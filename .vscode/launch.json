@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Chrome",
+            "url": "http://127.0.0.1:5500/html",
+            "webRoot": "${workspaceFolder}",
+            "type": "chrome",
+            "request": "launch"
+        }
+        ,
+        {
+            "name": "Launch Go Server",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": []
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Go + Chrome",
+            "configurations": ["Launch Go Server", "Launch Chrome"]
+        }
+    ]
+}
+
+

@@ -1,0 +1,105 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fff;
+    margin: 0;
+    color: #333;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: red;
+    font-family: 'Brush Script MT', cursive, sans-serif;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input[type="text"],
+textarea,
+select,
+input[type="file"] {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+    border-color: red;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.add-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 0;
+    border-radius: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.add-button:hover {
+    background-color: darkred;
+}
+
+#problemTitle {
+    border: 1px solid red;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.clear-btn,
+.save-btn {
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.clear-btn {
+    background-color: transparent;
+    color: red;
+    border: 1px solid red;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.clear-btn:hover {
+    background-color: red;
+    color: white;
+}
+
+.save-btn {
+    background-color: red;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.save-btn:hover {
+    background-color: darkred;
+}

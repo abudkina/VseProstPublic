@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Добавить решение</title>
+    <link rel="stylesheet" href="../css/add_solution.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+     <header>
+    <div class="logo">Всё Прoст</div>
+    <nav class="desktop-menu">
+        <a href="#" title="Вопросы" class="menu-item">
+            <img src="../assets/icons/help_6176358.png" alt="" /> Вопросы
+        </a>
+        <a href="#" title="Решения" class="menu-item">
+            <img src="../assets/icons/idea_17401118.png" alt="" /> Решения
+        </a>
+        <a href="#" title="Избранное" class="menu-item heart">
+            <img src="../assets/icons/hearts_8822941.png" alt="" /> Избранное
+        </a>
+        <a href="#" title="Корзина" class="menu-item">
+            <img src="../assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
+        </a>
+        <a href="#" title="Уведомления" class="menu-item">
+            <img src="../assets/icons/notification_5951646.png" alt="" /> Уведомления
+        </a>
+        <a href="#" title="Профиль" class="menu-item">
+            <img src="../assets/icons/user-list_18357678.png" alt="" /> Профиль
+        </a>
+    </nav>
+</header>
+<div class="container">
+        <h1>Добавить проблему</h1>
+<button class="btn-hide" id="hideBtn1">Скрыть</button>
+<button class="btn-hide small" id="hideBtn2">Скрыть</button>
+
+<form id="solutionForm">
+  <input type="text" id="solution" placeholder="Напишите решение" />
+  <textarea id="details" placeholder="Напишите подробности для решения"></textarea>
+  <input type="text" id="relatedProblems" placeholder="Выберите связанные проблемы" />
+
+  <div class="file-inputs">
+    <input type="file" id="mainImage" accept="image/*" />
+    <input type="file" id="additionalImage" accept="image/*" />
+  </div>
+
+  <div class="checkbox-group">
+    <label><input type="checkbox" id="canBuy" /> Можно ли купить?</label>
+    <label><input type="checkbox" id="canEvaluate" /> Можно ли оценить?</label>
+  </div>
+
+  <div class="buttons">
+    <button type="button" class="clear" id="clearBtn">Очистить</button>
+    <button type="submit" class="save">Сохранить</button>
+  </div>
+  </div>
+</form>
+
+<script src="../js/add_solution.js"></script>
+</body>
+</html>

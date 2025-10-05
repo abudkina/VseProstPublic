@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Добавить проблему</title>
+    <link rel="stylesheet" href="../css/add_problem.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <div class="logo">Всё Прoст</div>
+        <nav class="desktop-menu">
+            <a href="#" title="Вопросы" class="menu-item">
+                <img src="../assets/icons/help_6176358.png" alt="" /> Вопросы
+            </a>
+            <a href="#" title="Решения" class="menu-item">
+                <img src="../assets/icons/idea_17401118.png" alt="" /> Решения
+            </a>
+            <a href="#" title="Избранное" class="menu-item heart">
+                <img src="../assets/icons/hearts_8822941.png" alt="" /> Избранное
+            </a>
+            <a href="#" title="Корзина" class="menu-item">
+                <img src="../assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
+            </a>
+            <a href="#" title="Уведомления" class="menu-item">
+                <img src="../assets/icons/notification_5951646.png" alt="" /> Уведомления
+            </a>
+            <a href="#" title="Профиль" class="menu-item">
+                <img src="../assets/icons/user-list_18357678.png" alt="" /> Профиль
+            </a>
+        </nav>
+    </header>
+    <div class="container">
+        <h1>Добавить проблему</h1>
+        <form id="problemForm">
+            <select id="generalTopicSelect">
+                <option value="" disabled selected>Выберите общую тему</option>
+            </select>
+
+            <button type="button" class="add-button" id="addTopicBtn">Добавить тему</button>
+
+            <input type="text" id="problemTitle" placeholder="Введите название проблемы" required />
+
+            <textarea id="problemDescription" placeholder="Введите описание (необязательно)"></textarea>
+
+            <select id="categorySelect">
+                <option value="" disabled selected>Выберите категорию</option>
+            </select>
+
+            <button type="button" class="add-button" id="addCategoryBtn">Добавить категорию</button>
+
+            <select id="hashtags" multiple placeholder="Выберите хэштеги"></select>
+
+            <button type="button" class="add-button" id="addHashtagBtn">Добавить хэштег</button>
+
+            <input type="text" id="relatedProblems" placeholder="Выберите связанные проблемы" />
+
+            <input type="text" id="badSolutions" placeholder="Выберите плохие решения" />
+
+            <input type="file" id="problemImage" accept="image/*" />
+
+            <div class="form-buttons">
+                <button type="reset" class="clear-btn">Очистить</button>
+                <button type="submit" class="save-btn">Сохранить</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module" src="../js/add_problem.js"></script>
+</body>
+
+</html>

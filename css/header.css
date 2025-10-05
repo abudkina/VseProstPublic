@@ -1,0 +1,114 @@
+header {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1em 2em;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: red;
+  font-size: 1.5rem;
+}
+
+nav {
+  flex-grow: 1;
+  font-style: normal;
+}
+
+.desktop-menu {
+  display: flex;
+  width: 100%;
+  font-style: normal;
+}
+
+.desktop-menu .menu-item {
+  color: red;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Inter';
+  justify-content: space-around;
+  width: 100%;
+  font-style: normal;
+}
+
+.desktop-menu img {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 0.2em;
+  font-style: normal;
+}
+
+.desktop-menu .heart img {
+  filter: drop-shadow(0 0 2px red);
+  font-style: normal;
+}
+
+.mobile-menu {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  width: 100%;
+  font-style: normal;
+}
+
+.mobile-menu .menu-item img {
+  width: 100%;
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 0 2px red);
+  font-style: normal;
+}
+
+.mobile-menu .heart img {
+  filter: drop-shadow(0 0 2px red);
+  font-style: normal;
+}
+
+/* Адаптивность */
+@media (min-width: 1200px) and (max-width: 2000px){
+  
+  .mobile-menu{
+    display: none; /* Скрываем мобильные фильтры */
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+
+  .mobile-menu{
+    display: none; /* Скрываем мобильные фильтры */
+  }
+
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  
+  .mobile-menu{
+    display: none; /* Скрываем мобильные фильтры */
+  }
+
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  
+  .desktop-menu{
+    display: none; /* Скрываем мобильные фильтры */
+  }
+}
+
+@media (max-width: 479px) {
+  
+  .desktop-menu{
+    display: none; /* Скрываем мобильные фильтры */
+  }
+}

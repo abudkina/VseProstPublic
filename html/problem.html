@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Продукты от депрессии</title>
+    <link rel="stylesheet" href="../css/problem.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+
+</head>
+<body>
+   <header>
+  <div class="logo">Всё Прoст</div>
+  <nav class="desktop-menu">
+    <a href="#" title="Вопросы" class="menu-item">
+      <img src="../assets/icons/help_6176358.png" alt="" /> Вопросы
+    </a>
+    <a href="#" title="Решения" class="menu-item">
+      <img src="../assets/icons/idea_17401118.png" alt="" /> Решения
+    </a>
+    <a href="#" title="Избранное" class="menu-item heart">
+      <img src="../assets/icons/hearts_8822941.png" alt="" /> Избранное
+    </a>
+    <a href="#" title="Корзина" class="menu-item">
+      <img src="../assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
+    </a>
+    <a href="#" title="Уведомления" class="menu-item">
+      <img src="../assets/icons/notification_5951646.png" alt="" /> Уведомления
+    </a>
+    <a href="#" title="Профиль" class="menu-item">
+      <img src="../assets/icons/user-list_18357678.png" alt="" /> Профиль
+    </a>
+  </nav>
+  <nav class="mobile-menu">
+    <a href="#" title="Вопросы" class="menu-item">
+      <img src="../assets/icons/help_6176358.png" alt="" />
+    </a>
+    <a href="#" title="Решения" class="menu-item">
+      <img src="../assets/icons/idea_17401118.png" alt="" />
+    </a>
+    <a href="#" title="Избранное" class="menu-item heart">
+      <img src="../assets/icons/hearts_8822941.png" alt="" />
+    </a>
+    <a href="#" title="Корзина" class="menu-item">
+      <img src="../assets/icons/shopping-basket_11981486.png" alt="" />
+    </a>
+    <a href="#" title="Уведомления" class="menu-item">
+      <img src="../assets/icons/notification_5951646.png" alt="" />
+    </a>
+    <a href="#" title="Профиль" class="menu-item">
+      <img src="../assets/icons/user-list_18357678.png" alt="" />
+    </a>
+  </nav>
+</header>
+<div id="solutionContainer"></div>
+
+    <!-- Шаблоны -->
+    <template id="problem-info-template">
+        <div class="problem-info">
+            <img class="problem-img" alt="" />
+            <h2 class="problem-title"></h2>
+            <div class="problem-stats">
+                <span class="stat-item" title="Лайки">
+                    <img src="../assets/icons/love_9318199.png" alt="Лайки" class="icon" />
+                    <span class="stat-number">10</span>
+                </span>
+                <span class="stat-item" title="Просмотры">
+                    <img src="../assets/icons/eye_8979989.png" alt="Просмотры" class="icon" />
+                    <span class="stat-number">50</span>
+                </span>
+                <span class="stat-item" title="Ссылки">
+                    <img src="../assets/icons/link_13925097.png" alt="Ссылки" class="icon" />
+                    <span class="stat-number">5</span>
+                </span>
+            </div>
+        </div>
+    </template>
+
+    <template id="tag-template">
+        <span class="tag"></span>
+    </template>
+
+    <template id="solution-card-template">
+        <div class="card">
+            <div class="card-image-wrapper">
+                <a href="#" class="card-title-link">
+                    <img src="" alt="" class="card-image" />
+                </a>
+                <div class="likes-overlay">
+                    <img src="../assets/icons/love_9318199.png" alt="Избранное" class="icon" />
+                    <span class="likes-number">0</span>
+                </div>
+                <div class="rating">
+                    <span class="rating-number">0</span>
+                </div>
+                <div class="card-title-overlay"></div>
+            </div>
+            <div class="card-tags-stats">
+                <div class="stats">
+                    <div class="stat-item likes">
+                        <span class="stat">
+                            <img src="../assets/icons/like_5527412.png" alt="Лайки" class="icon" />0
+                        </span>
+                    </div>
+                    <div class="stat-item unlikes">
+                        <span class="stat">
+                            <img src="../assets/icons/down_13646455.png" alt="НеЛайки" class="icon" />0
+                        </span>
+                    </div>
+                    <div class="stat-item views">
+                        <span class="stat">
+                            <img src="../assets/icons/eye_8979989.png" alt="Просмотры" class="icon" />0
+                        </span>
+                    </div>
+                    <div class="stat-item comments">
+                        <span class="stat">
+                            <img src="../assets/icons/message_2629755.png" alt="Комментарии" class="icon" />0
+                        </span>
+                    </div>
+                    <div class="stat-item links">
+                        <span class="stat">
+                            <img src="../assets/icons/link_13925097.png" alt="Ссылки" class="icon" />0
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="../js/problem.js"></script>
+</body>
+</html>
