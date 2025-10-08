@@ -27,7 +27,7 @@ func setupDB() (*gorm.DB, error) {
 		PrepareStmt: true})
 }
 
-func test() {
+func main() {
 	db, err := setupDB()
 	if err != nil {
 		log.Fatalf("Ошибка подключения к БД: %v", err)
