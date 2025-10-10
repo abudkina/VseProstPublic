@@ -1,0 +1,77 @@
+ body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f0f0f0;
+  }
+  header {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-bottom: 2px solid red;
+    padding: 10px 0;
+    background: white;
+  }
+  .logo {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    color: red;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .logo span {
+    display: block;
+    line-height: 1;
+  }
+  nav {
+    display: flex;
+    gap: 30px;
+  }
+  nav .item {
+    text-align: center;
+    color: red;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  nav .item svg {
+    width: 30px;
+    height: 30px;
+    fill: red;
+    margin-bottom: 4px;
+  }
+  nav .item:hover {
+    text-decoration: underline;
+  }
+
+  main {
+    max-width: 960px;
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 0 10px;
+  }
+  .block {
+    border-radius: 12px;
+    padding: 20px;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .block.green {
+    background-color: #3fff00;
+    color: brown;
+  }
+  .block.red {
+    background-color: #ff0000;
+    color: white;
+  }
+  .block.green strong {
+    font-weight: normal;
+  }
+  .block.red strong {
+    font-weight: normal;
+  }

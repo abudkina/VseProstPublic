@@ -174,3 +174,25 @@ func CreateSolution(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Solution added successfully", "id": solution.ID})
 	}
 }
+
+// Обработчик для добавления категории
+func CountSolution(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req solutionModel.Solution
+
+		_, exists := c.Get("userID")
+		if !exists {
+			c.JSON(401, gin.H{"error": "userID не найден"})
+			return
+		}
+		
+		var count int64
+		if err := db.Model(req).Where("isnew = ?", true).Count(&count).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "DB error"})
+			return
+		}
+
+		// Возвращаем созданную категорию
+		c.JSON(http.StatusOK, gin.H{"count": count})
+	}
+}

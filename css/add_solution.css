@@ -110,3 +110,52 @@ body {
   button.save:hover {
     background-color: #a00;
   }
+
+          .problem-search-container {
+            position: relative;
+            width: 100%;
+        }
+        #problemSearch {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        #problemDropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .dropdown-item:hover {
+            background: #f0f0f0;
+        }
+        #selectedProblems {
+            margin-top: 10px;
+        }
+        .selected-problem {
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .selected-problem .remove {
+            margin-left: 5px;
+            cursor: pointer;
+            color: red;
+        }

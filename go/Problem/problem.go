@@ -13,7 +13,6 @@ import (
 	hashtagModel "vseProst/models/HashtagModel"
 	problemModel "vseProst/models/ProblemModel"
 	problemWithSolutionsModel "vseProst/models/ProblemWithSolutionsModel"
-	topicModel "vseProst/models/TopicModel"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -235,26 +234,7 @@ func GetFavouriteProblems(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func GetTopics(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		search := c.Query("search")
-		if len(search) < 2 {
-			// Чтобы не нагружать бд, вернем пустой массив, если меньше 3 символов
-			c.JSON(http.StatusOK, []string{})
-			return
-		}
 
-		var topics []topicModel.Topic
-		// Поиск с учетом регистра в поле name (Или ilike для Postgres, если GORM поддерживает)
-		err := db.Where("name ILIKE ?", "%"+strings.TrimSpace(search)+"%").Limit(10).Find(&topics).Error
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка поиска тем"})
-			return
-		}
-
-		c.JSON(http.StatusOK, topics)
-	}
-}
 func CreateProblem(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -351,5 +331,27 @@ func CreateProblem(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Проблема сохранена", "id": problem.ID})
+	}
+}
+
+// Обработчик для добавления категории
+func CountProblem(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req problemModel.Problem
+
+		_, exists := c.Get("userID")
+		if !exists {
+			c.JSON(401, gin.H{"error": "userID не найден"})
+			return
+		}
+		
+		var count int64
+		if err := db.Model(req).Where("isnew = ?", true).Count(&count).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "DB error"})
+			return
+		}
+
+		// Возвращаем созданную категорию
+		c.JSON(http.StatusOK, gin.H{"count": count})
 	}
 }

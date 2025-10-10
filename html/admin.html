@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Всё Просто</title>
+    <link rel="stylesheet" href="../css/admin.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <div class="logo">Всё Прoст</div>
+        <nav class="desktop-menu">
+            <a href="#" title="Вопросы" class="menu-item">
+                <img src="../assets/icons/help_6176358.png" alt="" /> Вопросы
+            </a>
+            <a href="#" title="Решения" class="menu-item">
+                <img src="../assets/icons/idea_17401118.png" alt="" /> Решения
+            </a>
+            <a href="#" title="Избранное" class="menu-item heart">
+                <img src="../assets/icons/hearts_8822941.png" alt="" /> Избранное
+            </a>
+            <a href="#" title="Корзина" class="menu-item">
+                <img src="../assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
+            </a>
+            <a href="#" title="Уведомления" class="menu-item">
+                <img src="../assets/icons/notification_5951646.png" alt="" /> Уведомления
+            </a>
+            <a href="#" title="Профиль" class="menu-item">
+                <img src="../assets/icons/user-list_18357678.png" alt="" /> Профиль
+            </a>
+        </nav>
+    </header>
+    <main>
+        <a href="#" id="new_problems"></a>
+        <div class="block green">Новые проблемы<strong id="new_problems-count"></strong></div>
+        </a>
+        <a href="#" id="new_solutions"></a>
+        <div class="block green">Новые решения<strong id="new_solutions-count"></strong></div>
+        </a>
+        <a href="#" id="new_hashtags"></a>
+        <div class="block green">Новые хэштеги<strong id="new_hashtags-count"></strong></div>
+        </a>
+        <a href="#" id="new_solution_comments"></a>
+        <div class="block green">Новые комментарии Решения<strong id="new_solution_comments-count"></strong></div>
+        </a>
+        <a href="#" id="new_problem_comments"></a>
+        <div class="block green">Link Problem Solution<strong id="new_problem_comments-count"></strong></div>
+        </a>
+
+        <a href="#" id="link_solution_problems"></a>
+        <div class="block green">Link Solution Problem<strong id="link_solution_problems"></strong></div>
+        </a>
+        <a href="#" id="link_problem_problems"></a>
+        <div class="block red">Link Problem Problem<strong id="link_problem_problems"></strong></div>
+        </a>
+        <a href="#" id="link_forbidden_problems"></a>
+        <div class="block red">Link Forbidden Problem<strong id="ink_forbidden_problems"></strong></div>
+        </a>
+
+        <a href="#" id="new_categories"></a>
+        <div class="block red">Категории<strong id="new-categories-count"></strong></div>
+        </a>
+
+        <a href="#" id="new_topics"></a>
+        <div class="block red">Темы<strong id="new_topics-count"></strong></div>
+        </a>
+        <a href="#" id="statistics"></a>
+        <div class="block red">Статистика</div>
+        </a>
+
+        <a href="#" id="users"></a>
+        <div class="block red">Пользователи<strong id="users-count"></strong></div>
+        </a>
+    </main>
+    <script type="module" src="../js/admin.js"></script>
+</body>
+
+</html>

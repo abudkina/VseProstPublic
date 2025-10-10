@@ -228,9 +228,7 @@ export function checkAuth(redirectIfUnauthorized = true) {
                     localStorage.setItem('redirectAfterLogin', window.location.href);
                     window.location.href = '../html/authorization.html';  // Или куда нужно
                 }
-                throw new Error('Unauthorized');
             }
-            throw new Error('Server error');
         }
         return response.json();
     })

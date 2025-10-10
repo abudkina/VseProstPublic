@@ -8,6 +8,7 @@ func (User) TableName() string {
 
 type User struct {
 	ID           int        `gorm:"primaryKey;column:id"`
+	IsNew        bool      `gorm:"column:is_new;default:true"`
 	FavProblem   bool       `gorm:"column:favproblem;default:true"`
 	FavSolution  bool       `gorm:"column:favsolution;default:false"`
 	Image        *string    `gorm:"column:image"` // nullable text

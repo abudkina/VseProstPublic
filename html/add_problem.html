@@ -74,7 +74,39 @@
         </form>
     </div>
 
-    <script type="module" src="../js/add_problem.js"></script>
+    <div id="modal-overlay" class="modal-overlay">
+        <!-- Модал для темы -->
+        <div id="topic-modal" class="modal">
+            <h2>Добавить тему</h2>
+            <input type="text" id="topic-name-input" placeholder="Введите имя темы">
+            <div class="modal-buttons">
+                <button id="topic-add-btn">Добавить</button>
+                <button id="topic-cancel-btn">Отмена</button>
+            </div>
+            <div id="topic-error" class="error-message"></div>
+        </div>
+
+        <!-- Модал для категории -->
+        <div id="category-modal" class="modal">
+            <h2>Добавить категорию</h2>
+            <input type="text" id="category-name-input" placeholder="Введите имя категории">
+            <div class="modal-buttons">
+                <button id="category-add-btn">Добавить</button>
+                <button id="category-cancel-btn">Отмена</button>
+            </div>
+            <div id="category-error" class="error-message"></div>
+        </div>
+
+        <!-- Модал для хэштега -->
+        <div id="hashtag-modal" class="modal">
+            <h2>Добавить хэштег</h2>
+            <input type="text" id="hashtag-name-input" placeholder="Введите имя хэштега">
+            <div class="modal-buttons">
+                <button id="hashtag-add-btn">Добавить</button>
+                <button id="hashtag-cancel-btn">Отмена</< /div>
+                    <div id="hashtag-error" class="error-message"></div>
+            </div>
+            <script type="module" src="../js/add_problem.js"></script>
 </body>
 
 </html>

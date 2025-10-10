@@ -1,0 +1,118 @@
+.unread {
+    color: blue;
+}
+
+.read {
+    color: gray;
+}
+
+.icon {
+    font-size: 20px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.notifications-container {
+    width: 100vw;
+    max-width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.notification-card {
+    width: 100%;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    /* Для позиционирования правого блока */
+}
+
+.notification-card.unread-card {
+    background: #ffebee;
+    /* Светло-розовый фон для непрочитанных */
+}
+
+.notification-title {
+    font-weight: 700;
+    font-size: 1.2em;
+    color: #002060;
+    margin-bottom: 6px;
+}
+
+.notification-text {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 12px;
+    max-height: 3em;
+    /* примерно 2 строки */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+}
+
+.notification-right {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    text-align: center;
+}
+
+.notification-icon {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 4px;
+    color: red;
+    /* для непрочитанных */
+    cursor: pointer; /* Для клика на иконку */
+}
+
+.notification-icon.read {
+    color: gray;
+}
+
+.notification-date {
+    font-size: 0.85em;
+    color: #666;
+    user-select: none;
+}

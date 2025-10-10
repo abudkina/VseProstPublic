@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Добавить решение</title>
-    <link rel="stylesheet" href="../css/add_solution.css" />
+    <link rel="stylesheet" href="../css/notifications.css" />
     <link rel="stylesheet" href="../css/header.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
@@ -35,37 +35,18 @@
             </a>
         </nav>
     </header>
-    <div class="container">
-        <h1>Добавить решение</h1>
-
-        <form id="solutionForm">
-            <input type="text" id="solution" placeholder="Напишите решение" />
-            <textarea id="details" placeholder="Напишите подробности для решения"></textarea>
-            
-            <!-- Замена поля relatedProblems на новый компонент -->
-            <div class="problem-search-container">
-                <input type="text" id="problemSearch" placeholder="Поиск похожих проблем..." />
-                <div id="problemDropdown"></div>
-                <div id="selectedProblems"></div>
-            </div>
-
-            <div class="file-inputs">
-                <input type="file" id="mainImage" accept="image/*" />
-                <input type="file" id="additionalImage" accept="image/*" />
-            </div>
-
-            <div class="checkbox-group">
-                <label><input type="checkbox" id="canBuy" /> Можно ли купить?</label>
-                <label><input type="checkbox" id="canEvaluate" /> Можно ли оценить?</label>
-            </div>
-
-            <div class="buttons">
-                <button type="button" class="clear" id="clearBtn">Очистить</button>
-                <button type="submit" class="save">Сохранить</button>
-            </div>
-        </form>
+    <h1>Уведомления</h1>
+<div id="notifications-container" class="notifications-container">
+  <!-- Уведомления будут динамически добавляться сюда -->
+</div>
+    <!-- Модальное окно -->
+    <div id="notification-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title"></h2>
+            <p id="modal-text"></p>
+        </div>
     </div>
-
-    <script type="module" src="../js/add_solution.js"></script>
+    <script type="module" src="../js/notifications.js"></script>
 </body>
 </html>

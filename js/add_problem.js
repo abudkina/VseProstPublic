@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     hashtagsIDsHidden.name = 'hashtagsIDs';
     form.appendChild(hashtagsIDsHidden);
 
-
     // Функция загрузки категорий
     async function loadCategories() {
         try {
@@ -41,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // загружаем категории при загрузке страницы
     loadCategories();
 
-// Инициализация Tom Select для тем (с поиском)
+    // Инициализация Tom Select для тем (с поиском)
     generalTopicTomSelect = new TomSelect('#generalTopicSelect', {
         multiple: false,
         placeholder: 'Выберите общую тему (введите для поиска)',
@@ -49,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         valueField: 'value', // Значение опции (ID)
         labelField: 'text', // Текст опции (имя)
         maxOptions: null, // Без ограничения опций
-        load: function(query, callback) {
+        load: function (query, callback) {
             if (query.length < 3) return callback(); // Минимум 3 символа для поиска
             fetch(`http://127.0.0.1:8080/api/topics?search=${encodeURIComponent(query)}`)
                 .then(res => res.json())
@@ -65,15 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     callback();
                 });
         },
-        onChange: function(value) {
+        onChange: function (value) {
             // Обновляем скрытое поле при выборе
             topicIDHidden.value = value;
         },
         render: {
-            option: function(item, escape) {
+            option: function (item, escape) {
                 return `<div>${escape(item.text)}</div>`;
             },
-            item: function(item, escape) {
+            item: function (item, escape) {
                 return `<div>${escape(item.text)}</div>`;
             }
         }
@@ -117,41 +116,126 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Обработчик для кнопки "Добавить хэштег"
-    document.getElementById('addHashtagBtn').addEventListener('click', async () => {
-        const newHashtagName = prompt('Введите имя нового хэштега:');
-        if (!newHashtagName || newHashtagName.trim().length < 1) return;
+    // Функции для модальных окон
+    const modalOverlay = document.getElementById('modal-overlay');
+    const topicModal = document.getElementById('topic-modal');
+    const categoryModal = document.getElementById('category-modal');
+    const hashtagModal = document.getElementById('hashtag-modal');
 
+    function showModal(modal) {
+        modalOverlay.style.display = 'flex';
+        modal.style.display = 'block';
+        modal.querySelector('input').focus();
+    }
+
+    function hideModal() {
+        modalOverlay.style.display = 'none';
+        topicModal.style.display = 'none';
+        categoryModal.style.display = 'none';
+        hashtagModal.style.display = 'none';
+        // Очистить ошибки и поля
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+        document.querySelectorAll('.modal input').forEach(inp => inp.value = '');
+    }
+
+    modalOverlay.
+    addEventListener('click', (e) => {
+        if (e.target === modalOverlay) hideModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideModal();
+    });
+
+    // Обработчики для кнопок добавления
+    document.getElementById('addTopicBtn').addEventListener('click', () => showModal(topicModal));
+    document.getElementById('addCategoryBtn').addEventListener('click', () => showModal(categoryModal));
+    document.getElementById('addHashtagBtn').addEventListener('click', () => showModal(hashtagModal));
+
+    // Обработчики для кнопок в модалах
+    document.getElementById('topic-cancel-btn').addEventListener('click', hideModal);
+    document.getElementById('category-cancel-btn').addEventListener('click', hideModal);
+    document.getElementById('hashtag-cancel-btn').addEventListener('click', hideModal);
+
+    document.getElementById('topic-add-btn').addEventListener('click', async () => {
+        const name = document.getElementById('topic-name-input').value.trim();
+        if (!name) {
+            document.getElementById('topic-error').textContent = 'Пожалуйста, введите имя темы.';
+            return;
+        }
+        try {
+            const response = await fetch('http://127.0.0.1:8080/api/addTopic', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const newTopic = await response.json();
+                generalTopicTomSelect.addOption({ value: newTopic.ID.toString(), text: newTopic.Name });
+                hideModal();
+            } else {
+                const error = await response.json();
+                document.getElementById('topic-error').textContent = 'Ошибка: ' + error.error;
+            }
+        } catch (error) {
+            document.getElementById('topic-error').textContent = 'Сетевая ошибка: ' + error.message;
+        }
+    });
+
+    document.getElementById('category-add-btn').addEventListener('click', async () => {
+        const name = document.getElementById('category-name-input').value.trim();
+        if (!name) {
+            document.getElementById('category-error').textContent = 'Пожалуйста, введите имя категории.';
+            return;
+        }
+        try {
+            const response = await fetch('http://127.0.0.1:8080/api/addCategory', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const newCategory = await response.json();
+                const option = document.createElement('option');
+                option.value = newCategory.ID;
+                option.textContent = newCategory.Name;
+                categorySelect.appendChild(option);
+                hideModal();
+            } else {
+                const error = await response.json();
+                document.getElementById('category-error').textContent = 'Ошибка: ' + error.error;
+            }
+        } catch (error) {
+            document.getElementById('category-error').textContent = 'Сетевая ошибка: ' + error.message;
+        }
+    });
+
+    document.getElementById('hashtag-add-btn').addEventListener('click', async () => {
+        const name = document.getElementById('hashtag-name-input').value.trim();
+        if (!name) {
+            document.getElementById('hashtag-error').textContent = 'Пожалуйста, введите имя хэштега.';
+            return;
+        }
         try {
             const response = await fetch('http://127.0.0.1:8080/api/addHashtag', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newHashtagName.trim() })
+                body: JSON.stringify({ name }),
+                credentials: 'include'
             });
             if (response.ok) {
                 const newHashtag = await response.json();
-                // Добавляем новую опцию в Tom Select и обновляем
                 hashtagsTomSelect.addOption({ value: newHashtag.ID.toString(), text: newHashtag.Name });
-                alert('Хэштег добавлен!');
+                hideModal();
             } else {
                 const error = await response.json();
-                alert('Ошибка: ' + error.error);
+                document.getElementById('hashtag-error').textContent = 'Ошибка: ' + error.error;
             }
         } catch (error) {
-            alert('Сетевая ошибка: ' + error.message);
+            document.getElementById('hashtag-error').textContent = 'Сетевая ошибка: ' + error.message;
         }
-    });
-
-    document.getElementById('addTopicBtn').addEventListener('click', () => {
-        alert('Добавить тему - функционал пока не реализован.');
-    });
-
-    document.getElementById('addCategoryBtn').addEventListener('click', () => {
-        alert('Добавить категорию - функционал пока не реализован.');
-    });
-
-    document.getElementById('addHashtagBtn').addEventListener('click', () => {
-        alert('Добавить хэштег - функционал пока не реализован.');
     });
 });
 
