@@ -45,31 +45,46 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background-color: rgba(208, 240, 216, 0.8);
-  /* светло-зеленый фон */
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.3) 0%, rgba(252, 165, 165, 0.3) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   gap: 2px;
   font-weight: 700;
-  font-size: 0.95rem;
-  color: #2E7D32;
-  /* темно-зеленый текст */
+  font-size: 0.9rem;
+  color: #991b1b;
   cursor: default;
   user-select: none;
   z-index: 10;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
   flex-direction: column;
   /* вертикальный столбик */
-  padding: 6px 8px;
-  width: 36px;
+  padding: 8px 10px;
+  width: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.card-favorites:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
 }
 
 .favorite-icon {
   width: 18px;
   height: 18px;
   display: block;
-  filter: none;
+  transition: all 0.3s ease;
+}
+
+.favorite-icon:not(.favorited) {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(95%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+  background: transparent;
+}
+
+.favorite-icon.favorited {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(95%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
 }
 
 a {
@@ -88,6 +103,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #ffffff 0%, #fee2e2 100%);
+  background-attachment: fixed;
 }
 
 .custom-select {
@@ -107,6 +124,8 @@ body {
   font-style: normal;
   position: relative;
   /* для корректного позиционирования дочерних абсолютных элементов */
+  overflow: visible !important;
+  /* чтобы выпадающий список не обрезался */
 }
 
 /* Выпадающий список Choices поверх грида */
@@ -144,6 +163,89 @@ body {
   box-sizing: border-box;
 }
 
+/* Стили для выпадающего списка TomSelect */
+.ts-dropdown {
+  position: absolute !important;
+  max-height: 300px !important;
+  background: white !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 0 0 20px 20px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  z-index: 10001 !important;
+  /* Выше чем search-filters (1000) и cards-container (1) */
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  min-width: 200px !important;
+}
+
+/* Выпадающий список должен быть виден, когда он открыт */
+.ts-dropdown:not([style*="display: none"]) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Переопределяем inline стили TomSelect для отображения выпадающего списка */
+.ts-dropdown[style*="display: none"] {
+  display: none !important;
+}
+
+/* Когда TomSelect открыт, выпадающий список должен быть виден */
+.vs-wrapper.focus .ts-dropdown,
+.vs-wrapper.input-active .ts-dropdown,
+.vs-wrapper.focus.input-active .ts-dropdown {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Убеждаемся, что выпадающий список виден, когда есть результаты */
+.ts-dropdown.has-options,
+.ts-dropdown:has(.option) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ts-dropdown-content {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.ts-dropdown .option {
+  padding: 10px 14px !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  text-align: center !important;
+}
+
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active {
+  background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%) !important;
+  color: #dc2626 !important;
+}
+
+.ts-dropdown .option[data-selectable="false"] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Скроллбар для выпадающего списка TomSelect */
+.ts-dropdown-content::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.ts-dropdown-content::-webkit-scrollbar-thumb {
+  background-color: rgba(220, 38, 38, 0.5) !important;
+  border-radius: 3px !important;
+}
+
+.ts-dropdown-content::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
 .filters.desktop .choices__item {
   display: inline-block;
   /* Чтобы элементы занимали только нужную ширину */
@@ -160,7 +262,7 @@ body {
 }
 
 .filters.desktop .choices__list--dropdown::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 0, 0, 0.5);
+  background-color: rgba(220, 38, 38, 0.5);
   border-radius: 3px;
 }
 
@@ -175,23 +277,65 @@ body {
   /* Отступы */
   position: relative;
   /* Для позиционирования выпадающего списка */
+  overflow: visible !important;
+  /* чтобы выпадающий список не обрезался */
+}
+
+/* Контейнер TomSelect в фильтрах */
+.filters.desktop .vs-wrapper {
+  position: relative !important;
+  overflow: visible !important;
+  /* чтобы выпадающий список не обрезался */
+  min-width: 140px !important;
+  /* минимальная ширина, чтобы не сужался при отсутствии элементов */
+  width: 25vw !important;
+  /* фиксированная ширина как у других фильтров */
+}
+
+/* Когда TomSelect в фокусе, выпадающий список должен быть виден */
+.vs-wrapper.focus .ts-dropdown,
+.vs-wrapper.focus.input-active .ts-dropdown,
+.vs-wrapper.input-active .ts-dropdown {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Убеждаемся, что выпадающий список виден даже если он вне контейнера фильтров */
+body > .ts-dropdown {
+  z-index: 10001 !important;
+  /* Выше чем search-filters (1000) и cards-container (1) */
+  position: absolute !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* При фокусе */
 .filters.desktop .choices__inner.is-focused {
-  border-color: red !important;
-  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3) !important;
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
 }
 
 .search-filters {
   width: 100%;
-  margin: 10px auto;
+  margin: 0 auto;
   box-sizing: border-box;
-  padding: 10px 1em;
+  padding: 5px 0.5em;
   display: flex;
   flex-direction: column;
   gap: 10px;
   font-style: normal;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 1400px;
+  overflow: visible !important;
+  /* чтобы выпадающий список не обрезался */
+  position: relative;
+  z-index: 1000;
+  /* чтобы фильтры и выпадающие списки были поверх грида */
 }
 
 .search-filters .container {
@@ -213,22 +357,28 @@ body {
 .top-row #search {
   flex-grow: 1;
   font-size: 1rem;
-  padding: 8px 12px;
+  padding: 14px 20px;
   border-radius: 16px;
-  border: none;
+  border: 2px solid #e2e8f0;
   outline: none;
-  background: white;
-  color: red;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  color: #2d3748;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-style: normal;
   font-family: 'Inter', sans-serif;
 }
 
+.top-row #search:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1), 0 6px 20px rgba(220, 38, 38, 0.15);
+  transform: translateY(-2px);
+}
+
 .top-row #search::placeholder {
-  color: red;
-  font-weight: 700;
+  color: #a0aec0;
+  font-weight: 400;
   font-style: normal;
   font-family: 'Inter', sans-serif;
 }
@@ -238,18 +388,32 @@ body {
   transition: color 0.3s;
 }
 
-.top-row #addProblem {
-  background-color: white;
-  color: red;
+.top-row #addProblem,
+.top-row #addSolution {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
   border: none;
-  padding: 9px 16px;
-  border-radius: 20px;
-  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-style: normal;
+  font-size: 0.95rem;
+}
+
+.top-row #addProblem:hover,
+.top-row #addSolution:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+}
+
+.top-row #addProblem:active,
+.top-row #addSolution:active {
+  transform: translateY(0);
 }
 
 .filters.desktop select,
@@ -262,24 +426,31 @@ body {
   flex-grow: 1;
   min-width: 140px;
   background: white;
-  color: red;
-  font-weight: 700;
+  color: #4a5568;
+  font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   font-style: normal;
 }
 
 .filters.desktop button {
   background-color: white;
-  color: red;
+  color: #dc2626;
   border: none;
   padding: 9px 16px;
   border-radius: 20px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   font-style: normal;
+}
+
+.filters.desktop button:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }
 
 .filters.mobile {
@@ -313,44 +484,50 @@ body {
 
 /* Карточки */
 .cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  /* Для переноса карточек */
-  gap: 16px;
-  padding: 10px 10px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  padding: 5px;
   overflow-x: hidden;
   /* Убираем горизонтальный скролл */
-  justify-content: flex-start;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   position: relative;
   /* Для z-index */
   z-index: 1;
   /* Чтобы фильтр с z-index:1000 был поверх */
+  margin-top: 10px;
+  /* Отступ сверху, чтобы выпадающий список не перекрывался */
 }
 
 .card {
-  width: calc((100% - 16px * 4) / 5);
-  background: #fff;
-  border-radius: 12px;
+  width: 100%;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
   font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
 }
 
 .card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(220, 38, 38, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: rgba(220, 38, 38, 0.3);
 }
 
 .card-image-wrapper {
   position: relative;
   width: 100%;
-  height: 160px;
+  height: 180px;
   overflow: hidden;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
 }
 
 .card-image-wrapper img.card-image {
@@ -404,116 +581,242 @@ body {
 
 /* Контент карточки */
 .card-content {
-  padding: 12px 16px;
+  padding: 16px 18px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* Тема проблемы */
+.problem-topic {
+  margin-bottom: 10px;
+  display: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  /* Скрываем полосы прокрутки */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE и Edge */
+}
+
+.problem-topic::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.problem-topic .topic-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25), 
+              0 2px 4px rgba(220, 38, 38, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.problem-topic .topic-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.problem-topic .topic-link:hover::before {
+  left: 100%;
+}
+
+.problem-topic .topic-link:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4), 
+              0 4px 8px rgba(220, 38, 38, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+}
+
+.problem-topic .topic-link:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
 /* Теги */
+.tags-wrapper {
+  position: relative;
+  margin-bottom: 8px;
+}
+
 .tags-column {
   display: flex;
   flex-wrap: nowrap;
   gap: 6px;
-  margin-bottom: 8px;
   max-width: 100%;
-  overflow: hidden;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
   white-space: nowrap;
+  scroll-behavior: smooth;
+  /* Скрываем полосы прокрутки */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE и Edge */
 }
 
-.tag {
-  /* Исходный стиль */
-  display: inline-block;
-  padding: 4px 8px;
-  margin: 2px;
-  border-radius: 4px;
-  background-color: #eee;
-  color: #333;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.tags-column::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
-.tag:hover {
-  background-color: #28a745;
-  /* Зеленый фон при наведении */
+.tags-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: white;
-  /* Белый текст для контраста */
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+  transition: all 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tags-wrapper:hover .tags-scroll-btn {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.tags-scroll-btn:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+}
+
+.tags-scroll-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.tags-scroll-btn.left {
+  left: 0;
+}
+
+.tags-scroll-btn.right {
+  right: 0;
+}
+
+.tags-scroll-btn.hidden {
+  display: none;
 }
 
 .tag {
-  background-color: #f0f0f0;
-  /* Цвет фона для тегов */
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   border-radius: 12px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   font-size: 0.75rem;
-  /* Размер шрифта для тегов */
-  color: #555;
+  color: #dc2626;
   white-space: nowrap;
   user-select: none;
-  font-weight: 500;
+  font-weight: 600;
   flex-shrink: 0;
-  max-width: 100%;
   box-sizing: border-box;
   line-height: 1.2;
   cursor: pointer;
   display: inline-block;
   margin: 2px;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.15);
+}
+
+.tag:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  border-color: rgba(220, 38, 38, 0.5);
 }
 
 /* Нижняя панель статистики */
 .card-footer {
   display: flex;
   flex-wrap: nowrap;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   width: 100%;
-  overflow-x: auto;
-  /* чтобы не выходило за пределы */
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Прячем скроллбар в Webkit браузерах */
-.card-footer::-webkit-scrollbar {
-  display: none;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-width: 0;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 4px;
-  border-radius: 16px;
-  font-weight: 300;
-  font-size: 0.4rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.7rem;
   user-select: none;
   white-space: nowrap;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  min-width: 0;
+}
+
+.stat-item:hover {
+  transform: scale(1.05);
 }
 
 /* Иконки статистики */
 .stat-icon {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   display: inline-flex;
   font-size: 0.8rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .stat-icon img {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 16px;
+  height: 16px;
   display: block;
 }
 
 /* Значения статистики */
 .stat-value {
   font-size: 0.8rem;
-  color: #555;
+  color: #2d3748;
   white-space: nowrap;
   user-select: none;
-  font-weight: 300;
+  font-weight: 600;
   display: flex;
   align-items: center;
   min-width: 10px;
@@ -522,32 +825,42 @@ body {
 
 /* Цвета статистики */
 .stat-item.views {
-  background-color: #e7e3e3;
-  color: #d4cfcf;
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+  color: #4a5568;
+  border: 1px solid rgba(74, 85, 104, 0.2);
 }
 
 .stat-item.likes {
-  background-color: #a2f3b6;
-  color: #2d8a4f;
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  color: #22543d;
+  border: 1px solid rgba(34, 84, 61, 0.2);
 }
 
 .stat-item.comments {
-  background-color: #cce3fc;
-  color: #2a6edb;
+  background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+  color: #2c5282;
+  border: 1px solid rgba(44, 82, 130, 0.2);
 }
 
 .stat-item.shares {
-  background-color: #fff0d1;
-  color: #d18b00;
+  background: linear-gradient(135deg, #fef5e7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid rgba(146, 64, 14, 0.2);
 }
 
 .stat-item.links {
-  background-color: #f8dbd3;
-  color: #fa1111;
+  background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
+  color: #c53030;
+  border: 1px solid rgba(197, 48, 48, 0.2);
+}
+
+.ts-control input[type="text"] {
+  color: #1a202c !important;
+  font-weight: 500;
 }
 
 .ts-control input[type="text"]::placeholder {
-  color: red;
+  color: #a0aec0;
   transition: color 0.2s ease;
 }
 
@@ -555,25 +868,40 @@ body {
   color: transparent !important;
 }
 
+/* Убеждаемся, что плейсхолдер виден, когда нет элементов */
+.ts-control:not(.has-items) input[type="text"]::placeholder {
+  color: #a0aec0 !important;
+  opacity: 1 !important;
+}
+
 .ts-control .item {
-  background-color: transparent !important;
-  /* прозрачный фон */
-  color: red !important;
-  /* красный текст */
-  border: 1px solid red;
-  /* красная рамка */
-  border-radius: 4px;
-  padding: 2px 8px;
+  background-color: rgba(220, 38, 38, 0.1) !important;
+  color: #dc2626 !important;
+  border: 1px solid #dc2626;
+  border-radius: 12px;
+  padding: 4px 10px;
   margin-right: 4px;
   font-weight: 600;
   white-space: normal !important;
   display: inline-block;
+  transition: all 0.3s ease;
 }
 
-/* При наведении на контейнер селекта скрываем placeholder */
-.ts-control:hover input::placeholder {
+.ts-control .item:hover {
+  background-color: rgba(220, 38, 38, 0.2) !important;
+  border-color: #b91c1c;
+}
+
+/* При наведении на контейнер селекта скрываем placeholder только если есть элементы */
+.ts-control.has-items:hover input::placeholder {
   color: transparent;
   transition: color 0.3s;
+}
+
+/* Если нет элементов, плейсхолдер остается видимым при наведении */
+.ts-control:not(.has-items):hover input::placeholder {
+  color: #a0aec0 !important;
+  opacity: 1 !important;
 }
 
 .ts-control {
@@ -586,23 +914,48 @@ body {
   /* чтобы тень нормально отрисовывалась */
   z-index: 1;
   /* на всякий случай */
+  min-width: 140px !important;
+  /* минимальная ширина */
 }
 
-.ts-wrapper.multi.has-items{
-  max-width: 20% !important;  /* ограничиваем ширину */
-  box-sizing: border-box;
+/* Для TomSelect в фильтрах - фиксированная ширина */
+.filters.desktop .ts-control {
+  min-width: 140px !important;
+  width: 100% !important;
+  /* занимает всю ширину контейнера ts-wrapper */
 }
 
-.ts-wrapper.multi.focus.input-active.has-items {
+/* Input внутри ts-control должен иметь минимальную ширину */
+.filters.desktop .ts-control input[type="text"] {
+  min-width: 100px !important;
+  /* минимальная ширина для поля ввода */
+}
+
+.vs-wrapper.multi.has-items{
   max-width: 20% !important;  /* ограничиваем ширину */
   box-sizing: border-box;
+  min-width: 140px !important;
+  /* минимальная ширина даже с элементами */
+}
+
+.vs-wrapper.multi.focus.input-active.has-items {
+  max-width: 20% !important;  /* ограничиваем ширину */
+  box-sizing: border-box;
+  min-width: 140px !important;
+  /* минимальная ширина даже с элементами */
+}
+
+/* Для wrapper без элементов - тоже минимальная ширина */
+.filters.desktop .vs-wrapper.multi:not(.has-items) {
+  min-width: 140px !important;
+  width: 25vw !important;
+  /* фиксированная ширина как у других фильтров */
 }
 
 /* Адаптивность */
 @media (min-width: 1200px) and (max-width: 2000px) {
-  .card {
-    width: calc(20% - 12.8px);
-    /* 5 карточек с учетом gap 16px */
+  .cards-container {
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .filters.mobile {
@@ -613,8 +966,8 @@ body {
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  .card {
-    width: calc(25% - 12px);
+  .cards-container {
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .filters.mobile {
@@ -626,8 +979,8 @@ body {
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
-  .card {
-    width: calc(33.33% - 10.7px);
+  .cards-container {
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .filters.mobile {
@@ -638,8 +991,8 @@ body {
 }
 
 @media (min-width: 480px) and (max-width: 767px) {
-  .card {
-    width: calc(50% - 8px);
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .filters.desktop {
@@ -647,15 +1000,16 @@ body {
     /* Скрываем фильтры */
   }
 
-  #addProblem {
+  #addProblem,
+  #addSolution {
     display: none;
   }
 
 }
 
 @media (max-width: 479px) {
-  .card {
-    width: 100%;
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .filters.desktop {
@@ -663,8 +1017,582 @@ body {
     /* Скрываем фильтры */
   }
 
-  #addProblem {
+  #addProblem,
+  #addSolution {
     display: none;
   }
 
+}
+
+/* Модальные окна */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    justify-self: center;
+}
+
+/* Декоративный элемент */
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #dc2626 0%, #b91c1c 50%, #ef4444 100%);
+    z-index: 1;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    padding: 30px 40px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #2d3748;
+    font-family: 'Jost', 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+.modal-close {
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    font-size: 24px;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.modal-close:hover {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px 40px 40px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-content input[type="text"],
+.modal-content textarea,
+.modal-content select,
+.modal-content input[type="file"] {
+    padding: 14px 18px;
+    font-size: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #2d3748;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content textarea:focus,
+.modal-content select:focus {
+    border-color: #dc2626;
+    box-shadow: 
+        0 0 0 4px rgba(220, 38, 38, 0.1),
+        0 4px 12px rgba(220, 38, 38, 0.15);
+    transform: translateY(-1px);
+}
+
+.modal-content input[type="text"]::placeholder,
+.modal-content textarea::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+.modal-content textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+}
+
+.modal-content input[type="file"] {
+    padding: 16px;
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-content input[type="file"]:hover {
+    border-color: #dc2626;
+    background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.modal-content .add-button {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    letter-spacing: 0.3px;
+}
+
+.modal-content .add-button:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+}
+
+.modal-content .add-button:active {
+    transform: translateY(0);
+}
+
+.modal-content .form-buttons,
+.modal-content .buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.modal-content .clear-btn,
+.modal-content .clear {
+    flex: 1;
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.3px;
+}
+
+.modal-content .clear-btn:hover,
+.modal-content .clear:hover {
+    background: linear-gradient(135deg, #5a6c7d 0%, #3a4555 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
+}
+
+.modal-content .clear-btn:active,
+.modal-content .clear:active {
+    transform: translateY(0);
+}
+
+.modal-content .save-btn,
+.modal-content .save {
+    flex: 1;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    letter-spacing: 0.3px;
+}
+
+.modal-content .save-btn:hover,
+.modal-content .save:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+}
+
+.modal-content .save-btn:active,
+.modal-content .save:active {
+    transform: translateY(0);
+}
+
+.modal-content .problem-search-container {
+    position: relative;
+    width: 100%;
+}
+
+.modal-content #problemDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content .dropdown-item {
+    padding: 12px 18px;
+    cursor: pointer;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    color: #2d3748;
+}
+
+.modal-content .dropdown-item:hover {
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.modal-content #selectedProblems {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.modal-content .selected-problem {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.modal-content .selected-problem .remove {
+    margin-left: 8px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.modal-content .selected-problem .remove:hover {
+    transform: scale(1.2);
+}
+
+.modal-content .file-inputs {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-content .file-inputs input[type="file"] {
+    flex: 1;
+}
+
+.modal-content .checkbox-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px;
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+}
+
+.modal-content .checkbox-group label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    color: #4a5568;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.modal-content .checkbox-group label:hover {
+    color: #2d3748;
+}
+
+.modal-content .checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #dc2626;
+    border-radius: 4px;
+    transition: transform 0.2s ease;
+}
+
+.modal-content .checkbox-group input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+/* Стили для select в модальных окнах */
+.modal-content select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23dc2626' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+/* Стили для TomSelect в модальных окнах */
+.modal-content .ts-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-content .ts-control.focus {
+    border-color: #dc2626;
+    box-shadow: 
+        0 0 0 4px rgba(220, 38, 38, 0.1),
+        0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+/* Стили для скроллбара в модальных окнах */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+}
+
+/* Адаптивность для модальных окон */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95%;
+        border-radius: 16px;
+    }
+    
+    .modal-header {
+        padding: 25px 25px 15px;
+    }
+    
+    .modal-header h2 {
+        font-size: 24px;
+    }
+    
+    .modal-content form {
+        padding: 20px 25px 30px;
+        gap: 15px;
+    }
+    
+    .modal-close {
+        right: 15px;
+        top: 15px;
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+    
+    .modal-content .form-buttons,
+    .modal-content .buttons {
+        flex-direction: column;
+    }
+    
+    .modal-content .save-btn,
+    .modal-content .clear-btn,
+    .modal-content .save,
+    .modal-content .clear {
+        width: 100%;
+    }
+}
+
+/* Модальные окна для темы, категории, хэштега */
+.modal {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    display: none;
+    position: relative;
+    z-index: 10001;
+}
+
+/* Исключение для editModal - не применяем стили из .modal */
+#editModal {
+    background: transparent !important;
+    padding: 20px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    max-width: none !important;
+    width: 100% !important;
+    text-align: center !important;
+    position: fixed !important;
+    z-index: 10000 !important;
+}
+
+.modal.active {
+    display: block;
+}
+
+/* Исключение для editModal - должно использовать flex для центрирования */
+#editModal.active {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-family: 'Inter', sans-serif;
+    color: #d00;
+}
+
+.modal input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.modal-buttons button:first-child {
+    background: #d00;
+    color: white;
+}
+
+.modal-buttons button:first-child:hover {
+    background: #a00;
+}
+
+.modal-buttons button:last-child {
+    background: #6c757d;
+    color: white;
+}
+
+.modal-buttons button:last-child:hover {
+    background: #5a6268;
+}
+
+.error-message {
+    color: #d00;
+    margin-top: 10px;
+    font-size: 14px;
+    min-height: 20px;
 }

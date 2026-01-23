@@ -1,0 +1,573 @@
+// problemListCommon.js - общая логика для работы со списком проблем
+// Используется в index.js и admin_problems.js
+
+import { initTagsScroll } from './tagsScroll.js';
+
+// Re-export initTagsScroll for use in other modules
+export { initTagsScroll };
+
+const API_BASE_URL = window.location.origin + '/api';
+
+/**
+ * Загрузка категорий и заполнение select
+ */
+export async function loadCategories(selectId = 'category', requireAuth = false) {
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (requireAuth) {
+            const token = localStorage.getItem('accessToken');
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/categories`, { headers });
+        const categories = await response.json();
+        
+        const categorySelect = document.getElementById(selectId);
+        if (!categorySelect) return;
+        
+        categorySelect.innerHTML = '<option value="">Выберите категорию</option>';
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.ID;
+            option.textContent = cat.Name;
+            categorySelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Ошибка загрузки категорий:', error);
+    }
+}
+
+/**
+ * Инициализация TomSelect для хэштегов
+ */
+export function initHashtagsTomSelect(selectId = 'hashtags', onItemAdd = null) {
+    const hashtagsElement = document.getElementById(selectId);
+    if (!hashtagsElement) {
+        console.warn(`Элемент с id "${selectId}" не найден`);
+        return null;
+    }
+    
+    // Проверяем, не инициализирован ли уже TomSelect на этом элементе
+    try {
+        // Проверяем прямое свойство tomselect
+        if (hashtagsElement.tomselect) {
+            if (typeof hashtagsElement.tomselect.destroy === 'function') {
+                hashtagsElement.tomselect.destroy();
+            }
+            // Очищаем свойство вручную на случай, если destroy не сработал полностью
+            delete hashtagsElement.tomselect;
+        }
+    } catch (e) {
+        // Игнорируем ошибки при уничтожении, но пытаемся очистить свойство
+        console.warn('Предупреждение при проверке TomSelect:', e);
+        try {
+            if (hashtagsElement.tomselect) {
+                delete hashtagsElement.tomselect;
+            }
+        } catch (e2) {
+            // Игнорируем
+        }
+    }
+    
+    // Убеждаемся, что элемент все еще в DOM
+    const element = document.getElementById(selectId);
+    if (!element) {
+        console.warn(`Элемент с id "${selectId}" был удален из DOM`);
+        return null;
+    }
+    
+    // Финальная проверка перед созданием
+    if (element.tomselect) {
+        console.warn('TomSelect все еще привязан к элементу, принудительная очистка...');
+        try {
+            if (typeof element.tomselect.destroy === 'function') {
+                element.tomselect.destroy();
+            }
+        } catch (e) {
+            // Игнорируем
+        }
+        delete element.tomselect;
+    }
+    
+    try {
+        // Передаем элемент напрямую (более надежно, чем селектор)
+        const instance = new TomSelect(element, {
+            // Уходим от дефолтного wrapperClass="ts-wrapper" (часто конфликтует с чужими стилями)
+            wrapperClass: 'vs-wrapper',
+            valueField: 'ID',
+            labelField: 'Name',
+            searchField: 'Name',
+            maxItems: null,
+            create: false,
+            loadThrottle: 300,
+            placeholder: 'Выберите хэштеги',
+            dropdownParent: 'body', // Рендерим выпадающий список в body, чтобы он был поверх всего
+            shouldLoad: function(query) {
+                // Показываем выпадающий список только при вводе минимум 2 символов
+                return query && query.length >= 2;
+            },
+            onType: function(query) {
+                // При вводе текста очищаем опции, если запрос меньше 2 символов
+                if (!query || query.length < 2) {
+                    this.clearOptions();
+                    this.close();
+                }
+            },
+            load(query, callback) {
+                if (!query.length || query.length < 2) {
+                    callback();
+                    return;
+                }
+                
+                fetch(`${API_BASE_URL}/hashtags?q=${encodeURIComponent(query)}`, {
+                    credentials: 'include' // Важно для отправки cookies с токеном
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Ошибка загрузки хэштегов');
+                        return res.json();
+                    })
+                    .then(json => {
+                        // Обрабатываем разные форматы ответа
+                        const hashtags = Array.isArray(json) ? json : (json.hashtags || []);
+                        callback(hashtags);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка загрузки хэштегов:', error);
+                        callback();
+                    });
+            },
+            onItemAdd() {
+                // Очищаем поле ввода
+                this.control_input.value = '';
+                // Очищаем все опции, чтобы не показывать все хэштеги
+                this.clearOptions();
+                // Закрываем выпадающий список
+                this.close();
+                if (onItemAdd) onItemAdd(this);
+            },
+            onItemRemove() {
+                // Очищаем опции при удалении элемента, чтобы не показывать старые хэштеги
+                this.clearOptions();
+                this.close();
+                this.control_input.value = '';
+                
+                // При удалении элемента проверяем, остались ли элементы
+                // Если элементов нет, убеждаемся, что плейсхолдер виден
+                if (this.items.length === 0) {
+                    // Удаляем класс has-items, чтобы показать плейсхолдер
+                    this.wrapper.classList.remove('has-items');
+                    // Убеждаемся, что input виден и плейсхолдер отображается
+                    if (this.control_input) {
+                        this.control_input.placeholder = this.settings.placeholder || 'Выберите хэштеги';
+                    }
+                }
+            },
+            onFocus() {
+                // При фокусе не показываем выпадающий список автоматически
+                // Пользователь должен ввести минимум 2 символа для поиска
+                this.control_input.value = '';
+                this.clearOptions();
+            },
+            onBlur() {
+                // При потере фокуса закрываем выпадающий список
+                this.close();
+            },
+        });
+        
+        return instance;
+    } catch (error) {
+        console.error('Ошибка инициализации TomSelect:', error);
+        return null;
+    }
+}
+
+/**
+ * Загрузка карточек проблем с фильтрами
+ */
+export async function loadProblemsCards(filters, onSuccess = null, onError = null) {
+    const container = document.querySelector('.cards-container');
+    if (!container) return;
+    
+    container.innerHTML = 'Загрузка...';
+    
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.hashtags && filters.hashtags.length) {
+        params.append('hashtags', filters.hashtags.join(','));
+    }
+    if (filters.category != null) {
+        params.append('category', filters.category);
+    }
+    if (filters.topic != null) {
+        params.append('topic', filters.topic);
+    }
+    if (filters.isNew) {
+        params.append('isnew', 'true');
+    }
+    if (filters.limit) params.append('limit', filters.limit);
+    if (filters.offset) params.append('offset', filters.offset);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/problems?${params.toString()}`, {
+            credentials: 'include' // Важно для отправки cookies с токеном
+        });
+        
+        // Перехватчик fetch должен автоматически обработать 401,
+        // но проверяем статус на всякий случай
+        if (response.status === 401) {
+            // Пытаемся обновить токен через перехватчик
+            // Если это не помогло, выводим ошибку
+            throw new Error('Требуется авторизация');
+        }
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        if (onSuccess) {
+            onSuccess(data);
+        } else {
+            renderProblemCards(data);
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки проблем:', error);
+        if (container) {
+            container.innerHTML = `<p style="color:red; text-align:center">Ошибка загрузки данных: ${error.message}</p>`;
+        }
+        if (onError) onError(error);
+    }
+}
+
+/**
+ * Рендеринг карточек проблем (базовая версия)
+ */
+export function renderProblemCards(data, options = {}) {
+    const container = document.querySelector('.cards-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (data.length === 0) {
+        container.innerHTML = '<p style="text-align:center">Нет проблем для отображения</p>';
+        return;
+    }
+    
+    const template = document.getElementById('card-template');
+    if (!template) {
+        console.error('Шаблон карточки не найден!');
+        return;
+    }
+    
+    data.forEach(problem => {
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.card');
+        
+        // Устанавливаем ID для админки
+        if (options.isAdmin) {
+            card.setAttribute('data-problem-id', problem.ID);
+            card.style.cursor = 'pointer';
+        }
+        
+        // Изображение
+        const img = clone.querySelector('.card-image');
+        if (img) {
+            let imageSrc = problem.Image || '../images/default.png';
+            // Исправляем пути к изображениям
+            if (imageSrc && !imageSrc.startsWith('http') && !imageSrc.startsWith('/')) {
+                if (imageSrc.startsWith('../images/')) {
+                    imageSrc = imageSrc.replace('../images/', '/images/');
+                } else if (imageSrc.startsWith('../assets/')) {
+                    imageSrc = imageSrc.replace('../assets/', '/assets/');
+                } else if (!imageSrc.startsWith('/')) {
+                    imageSrc = '/images/' + imageSrc;
+                }
+            }
+            img.src = imageSrc;
+            img.alt = problem.Name || 'Проблема';
+        }
+        
+        // Название
+        const titleText = clone.querySelector('.card-title-text');
+        if (titleText) {
+            titleText.textContent = problem.Name || 'Без названия';
+            if (!options.isAdmin && titleText.tagName === 'A') {
+                titleText.href = `/html/problem.html?problemId=${problem.ID}`;
+            }
+        }
+        
+        // Ссылка на детальную страницу (для обычной страницы)
+        if (!options.isAdmin) {
+            const cardTitleLink = clone.querySelector('.card-title-link');
+            if (cardTitleLink) {
+                cardTitleLink.href = `/html/problem.html?problemId=${problem.ID}`;
+            }
+        }
+        
+        // Избранное
+        const favoriteCount = clone.querySelector('.favorite-count');
+        if (favoriteCount) {
+            favoriteCount.textContent = problem.FavouriteUsers ? problem.FavouriteUsers.length : (problem.Favourite || 0);
+        }
+        
+        // Проверяем статус избранного и меняем иконку
+        const favoriteIcon = clone.querySelector('.favorite-icon');
+        if (favoriteIcon && !options.isAdmin) {
+            if (problem.IsFavourite === true) {
+                favoriteIcon.src = '/assets/icons/love_6787061.png';
+                favoriteIcon.classList.add('favorited');
+            } else {
+                favoriteIcon.src = '/assets/icons/love_9318199.png';
+                favoriteIcon.classList.remove('favorited');
+            }
+        }
+        
+        // Тема проблемы
+        const topicElement = clone.querySelector('.problem-topic');
+        if (topicElement) {
+            if (problem.TopicInfo && problem.TopicInfo.Name) {
+                topicElement.innerHTML = '';
+                const topicLink = document.createElement('a');
+                topicLink.className = 'topic-link';
+                topicLink.href = '#';
+                topicLink.textContent = problem.TopicInfo.Name;
+                topicLink.setAttribute('data-topic-id', problem.TopicInfo.ID);
+                topicLink.style.cursor = 'pointer';
+                topicElement.appendChild(topicLink);
+                topicElement.style.display = 'block';
+            } else {
+                topicElement.style.display = 'none';
+            }
+        }
+        
+        // Хэштеги
+        const tagsColumn = clone.querySelector('.tags-column');
+        if (tagsColumn && problem.Hashtags) {
+            tagsColumn.innerHTML = '';
+            problem.Hashtags.forEach(hashtag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.setAttribute('data-id', hashtag.ID);
+                tagElement.textContent = hashtag.Name;
+                tagsColumn.appendChild(tagElement);
+            });
+        }
+        
+        // Статистика
+        const viewsStat = clone.querySelector('.views .stat-value');
+        if (viewsStat) viewsStat.textContent = problem.Views || problem.Show || 0;
+        
+        const commentsStat = clone.querySelector('.comments .stat-value');
+        if (commentsStat) {
+            commentsStat.textContent = problem.Confirmations || (problem.Solutions?.length || 0);
+        }
+        
+        const sharesStat = clone.querySelector('.shares .stat-value');
+        if (sharesStat) sharesStat.textContent = problem.Shares || problem.Reply || 0;
+        
+        const linksStat = clone.querySelector('.links .stat-value');
+        if (linksStat) {
+            linksStat.textContent = problem.ProblemLinks ? problem.ProblemLinks.length : 0;
+        }
+        
+        // Обработчик избранного (только для обычной страницы)
+        if (!options.isAdmin) {
+            const favoriteIcon = clone.querySelector('.favorite-icon');
+            if (favoriteIcon) {
+                favoriteIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(problem.ID, favoriteIcon);
+                });
+            }
+        }
+        
+        container.appendChild(clone);
+    });
+    
+    // Инициализируем обработчики клика на тему (только для обычной страницы)
+    if (!options.isAdmin) {
+        container.querySelectorAll('.topic-link').forEach(topicLink => {
+            topicLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const topicId = topicLink.getAttribute('data-topic-id');
+                if (topicId && options.onTopicClick) {
+                    options.onTopicClick(parseInt(topicId, 10));
+                }
+            });
+        });
+    }
+    
+    // Инициализируем прокрутку тегов после рендеринга
+    setTimeout(() => {
+        initTagsScroll();
+    }, 100);
+}
+
+/**
+ * Переключение избранного
+ */
+export async function toggleFavorite(problemId, iconElement) {
+    try {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+        const response = await fetch(`/api/problems/${problemId}/toggle-favourite`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.status === 401) {
+            // Пробуем обновить токен
+            const refreshResponse = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            
+            if (refreshResponse.ok) {
+                // Повторяем запрос
+                const retryResponse = await fetch(`/api/problems/${problemId}/toggle-favourite`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (retryResponse.ok) {
+                    const data = await retryResponse.json();
+                    const countElement = iconElement.closest('.card-favorites')?.querySelector('.favorite-count');
+                    if (countElement) {
+                        // Обновляем счетчик (увеличиваем или уменьшаем на 1)
+                        const currentCount = parseInt(countElement.textContent) || 0;
+                        countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
+                    }
+                    iconElement.classList.toggle('liked', data.is_favourite);
+                }
+            }
+        } else if (response.ok) {
+            const data = await response.json();
+            const countElement = iconElement.closest('.card-favorites')?.querySelector('.favorite-count');
+            if (countElement) {
+                const currentCount = parseInt(countElement.textContent) || 0;
+                countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
+            }
+            // Переключаем иконку и класс favorited
+            if (data.is_favourite) {
+                iconElement.src = '/assets/icons/love_6787061.png';
+                iconElement.classList.add('favorited');
+            } else {
+                iconElement.src = '/assets/icons/love_9318199.png';
+                iconElement.classList.remove('favorited');
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка добавления в избранное:', error);
+    }
+}
+
+/**
+ * Инициализация обработчиков фильтров
+ */
+export function initFilterHandlers(filters, tomSelectInstance, onFilterChange) {
+    const searchInput = document.getElementById('search');
+    const categorySelect = document.getElementById('category');
+    const hashtagsSelect = document.getElementById('hashtags');
+    const sortSelect = document.getElementById('sort');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            filters.search = e.target.value.trim();
+            filters.offset = 0;
+            if (onFilterChange) onFilterChange();
+        });
+    }
+    
+    if (categorySelect) {
+        categorySelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            filters.category = val === '' ? null : parseInt(val, 10);
+            filters.offset = 0;
+            if (onFilterChange) onFilterChange();
+        });
+    }
+    
+    if (hashtagsSelect && tomSelectInstance) {
+        hashtagsSelect.addEventListener('change', (e) => {
+            filters.hashtags = tomSelectInstance.getValue().map(Number);
+            filters.offset = 0;
+            if (onFilterChange) onFilterChange();
+        });
+    }
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            filters.sort = e.target.value;
+            filters.offset = 0;
+            if (onFilterChange) onFilterChange();
+        });
+    }
+}
+
+/**
+ * Обработчик клика на теги (для фильтрации)
+ */
+export function initTagClickHandler(tomSelectInstance, filters, onFilterChange) {
+    document.addEventListener('click', (event) => {
+        if (event.target.classList.contains('tag')) {
+            event.stopPropagation();
+            event.preventDefault();
+            const tagId = event.target.getAttribute('data-id');
+            const tagName = event.target.textContent.trim();
+            
+            if (tagId && tomSelectInstance) {
+                const tagIdNum = parseInt(tagId, 10);
+                const currentValues = tomSelectInstance.getValue().map(v => parseInt(v, 10));
+                
+                // Проверяем, не добавлен ли уже этот хэштег
+                if (!currentValues.includes(tagIdNum)) {
+                    // Создаем объект опции для хэштега
+                    const option = {
+                        ID: tagIdNum,
+                        Name: tagName
+                    };
+                    
+                    // Добавляем опцию в TomSelect, если её еще нет
+                    if (!tomSelectInstance.options[tagId]) {
+                        tomSelectInstance.addOption(option);
+                    }
+                    
+                    // Получаем текущие значения и добавляем новый хэштег
+                    const currentValue = tomSelectInstance.getValue();
+                    const newValue = [...currentValue, tagId];
+                    
+                    // Устанавливаем новое значение (silent = false, чтобы вызвать события)
+                    tomSelectInstance.setValue(newValue, false);
+                    
+                    // Обновляем фильтры сразу после добавления
+                    filters.hashtags = newValue.map(v => parseInt(v, 10));
+                    filters.offset = 0;
+                    
+                    // Обновляем класс has-items для правильного отображения
+                    const tsControl = document.querySelector('.ts-control');
+                    if (tsControl && !tsControl.classList.contains('has-items')) {
+                        tsControl.classList.add('has-items');
+                    }
+                    
+                    // Очищаем поле ввода и опции после добавления
+                    tomSelectInstance.control_input.value = '';
+                    tomSelectInstance.clearOptions();
+                    tomSelectInstance.close();
+                    
+                    // Вызываем callback для обновления карточек
+                    if (onFilterChange) {
+                        onFilterChange();
+                    }
+                }
+            }
+        }
+    });
+}
+

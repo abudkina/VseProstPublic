@@ -46,11 +46,17 @@
 
   main {
     max-width: 960px;
-    margin: 20px auto;
+    margin: 5px auto;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 15px;
-    padding: 0 10px;
+    padding: 0 5px;
+  }
+
+  @media (max-width: 768px) {
+    main {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
   .block {
     border-radius: 12px;

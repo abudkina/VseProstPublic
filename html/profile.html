@@ -1,3 +1,211 @@
- <button id="logout">Выйти</button>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106420688', 'ym');
 
- <script src="../js/profile.js" defer></script>
+        ym(106420688, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/106420688" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Permissions-Policy" content="local-network=(), private-network=()" />
+    <title>Профиль - Всё Прост</title>
+    <link rel="stylesheet" href="/css/profile.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">Всё Прoст</a>
+        <nav class="desktop-menu">
+            <a href="/" title="Вопросы" class="menu-item">
+                <img src="/assets/icons/help_6176358.png" alt="" /> Вопросы
+            </a>
+            <a href="/html/solutions.html" title="Решения" class="menu-item">
+                <img src="/assets/icons/idea_17401118.png" alt="" /> Решения
+            </a>
+            <a href="/html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink">
+                <img src="/assets/icons/hearts_8822941.png" alt="" /> Избранное
+            </a>
+            <a href="/html/cart.html" title="Корзина" class="menu-item">
+                <img src="/assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
+            </a>
+            <a href="/html/notifications.html" title="Уведомления" class="menu-item">
+                <img src="/assets/icons/notification_5951646.png" alt="" /> Уведомления
+            </a>
+            <a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn">
+                <img src="/assets/icons/user-list_18357678.png" alt="" /> Профиль
+            </a>
+        </nav>
+        <nav class="mobile-menu">
+            <a href="/" title="Вопросы" class="menu-item">
+                <img src="/assets/icons/help_6176358.png" alt="" />
+            </a>
+            <a href="/html/solutions.html" title="Решения" class="menu-item">
+                <img src="/assets/icons/idea_17401118.png" alt="" />
+            </a>
+            <a href="/html/favourites.html" title="Избранное" class="menu-item heart">
+                <img src="/assets/icons/hearts_8822941.png" alt="" />
+            </a>
+            <a href="/html/cart.html" title="Корзина" class="menu-item">
+                <img src="/assets/icons/shopping-basket_11981486.png" alt="" />
+            </a>
+            <a href="/html/notifications.html" title="Уведомления" class="menu-item">
+                <img src="/assets/icons/notification_5951646.png" alt="" />
+            </a>
+            <a href="/html/profile.html" title="Профиль" class="menu-item">
+                <img src="/assets/icons/user-list_18357678.png" alt="" />
+            </a>
+        </nav>
+    </header>
+
+    <main class="profile-container">
+        <!-- Профиль пользователя -->
+        <section class="profile-section">
+            <div class="profile-header">
+                <div class="avatar-container">
+                    <img id="avatar-img" src="/assets/icons/user-list_18357678.png" alt="Аватар" class="avatar" />
+                    <label for="avatar-input" class="avatar-upload-btn" title="Изменить аватар">
+                        <span>📷</span>
+                    </label>
+                    <input type="file" id="avatar-input" accept="image/*" style="display: none;" />
+                </div>
+                <div class="profile-info">
+                    <h1 id="username-display">Загрузка...</h1>
+                    <p id="email-display" class="email">Загрузка...</p>
+                    <p id="join-date" class="join-date">Дата регистрации: Загрузка...</p>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">❓</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="problems-count">0</div>
+                        <div class="stat-label">Проблем создано</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💡</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="solutions-count">0</div>
+                        <div class="stat-label">Решений создано</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">❤️</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="fav-problems-count">0</div>
+                        <div class="stat-label">Избранных проблем</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="fav-solutions-count">0</div>
+                        <div class="stat-label">Избранных решений</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Вкладки -->
+        <section class="tabs-section">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="edit">Редактировать профиль</button>
+                <button class="tab-btn" data-tab="password">Изменить пароль</button>
+                <button class="tab-btn" data-tab="problems">Мои проблемы</button>
+                <button class="tab-btn" data-tab="solutions">Мои решения</button>
+            </div>
+
+            <!-- Вкладка редактирования профиля -->
+            <div class="tab-content active" id="tab-edit">
+                <div class="form-container">
+                    <h2>Редактировать профиль</h2>
+                    <form id="edit-profile-form">
+                        <div class="form-group">
+                            <label for="edit-username">Имя пользователя</label>
+                            <input type="text" id="edit-username" name="username" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email</label>
+                            <input type="email" id="edit-email" name="email" required />
+                        </div>
+                        <button type="submit" class="btn-primary">Сохранить изменения</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Вкладка смены пароля -->
+            <div class="tab-content" id="tab-password">
+                <div class="form-container">
+                    <h2>Изменить пароль</h2>
+                    <form id="change-password-form">
+                        <input type="text" name="username" autocomplete="username" style="display: none;" aria-hidden="true" tabindex="-1" />
+                        <div class="form-group">
+                            <label for="old-password">Текущий пароль</label>
+                            <input type="password" id="old-password" name="old_password" autocomplete="current-password" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Новый пароль</label>
+                            <input type="password" id="new-password" name="new_password" autocomplete="new-password" required minlength="6" />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Подтвердите новый пароль</label>
+                            <input type="password" id="confirm-password" name="confirm_password" autocomplete="new-password" required minlength="6" />
+                        </div>
+                        <button type="submit" class="btn-primary">Изменить пароль</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Вкладка мои проблемы -->
+            <div class="tab-content" id="tab-problems">
+                <div class="content-header">
+                    <h2>Мои проблемы</h2>
+                </div>
+                <div id="problems-list" class="items-list">
+                    <!-- Проблемы будут загружены динамически -->
+                </div>
+                <div id="problems-loading" class="loading">Загрузка...</div>
+                <div id="problems-empty" class="empty-state" style="display: none;">
+                    <p>У вас пока нет созданных проблем</p>
+                    <a href="/html/add_problem.html" class="btn-primary">Создать проблему</a>
+                </div>
+            </div>
+
+            <!-- Вкладка мои решения -->
+            <div class="tab-content" id="tab-solutions">
+                <div class="content-header">
+                    <h2>Мои решения</h2>
+                </div>
+                <div id="solutions-list" class="items-list">
+                    <!-- Решения будут загружены динамически -->
+                </div>
+                <div id="solutions-loading" class="loading">Загрузка...</div>
+                <div id="solutions-empty" class="empty-state" style="display: none;">
+                    <p>У вас пока нет созданных решений</p>
+                    <a href="/html/add_solution.html" class="btn-primary">Создать решение</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Сообщения об успехе/ошибке -->
+    <div id="message-toast" class="toast"></div>
+
+    <script type="module" src="/js/profile.js" defer></script>
+    <script type="module" src="/js/logoAdmin.js"></script>
+</body>
+</html>

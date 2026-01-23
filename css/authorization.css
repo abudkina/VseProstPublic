@@ -46,4 +46,17 @@ button:hover {
     background-color: #f0f0f0;
 }
 
+/* Ссылка "Забыли пароль?" */
+.forgot-password-link {
+    display: block;
+    margin-top: 15px;
+    color: #6366f1;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
 
+.forgot-password-link:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}

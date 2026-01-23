@@ -1,0 +1,1547 @@
+/* ============================================
+   СОВРЕМЕННЫЕ СТИЛИ ДЛЯ МОДАЛЬНЫХ ОКОН АДМИН-ПАНЕЛИ
+   ============================================ */
+
+/* Базовые стили для модала */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+    padding: 20px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Гарантированное центрирование для модального окна редактирования */
+#editModal {
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    text-align: center !important;
+}
+
+/* Все варианты показа модального окна редактирования с центрированием */
+#editModal[style*="display: flex"],
+#editModal[style*="display:flex"],
+#editModal[style*="display: flex;"],
+#editModal[style*="display:flex;"],
+#editModal[style*="display: block"],
+#editModal[style*="display:block"],
+#editModal[style*="display: block;"],
+#editModal[style*="display:block;"],
+#editModal.active {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-content: center !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    text-align: center !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Универсальное правило для центрирования editModal - применяется всегда когда видим */
+#editModal:not([style*="display: none"]):not([style*="display:none"]) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Правила для показа модального окна с центрированием */
+.modal.active,
+.modal[style*="display: block"],
+.modal[style*="display:flex"],
+.modal[style*="display: block;"],
+.modal[style*="display: flex;"],
+.modal[style*="display:block"],
+.modal[style*="display:flex"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+    }
+    to { 
+        opacity: 1; 
+    }
+}
+
+/* Контент модального окна */
+.modal-content {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    margin: auto !important;
+    padding: 0;
+    border: none;
+    border-radius: 20px;
+    width: calc(100% - 40px) !important;
+    max-width: 600px !important;
+    max-height: 90vh;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-self: center !important;
+    justify-self: center !important;
+    left: auto !important;
+    right: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    flex-shrink: 0 !important;
+}
+
+/* Дополнительное центрирование для контента в editModal */
+#editModal .modal-content,
+#editModal[style*="flex"] .modal-content,
+#editModal.active .modal-content {
+    margin: auto !important;
+    align-self: center !important;
+    justify-self: center !important;
+    left: 50% !important;
+    right: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: calc(100% - 40px) !important;
+    max-width: 600px !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    transform: translateX(-50%) !important;
+}
+
+/* Альтернативный способ центрирования через transform (если flexbox не работает) */
+#editModal[style*="flex"] .modal-content {
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    transform: none !important;
+}
+
+/* Декоративный элемент */
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    z-index: 1;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Заголовок модального окна */
+.modal-content h2 {
+    margin: 0;
+    padding: 30px 40px 20px;
+    color: #2d3748;
+    font-family: 'Jost', 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    position: relative;
+}
+
+/* Кнопка закрытия */
+.close {
+    color: #a0aec0;
+    position: absolute;
+    right: 25px;
+    top: 25px;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+}
+
+.close:hover,
+.close:focus {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Форма в модальном окне */
+.modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px 40px 40px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Стили для полей ввода */
+.modal input[type="text"],
+.modal input[type="number"],
+.modal input[type="email"],
+.modal input[type="url"],
+.modal textarea,
+.modal select {
+    padding: 14px 18px;
+    font-size: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #2d3748;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal input[type="text"]:focus,
+.modal input[type="number"]:focus,
+.modal input[type="email"]:focus,
+.modal input[type="url"]:focus,
+.modal textarea:focus,
+.modal select:focus {
+    border-color: #667eea;
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+.modal input[type="text"]::placeholder,
+.modal textarea::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+/* Textarea */
+.modal textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+}
+
+/* File input */
+.modal input[type="file"] {
+    padding: 16px;
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.modal input[type="file"]:hover {
+    border-color: #667eea;
+    background: linear-gradient(145deg, #edf2f7 0%, #e2e8f0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+/* Checkbox */
+.modal input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+/* Labels */
+.modal label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    color: #4a5568;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.modal label:hover {
+    color: #2d3748;
+}
+
+/* Специальные стили для label с input внутри */
+.modal label:has(input[type="number"]) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.modal label:has(input[type="number"]) input {
+    width: 100%;
+}
+
+/* Кнопки формы */
+.modal .form-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.modal .save-btn,
+.modal .clear-btn,
+.modal button[type="submit"],
+.modal button[type="button"]:not(.close) {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow: hidden;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal .save-btn,
+.modal button[type="submit"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.modal .save-btn:hover,
+.modal button[type="submit"]:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.modal .save-btn:active,
+.modal button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.modal .clear-btn {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    color: white;
+}
+
+.modal .clear-btn:hover {
+    background: linear-gradient(135deg, #5a6c7d 0%, #3a4555 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
+}
+
+/* Кнопка удаления */
+.modal button#deleteBtn,
+.modal .delete-btn {
+    background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
+}
+
+.modal button#deleteBtn:hover,
+.modal .delete-btn:hover {
+    background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(229, 62, 62, 0.5);
+}
+
+/* Preview изображения */
+#currentImagePreview {
+    margin: 15px 0;
+    padding: 15px;
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    text-align: center;
+}
+
+#currentImagePreview img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    object-fit: contain;
+}
+
+/* Related info */
+#relatedInfo {
+    margin: 15px 0;
+    padding: 18px;
+    background: linear-gradient(145deg, #f0f4f8 0%, #e6edf3 100%);
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+    font-size: 14px;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+#relatedInfo p {
+    margin: 8px 0;
+    padding: 4px 0;
+}
+
+#relatedInfo strong {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+/* Сетка для полей (например, для решений) */
+.modal form > div[style*="grid"] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 10px 0;
+}
+
+/* Группы чекбоксов */
+.modal form > div[style*="flex"]:has(input[type="checkbox"]) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 15px;
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 12px;
+    margin: 10px 0;
+}
+
+/* Стили для TomSelect в модальном окне */
+.modal .ts-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal .ts-control.focus {
+    border-color: #667eea;
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .modal {
+        padding: 10px;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Гарантированное центрирование для editModal на мобильных */
+    #editModal[style*="display: flex"],
+    #editModal[style*="display:flex"],
+    #editModal[style*="display: flex;"],
+    #editModal[style*="display:flex;"],
+    #editModal[style*="display: block"],
+    #editModal[style*="display:block"],
+    #editModal[style*="display: block;"],
+    #editModal[style*="display:block;"],
+    #editModal.active {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .modal-content {
+        max-width: 100%;
+        max-height: 95vh;
+        border-radius: 16px;
+        margin: auto;
+    }
+    
+    .modal-content h2 {
+        font-size: 24px;
+        padding: 25px 25px 15px;
+    }
+    
+    .modal form {
+        padding: 20px 25px 30px;
+        gap: 15px;
+    }
+    
+    .close {
+        right: 15px;
+        top: 15px;
+        width: 36px;
+        height: 36px;
+        font-size: 28px;
+    }
+    
+    .modal .form-buttons {
+        flex-direction: column;
+    }
+    
+    .modal .save-btn,
+    .modal .clear-btn,
+    .modal button[type="submit"],
+    .modal button[type="button"]:not(.close) {
+        width: 100%;
+    }
+}
+
+/* Анимация появления для элементов формы */
+.modal form > * {
+    animation: fadeInUp 0.4s ease-out backwards;
+}
+
+.modal form > *:nth-child(1) { animation-delay: 0.05s; }
+.modal form > *:nth-child(2) { animation-delay: 0.1s; }
+.modal form > *:nth-child(3) { animation-delay: 0.15s; }
+.modal form > *:nth-child(4) { animation-delay: 0.2s; }
+.modal form > *:nth-child(5) { animation-delay: 0.25s; }
+.modal form > *:nth-child(6) { animation-delay: 0.3s; }
+.modal form > *:nth-child(7) { animation-delay: 0.35s; }
+.modal form > *:nth-child(8) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Скрытие анимации для скрытых элементов */
+.modal form > [style*="display: none"] {
+    animation: none;
+}
+
+/* Стили для скроллбара в модальном окне */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+/* Улучшенные стили для select (если не используется TomSelect) */
+.modal select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+/* Модальные окна для добавления проблемы и решения */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-overlay.active,
+.modal-overlay[style*="display: flex"] {
+    display: flex !important;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    padding: 30px 40px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #2d3748;
+    font-family: 'Jost', 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+.modal-close {
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    font-size: 24px;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.modal-close:hover {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Стили для форм в модальных окнах добавления */
+#problem-modal .modal-content form,
+#solution-modal .modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px 40px 40px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#problem-modal .modal-content input[type="text"],
+#problem-modal .modal-content textarea,
+#problem-modal .modal-content select,
+#problem-modal .modal-content input[type="file"],
+#solution-modal .modal-content input[type="text"],
+#solution-modal .modal-content textarea,
+#solution-modal .modal-content select,
+#solution-modal .modal-content input[type="file"] {
+    padding: 14px 18px;
+    font-size: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #2d3748;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#problem-modal .modal-content input[type="text"]:focus,
+#problem-modal .modal-content textarea:focus,
+#problem-modal .modal-content select:focus,
+#solution-modal .modal-content input[type="text"]:focus,
+#solution-modal .modal-content textarea:focus,
+#solution-modal .modal-content select:focus {
+    border-color: #667eea;
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+#problem-modal .modal-content input[type="text"]::placeholder,
+#problem-modal .modal-content textarea::placeholder,
+#solution-modal .modal-content input[type="text"]::placeholder,
+#solution-modal .modal-content textarea::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+#problem-modal .modal-content textarea,
+#solution-modal .modal-content textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+}
+
+#problem-modal .modal-content input[type="file"],
+#solution-modal .modal-content input[type="file"] {
+    padding: 16px;
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#problem-modal .modal-content input[type="file"]:hover,
+#solution-modal .modal-content input[type="file"]:hover {
+    border-color: #667eea;
+    background: linear-gradient(145deg, #edf2f7 0%, #e2e8f0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+#problem-modal .modal-content .add-button,
+#solution-modal .modal-content .add-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    letter-spacing: 0.3px;
+}
+
+#problem-modal .modal-content .add-button:hover,
+#solution-modal .modal-content .add-button:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+#problem-modal .modal-content .add-button:active,
+#solution-modal .modal-content .add-button:active {
+    transform: translateY(0);
+}
+
+#problem-modal .modal-content .problem-search-container,
+#solution-modal .modal-content .problem-search-container {
+    position: relative;
+    width: 100%;
+}
+
+#problem-modal .modal-content #problemDropdown,
+#solution-modal .modal-content #problemDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#problem-modal .modal-content .dropdown-item,
+#solution-modal .modal-content .dropdown-item {
+    padding: 12px 18px;
+    cursor: pointer;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    color: #2d3748;
+}
+
+#problem-modal .modal-content .dropdown-item:hover,
+#solution-modal .modal-content .dropdown-item:hover {
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+#problem-modal .modal-content #selectedProblems,
+#solution-modal .modal-content #selectedProblems {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#problem-modal .modal-content .selected-problem,
+#solution-modal .modal-content .selected-problem {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+#problem-modal .modal-content .selected-problem .remove,
+#solution-modal .modal-content .selected-problem .remove {
+    margin-left: 8px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+#problem-modal .modal-content .selected-problem .remove:hover,
+#solution-modal .modal-content .selected-problem .remove:hover {
+    transform: scale(1.2);
+}
+
+#problem-modal .modal-content .file-inputs,
+#solution-modal .modal-content .file-inputs {
+    display: flex;
+    gap: 12px;
+}
+
+#problem-modal .modal-content .checkbox-group,
+#solution-modal .modal-content .checkbox-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px;
+    background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+}
+
+#problem-modal .modal-content .checkbox-group label,
+#solution-modal .modal-content .checkbox-group label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    color: #4a5568;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+#problem-modal .modal-content .checkbox-group label:hover,
+#solution-modal .modal-content .checkbox-group label:hover {
+    color: #2d3748;
+}
+
+#problem-modal .modal-content .checkbox-group input[type="checkbox"],
+#solution-modal .modal-content .checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+    border-radius: 4px;
+    transition: transform 0.2s ease;
+}
+
+#problem-modal .modal-content .checkbox-group input[type="checkbox"]:hover,
+#solution-modal .modal-content .checkbox-group input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+/* Кнопки в модальных окнах проблем и решений */
+#problem-modal .modal-content .form-buttons,
+#problem-modal .modal-content .buttons,
+#solution-modal .modal-content .form-buttons,
+#solution-modal .modal-content .buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+#problem-modal .modal-content .clear-btn,
+#problem-modal .modal-content .clear,
+#solution-modal .modal-content .clear-btn,
+#solution-modal .modal-content .clear {
+    flex: 1;
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.3px;
+}
+
+#problem-modal .modal-content .clear-btn:hover,
+#problem-modal .modal-content .clear:hover,
+#solution-modal .modal-content .clear-btn:hover,
+#solution-modal .modal-content .clear:hover {
+    background: linear-gradient(135deg, #5a6c7d 0%, #3a4555 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
+}
+
+#problem-modal .modal-content .clear-btn:active,
+#problem-modal .modal-content .clear:active,
+#solution-modal .modal-content .clear-btn:active,
+#solution-modal .modal-content .clear:active {
+    transform: translateY(0);
+}
+
+#problem-modal .modal-content .save-btn,
+#problem-modal .modal-content .save,
+#solution-modal .modal-content .save-btn,
+#solution-modal .modal-content .save {
+    flex: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    letter-spacing: 0.3px;
+}
+
+#problem-modal .modal-content .save-btn:hover,
+#problem-modal .modal-content .save:hover,
+#solution-modal .modal-content .save-btn:hover,
+#solution-modal .modal-content .save:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+#problem-modal .modal-content .save-btn:active,
+#problem-modal .modal-content .save:active,
+#solution-modal .modal-content .save-btn:active,
+#solution-modal .modal-content .save:active {
+    transform: translateY(0);
+}
+
+/* Стили для select в модальных окнах проблем и решений */
+#problem-modal .modal-content select,
+#solution-modal .modal-content select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+/* Стили для TomSelect в модальных окнах проблем и решений */
+#problem-modal .modal-content .ts-control,
+#solution-modal .modal-content .ts-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#problem-modal .modal-content .ts-control.focus,
+#solution-modal .modal-content .ts-control.focus {
+    border-color: #667eea;
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+/* Стили для скроллбара в модальных окнах проблем и решений */
+#problem-modal .modal-content::-webkit-scrollbar,
+#solution-modal .modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#problem-modal .modal-content::-webkit-scrollbar-track,
+#solution-modal .modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#problem-modal .modal-content::-webkit-scrollbar-thumb,
+#solution-modal .modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+#problem-modal .modal-content::-webkit-scrollbar-thumb:hover,
+#solution-modal .modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+/* Адаптивность для модальных окон проблем и решений */
+@media (max-width: 768px) {
+    #problem-modal .modal-content,
+    #solution-modal .modal-content {
+        max-width: 95%;
+        border-radius: 16px;
+    }
+    
+    #problem-modal .modal-content .modal-header,
+    #solution-modal .modal-content .modal-header {
+        padding: 25px 25px 15px;
+    }
+    
+    #problem-modal .modal-content .modal-header h2,
+    #solution-modal .modal-content .modal-header h2 {
+        font-size: 24px;
+    }
+    
+    #problem-modal .modal-content form,
+    #solution-modal .modal-content form {
+        padding: 20px 25px 30px;
+        gap: 15px;
+    }
+    
+    #problem-modal .modal-content .form-buttons,
+    #problem-modal .modal-content .buttons,
+    #solution-modal .modal-content .form-buttons,
+    #solution-modal .modal-content .buttons {
+        flex-direction: column;
+    }
+    
+    #problem-modal .modal-content .save-btn,
+    #problem-modal .modal-content .clear-btn,
+    #problem-modal .modal-content .save,
+    #problem-modal .modal-content .clear,
+    #solution-modal .modal-content .save-btn,
+    #solution-modal .modal-content .clear-btn,
+    #solution-modal .modal-content .save,
+    #solution-modal .modal-content .clear {
+        width: 100%;
+    }
+}
+
+/* Модальные окна для темы, категории, хэштега (внутри modal-overlay) */
+#modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+#modal-overlay.active,
+#modal-overlay[style*="display: flex"] {
+    display: flex !important;
+}
+
+#modal-overlay .modal {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 0;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    display: none;
+    position: relative;
+    z-index: 10001;
+    overflow: hidden;
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#modal-overlay .modal.active,
+#modal-overlay .modal[style*="display: block"] {
+    display: block;
+}
+
+/* Декоративный элемент */
+#modal-overlay .modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    z-index: 1;
+}
+
+#modal-overlay .modal h2 {
+    margin: 0;
+    padding: 30px 40px 20px;
+    color: #2d3748;
+    font-family: 'Jost', 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    position: relative;
+}
+
+#modal-overlay .modal input {
+    width: calc(100% - 80px);
+    padding: 14px 18px;
+    margin: 10px 40px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #2d3748;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#modal-overlay .modal input:focus {
+    border-color: #667eea;
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+#modal-overlay .modal input::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+#modal-overlay .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 40px 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+#modal-overlay .modal-buttons button {
+    flex: 1;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#modal-overlay .modal-buttons button:first-child {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+#modal-overlay .modal-buttons button:first-child:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+#modal-overlay .modal-buttons button:first-child:active {
+    transform: translateY(0);
+}
+
+#modal-overlay .modal-buttons button:last-child {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    color: white;
+}
+
+#modal-overlay .modal-buttons button:last-child:hover {
+    background: linear-gradient(135deg, #5a6c7d 0%, #3a4555 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
+}
+
+#modal-overlay .modal-buttons button:last-child:active {
+    transform: translateY(0);
+}
+
+#modal-overlay .error-message {
+    color: #e53e3e;
+    margin: 0 40px 20px;
+    font-size: 14px;
+    min-height: 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+/* Адаптивность для модалов в modal-overlay */
+@media (max-width: 768px) {
+    #modal-overlay .modal {
+        max-width: 95%;
+        border-radius: 16px;
+    }
+    
+    #modal-overlay .modal h2 {
+        font-size: 24px;
+        padding: 25px 25px 15px;
+    }
+    
+    #modal-overlay .modal input {
+        width: calc(100% - 50px);
+        margin: 10px 25px;
+    }
+    
+    #modal-overlay .modal-buttons {
+        margin: 20px 25px 25px;
+        flex-direction: column;
+    }
+    
+    #modal-overlay .modal-buttons button {
+        width: 100%;
+    }
+
+    #modal-overlay .error-message {
+        margin: 0 25px 15px;
+    }
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО: Принудительное центрирование editModal */
+/* Это правило должно быть в конце файла для максимального приоритета */
+body #editModal[style*="flex"],
+html body #editModal[style*="flex"],
+body #editModal[style*="display: flex"],
+html body #editModal[style*="display: flex"],
+body #editModal[style*="display:flex"],
+html body #editModal[style*="display:flex"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+body #editModal .modal-content,
+html body #editModal .modal-content,
+html body div#editModal .modal-content {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    position: relative !important;
+    transform: none !important;
+    float: none !important;
+    text-align: left !important;
+}
+
+/* Дополнительное правило для гарантии центрирования через flexbox */
+html body div#editModal[style*="flex"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-content: center !important;
+}
+
+/* ФИНАЛЬНОЕ ПРАВИЛО: Универсальное центрирование для любого видимого editModal */
+/* Это правило применяется ко всем возможным вариантам показа модального окна */
+div#editModal:not([style*="display: none"]):not([style*="display:none"]) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: fixed !important;
+}
+
+/* Исключение для скрытого состояния */
+div#editModal[style*="display: none"],
+div#editModal[style*="display:none"] {
+    display: none !important;
+}
+
+/* САМОЕ СИЛЬНОЕ ПРАВИЛО: Принудительное центрирование через все возможные способы */
+/* Переопределяет все стили из index.css и других файлов */
+html body div#editModal[style*="flex"],
+html body div#editModal.active,
+html body div.modal#editModal[style*="flex"],
+html body div.modal#editModal.active {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-content: center !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: fixed !important;
+    text-align: center !important;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 10000 !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+}
+
+html body div#editModal[style*="flex"] > .modal-content,
+html body div#editModal.active > .modal-content,
+html body div.modal#editModal[style*="flex"] > .modal-content,
+html body div.modal#editModal.active > .modal-content {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    position: relative !important;
+    transform: none !important;
+    width: calc(100% - 40px) !important;
+    max-width: 600px !important;
+    flex-shrink: 0 !important;
+    align-self: center !important;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО: Переопределяет .modal.active из index.css */
+/* Это правило должно быть самым последним в файле */
+html body div.modal#editModal.active,
+html body div#editModal.modal.active,
+html body div#editModal.active.modal,
+html body div#editModal[style*="display: flex"],
+html body div#editModal[style*="display:flex"],
+html body div#editModal[style*="display: flex;"],
+html body div#editModal[style*="display:flex;"],
+html body div.modal#editModal[style*="display: flex"],
+html body div.modal#editModal[style*="display:flex"],
+html body div.modal#editModal[style*="display: flex;"],
+html body div.modal#editModal[style*="display:flex;"] {
+    display: flex !important;
+    position: fixed !important;
+    align-items: center !important;
+    justify-content: center !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 10000 !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    max-width: none !important;
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО для modal-content: гарантированное центрирование через transform */
+html body div#editModal[style*="display: flex"] > .modal-content,
+html body div#editModal[style*="display:flex"] > .modal-content,
+html body div#editModal[style*="display: flex;"] > .modal-content,
+html body div#editModal[style*="display:flex;"] > .modal-content,
+html body div.modal#editModal[style*="display: flex"] > .modal-content,
+html body div.modal#editModal[style*="display:flex"] > .modal-content,
+html body div.modal#editModal[style*="display: flex;"] > .modal-content,
+html body div.modal#editModal[style*="display:flex;"] > .modal-content,
+html body div#editModal.active > .modal-content,
+html body div.modal#editModal.active > .modal-content,
+html body div#editModal .modal-content {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    position: relative !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 40px) !important;
+    max-width: 600px !important;
+    flex-shrink: 0 !important;
+    align-self: center !important;
+    justify-self: center !important;
+}
+
+/* Класс для принудительного центрирования через абсолютное позиционирование */
+html body div#editModal.centered-modal {
+    display: block !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 10000 !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+}
+
+html body div#editModal.centered-modal > .modal-content,
+html body div#editModal.centered-modal .modal-content.centered {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: calc(100% - 40px) !important;
+    max-width: 600px !important;
+    margin: 0 !important;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 90vh !important;
+}
+
+/* Полноэкранное модальное окно редактирования */
+html body div#editModal[style*="display"],
+html body div#editModal.active,
+html body div.modal#editModal[style*="display"],
+html body div.modal#editModal.active {
+    display: block !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 10000 !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+}
+
+html body div#editModal[style*="display"] > .modal-content,
+html body div#editModal.active > .modal-content,
+html body div.modal#editModal[style*="display"] > .modal-content,
+html body div.modal#editModal.active > .modal-content {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+

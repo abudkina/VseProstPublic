@@ -1,20 +1,38 @@
 header {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1em 2em;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 0.5em 1em;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid rgba(220, 38, 38, 0.1);
+  transition: all 0.3s ease;
 }
 
 .logo {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  color: red;
-  font-size: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
 }
 
 nav {
@@ -29,50 +47,237 @@ nav {
 }
 
 .desktop-menu .menu-item {
-  color: red;
+  color: #991b1b;
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.9rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: 'Inter';
+  font-family: 'Inter', sans-serif;
   justify-content: space-around;
   width: 100%;
   font-style: normal;
+  padding: 8px 12px;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  gap: 4px;
+}
+
+.desktop-menu .menu-item::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  border-radius: 2px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.desktop-menu .menu-item:hover {
+  background: linear-gradient(145deg, rgba(220, 38, 38, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+  color: #dc2626;
+  transform: translateY(-2px);
+}
+
+.desktop-menu .menu-item:hover::before {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .desktop-menu img {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   margin-bottom: 0.2em;
   font-style: normal;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.2));
+}
+
+.desktop-menu .menu-item:hover img {
+  transform: scale(1.15) translateY(-2px);
+  filter: drop-shadow(0 4px 8px rgba(220, 38, 38, 0.4));
 }
 
 .desktop-menu .heart img {
-  filter: drop-shadow(0 0 2px red);
+  filter: drop-shadow(0 2px 6px rgba(236, 72, 153, 0.4));
   font-style: normal;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.desktop-menu .heart:hover img {
+  filter: drop-shadow(0 4px 12px rgba(236, 72, 153, 0.6));
+  transform: scale(1.2) rotate(5deg);
 }
 
 .mobile-menu {
   display: flex;
   justify-content: space-between;
-  gap: 1em;
+  gap: 0.8em;
   width: 100%;
   font-style: normal;
+  padding: 0.5em 0;
+}
+
+.mobile-menu .menu-item {
+  padding: 10px;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.mobile-menu .menu-item:hover {
+  background: linear-gradient(145deg, rgba(220, 38, 38, 0.15) 0%, rgba(185, 28, 28, 0.15) 100%);
+  transform: scale(1.1);
 }
 
 .mobile-menu .menu-item img {
-  width: 100%;
-  width: 26px;
-  height: 26px;
-  filter: drop-shadow(0 0 2px red);
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.3));
   font-style: normal;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu .menu-item:hover img {
+  transform: scale(1.15);
+  filter: drop-shadow(0 4px 8px rgba(220, 38, 38, 0.5));
 }
 
 .mobile-menu .heart img {
-  filter: drop-shadow(0 0 2px red);
+  filter: drop-shadow(0 2px 6px rgba(236, 72, 153, 0.4));
   font-style: normal;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu .heart:hover img {
+  filter: drop-shadow(0 4px 12px rgba(236, 72, 153, 0.6));
+  transform: scale(1.2) rotate(5deg);
+}
+
+/* Стили для закрашенной корзины (только для mobile-menu) */
+.mobile-menu .menu-item.cart-filled {
+  background: linear-gradient(145deg, rgba(76, 175, 80, 0.2) 0%, rgba(56, 142, 60, 0.2) 100%) !important;
+  color: #4caf50 !important;
+}
+
+.mobile-menu .menu-item.cart-filled img {
+  filter: drop-shadow(0 2px 6px rgba(76, 175, 80, 0.6)) brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%) !important;
+}
+
+.mobile-menu .menu-item.cart-filled:hover {
+  background: linear-gradient(145deg, rgba(76, 175, 80, 0.3) 0%, rgba(56, 142, 60, 0.3) 100%) !important;
+}
+
+/* Счетчик товаров в корзине (бейдж) */
+.desktop-menu .menu-item,
+.mobile-menu .menu-item {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+  border: 2px solid white;
+  line-height: 1;
+  min-width: 20px;
+  padding: 0 2px;
+  z-index: 10;
+}
+
+/* Бейдж для desktop-menu - прямо на иконке корзины */
+.desktop-menu .cart-badge {
+  top: 8px;
+  right: calc(50% - 4px);
+  transform: translateX(50%);
+}
+
+.mobile-menu .cart-badge {
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  min-width: 18px;
+}
+
+/* Бейдж для уведомлений */
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+  border: 2px solid white;
+  line-height: 1;
+  min-width: 20px;
+  padding: 0 2px;
+  z-index: 10;
+  animation: badgePop 0.3s ease-out;
+}
+
+/* Бейдж для desktop-menu - прямо на иконке уведомлений */
+.desktop-menu .notification-badge {
+  top: 8px;
+  right: calc(50% - 4px);
+  transform: translateX(50%);
+}
+
+.mobile-menu .notification-badge {
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  min-width: 18px;
+}
+
+/* Анимация появления бейджа */
+@keyframes badgePop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.cart-badge {
+  animation: badgePop 0.3s ease-out;
 }
 
 /* Адаптивность */

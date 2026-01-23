@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106420688', 'ym');
+
+        ym(106420688, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/106420688" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Permissions-Policy" content="local-network=(), private-network=()" />
+    <title>Всё Прост</title>
+    <link rel="stylesheet" href="/css/index.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/admin_problems.css" />
+    <link rel="stylesheet" href="/css/admin_modal.css" />
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+</head>
+<body>
+<header>
+    <a href="/" class="logo">Всё Прoст</a>
+    <nav class="desktop-menu">
+        <a href="/" title="Вопросы" class="menu-item">
+            <img src="/assets/icons/help_6176358.png" alt="" /> Вопросы
+        </a>
+        <a href="/html/solutions.html" title="Решения" class="menu-item">
+            <img src="/assets/icons/idea_17401118.png" alt="" /> Решения
+        </a>
+        <a href="/html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink">
+            <img src="/assets/icons/hearts_8822941.png" alt="" /> Избранное
+        </a>
+        <a href="#" title="Корзина" class="menu-item">
+            <img src="/assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
+        </a>
+        <a href="/html/notifications.html" title="Уведомления" class="menu-item">
+            <img src="/assets/icons/notification_5951646.png" alt="" /> Уведомления
+        </a>
+        <a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn">
+            <img src="/assets/icons/user-list_18357678.png" alt="" /> Профиль
+        </a>
+    </nav>
+    <nav class="mobile-menu">
+        <a href="/" title="Вопросы" class="menu-item">
+            <img src="/assets/icons/help_6176358.png" alt="" />
+        </a>
+        <a href="/html/solutions.html" title="Решения" class="menu-item">
+            <img src="/assets/icons/idea_17401118.png" alt="" />
+        </a>
+        <a href="/html/favourites.html" title="Избранное" class="menu-item heart">
+            <img src="/assets/icons/hearts_8822941.png" alt="" />
+        </a>
+        <a href="#" title="Корзина" class="menu-item">
+            <img src="/assets/icons/shopping-basket_11981486.png" alt="" />
+        </a>
+        <a href="/html/notifications.html" title="Уведомления" class="menu-item">
+            <img src="/assets/icons/notification_5951646.png" alt="" />
+        </a>
+        <a href="/html/profile.html" title="Профиль" class="menu-item">
+            <img src="/assets/icons/user-list_18357678.png" alt="" />
+        </a>
+    </nav>
+</header>
+
+<section class="search-filters">
+    <div class="top-row">
+        <input type="search" placeholder="Найти проблему по названию" id="search" />
+        <button id="addProblem">Добавить проблему</button>
+    </div>
+    <div class="filters desktop">
+        <select id="sort">
+            <option value="default">Сортировать</option>
+            <option value="popularity">По популярности</option>
+            <option value="date">По дате</option>
+            <option value="show">По просмотрам</option>
+        </select>
+        <select id="category">
+            <option>Выберите категорию</option>
+        </select>
+        <select id="hashtags" multiple></select>
+        <button id="newBtn">Новые</button> <!-- Добавлена кнопка "Новые" -->
+    </div>
+</section>
+
+<main>
+    <!-- Шаблон карточки (исправлен: закрыты теги) -->
+    <template id="card-template">
+        <article class="card" data-problem-id=""> <!-- Добавлен data-problem-id для удобства -->
+            <div class="card-image-wrapper">
+                 <a href="#" class="card-title-link">
+                <img src="" alt="" class="card-image" />
+                </a>
+             <div class="card-title-overlay"></div>
+            <a href="#" class="card-title-text"></a>
+            <div class="card-favorites">
+      <img src="/assets/icons/love_9318199.png" alt="Избранное" class="favorite-icon" />
+      <span class="favorite-count">0</span>
+         </div>
+          </div> <!-- Закрыт div -->
+            <div class="card-content">
+                <div class="problem-topic"></div>
+                <div class="tags-column"></div>
+                <div class="card-footer">
+                    <div class="stat-item views">
+                        <div class="stat-icon" title="Просмотры"><img src="/assets/icons/eye_8979989.png" alt="Просмотры"/></div>
+                        <div class="stat-value"></div>
+                    </div>
+                    <div class="stat-item comments">
+                        <div class="stat-icon" title="Подтверждения"><img src="/assets/icons/check-mark_3906842.png" alt="Подтверждения" /></div>
+                        <div class="stat-value"></div>
+                    </div>
+                    <div class="stat-item shares">
+                        <div class="stat-icon" title="Ссылки"><img src="/assets/icons/reply_17222221.png" alt="Ссылки" /></div>
+                        <div class="stat-value"></div>
+                    </div>
+                    <div class="stat-item links">
+                        <div class="stat-icon" title="Ссылки"><img src="/assets/icons/link_13925097.png" alt="Ссылки" /></div>
+                        <div class="stat-value"></div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <div class="cards-container">
+        <!-- Здесь будут добавляться карточки -->
+    </div>
+</main>
+
+<!-- Модальное окно для добавления проблемы -->
+<div id="problem-modal-overlay" class="modal-overlay">
+    <div id="problem-modal" class="modal-content">
+        <div class="modal-header">
+            <h2>Добавить проблему</h2>
+            <button class="modal-close" id="closeProblemModal">&times;</button>
+        </div>
+        <form id="problemForm">
+            <select id="generalTopicSelect">
+                <option value="" disabled selected>Выберите общую тему</option>
+            </select>
+            <button type="button" class="add-button" id="addTopicBtn">Добавить тему</button>
+
+            <input type="text" id="problemTitle" placeholder="Введите название проблемы" required />
+
+            <textarea id="problemDescription" placeholder="Введите описание (необязательно)"></textarea>
+
+            <select id="categorySelect">
+                <option value="" disabled selected>Выберите категорию</option>
+            </select>
+            <button type="button" class="add-button" id="addCategoryBtn">Добавить категорию</button>
+
+            <select id="hashtags" multiple placeholder="Выберите хэштеги"></select>
+            <button type="button" class="add-button" id="addHashtagBtn">Добавить хэштег</button>
+
+            <input type="file" id="problemImage" accept="image/*" />
+
+            <div class="form-buttons">
+                <button type="button" class="clear-btn" id="clearProblemBtn">Очистить</button>
+                <button type="submit" class="save-btn">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальные окна для добавления темы, категории, хэштега -->
+<div id="modal-overlay" class="modal-overlay">
+    <!-- Модал для темы -->
+    <div id="topic-modal" class="modal">
+        <h2>Добавить тему</h2>
+        <input type="text" id="topic-name-input" placeholder="Введите имя темы">
+        <div class="modal-buttons">
+            <button id="topic-add-btn">Добавить</button>
+            <button id="topic-cancel-btn">Отмена</button>
+        </div>
+        <div id="topic-error" class="error-message"></div>
+    </div>
+
+    <!-- Модал для категории -->
+    <div id="category-modal" class="modal">
+        <h2>Добавить категорию</h2>
+        <input type="text" id="category-name-input" placeholder="Введите имя категории">
+        <div class="modal-buttons">
+            <button id="category-add-btn">Добавить</button>
+            <button id="category-cancel-btn">Отмена</button>
+        </div>
+        <div id="category-error" class="error-message"></div>
+    </div>
+
+    <!-- Модал для хэштега -->
+    <div id="hashtag-modal" class="modal">
+        <h2>Добавить хэштег</h2>
+        <input type="text" id="hashtag-name-input" placeholder="Введите имя хэштега">
+        <div class="modal-buttons">
+            <button id="hashtag-add-btn">Добавить</button>
+            <button id="hashtag-cancel-btn">Отмена</button>
+        </div>
+        <div id="hashtag-error" class="error-message"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования проблемы -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Редактировать проблему</h2>
+        <form id="editForm" enctype="multipart/form-data">
+            <input type="hidden" id="problemId">
+            
+            <select id="editTopic">
+                <option value="" disabled selected>Выберите общую тему</option>
+            </select>
+            
+            <input type="text" id="editName" placeholder="Введите название проблемы" required />
+            
+            <textarea id="editDescribe" placeholder="Введите описание (необязательно)"></textarea>
+            
+            <select id="editCategory" required>
+                <option value="" disabled selected>Выберите категорию</option>
+            </select>
+            
+            <select id="editHashtags" multiple placeholder="Выберите хэштеги"></select>
+            
+            <input type="file" id="editImage" accept="image/*" />
+            <div id="currentImagePreview" style="margin: 10px 0;"></div>
+            
+            <div style="display: flex; gap: 20px; margin: 10px 0;">
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" id="editIsNew" />
+                    <span>Новая проблема</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" id="editFromAuthor" />
+                    <span>От автора</span>
+                </label>
+            </div>
+            
+            <div id="relatedInfo" style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+                <!-- Для показа связанных данных -->
+            </div>
+            
+            <div class="form-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="button" id="clearBtn" class="clear-btn">Очистить</button>
+                <button type="button" id="deleteBtn" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Удалить</button>
+                <button type="submit" class="save-btn">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="module" src="/js/admin_problems.js"></script>
+<script type="module" src="/js/logoAdmin.js"></script>
+<script type="module" src="/js/modalProblem.js"></script>
+</body>
+</html>

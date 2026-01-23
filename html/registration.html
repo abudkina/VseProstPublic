@@ -1,35 +1,69 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106420688', 'ym');
+
+        ym(106420688, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/106420688" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Permissions-Policy" content="local-network=(), private-network=()" />
     <title>Всё Прост</title>
-    <link rel="stylesheet" href="../css/registration.css" />
-    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="/css/registration.css" />
+    <link rel="stylesheet" href="/css/header.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 </head>
 <body>
 <header>
-    <div class="logo">Всё Прoст</div>
+    <a href="/" class="logo">Всё Прoст</a>
     <nav class="desktop-menu">
-        <a href="#" title="Вопросы" class="menu-item">
-            <img src="../assets/icons/help_6176358.png" alt="" /> Вопросы
+        <a href="/" title="Вопросы" class="menu-item">
+            <img src="/assets/icons/help_6176358.png" alt="" /> Вопросы
         </a>
-        <a href="#" title="Решения" class="menu-item">
-            <img src="../assets/icons/idea_17401118.png" alt="" /> Решения
+        <a href="/html/solutions.html" title="Решения" class="menu-item">
+            <img src="/assets/icons/idea_17401118.png" alt="" /> Решения
         </a>
-        <a href="#" title="Избранное" class="menu-item heart">
-            <img src="../assets/icons/hearts_8822941.png" alt="" /> Избранное
+        <a href="/html/favourites.html" title="Избранное" class="menu-item heart">
+            <img src="/assets/icons/hearts_8822941.png" alt="" /> Избранное
         </a>
         <a href="#" title="Корзина" class="menu-item">
-            <img src="../assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
+            <img src="/assets/icons/shopping-basket_11981486.png" alt="" /> Корзина
         </a>
-        <a href="#" title="Уведомления" class="menu-item">
-            <img src="../assets/icons/notification_5951646.png" alt="" /> Уведомления
+        <a href="/html/notifications.html" title="Уведомления" class="menu-item">
+            <img src="/assets/icons/notification_5951646.png" alt="" /> Уведомления
         </a>
-        <a href="#" title="Профиль" class="menu-item">
-            <img src="../assets/icons/user-list_18357678.png" alt="" /> Профиль
+        <a href="/html/profile.html" title="Профиль" class="menu-item">
+            <img src="/assets/icons/user-list_18357678.png" alt="" /> Профиль
+        </a>
+    </nav>
+    <nav class="mobile-menu">
+        <a href="/" title="Вопросы" class="menu-item">
+            <img src="/assets/icons/help_6176358.png" alt="" />
+        </a>
+        <a href="/html/solutions.html" title="Решения" class="menu-item">
+            <img src="/assets/icons/idea_17401118.png" alt="" />
+        </a>
+        <a href="/html/favourites.html" title="Избранное" class="menu-item heart">
+            <img src="/assets/icons/hearts_8822941.png" alt="" />
+        </a>
+        <a href="#" title="Корзина" class="menu-item">
+            <img src="/assets/icons/shopping-basket_11981486.png" alt="" />
+        </a>
+        <a href="/html/notifications.html" title="Уведомления" class="menu-item">
+            <img src="/assets/icons/notification_5951646.png" alt="" />
+        </a>
+        <a href="/html/profile.html" title="Профиль" class="menu-item">
+            <img src="/assets/icons/user-list_18357678.png" alt="" />
         </a>
     </nav>
 </header>
@@ -44,6 +78,6 @@
             <button type="button" id="authorizationBtn">Авторизация</button>
         </form>
     </div>
-    <script type="module"src="../js/registration.js"></script>
+    <script type="module"src="/js/registration.js"></script>
 </body>
 </html>

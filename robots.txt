@@ -1,0 +1,48 @@
+# robots.txt для сайта Всё Прост
+# Разрешаем индексацию всем поисковым роботам
+
+User-agent: *
+Allow: /
+Allow: /html/
+Allow: /css/
+Allow: /js/
+Allow: /assets/
+
+# Запрещаем индексацию служебных страниц и личных разделов
+Disallow: /api/
+Disallow: /admin/
+Disallow: /html/admin
+Disallow: /html/favourites.html
+Disallow: /html/cart.html
+Disallow: /html/notifications.html
+Disallow: /html/profile.html
+Disallow: /uploads/
+
+# Специальные правила для Яндекс
+User-agent: Yandex
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /html/admin
+Disallow: /html/favourites.html
+Disallow: /html/cart.html
+Disallow: /html/notifications.html
+Disallow: /html/profile.html
+Disallow: /uploads/
+Crawl-delay: 1
+
+# Специальные правила для Google
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /html/admin
+Disallow: /html/favourites.html
+Disallow: /html/cart.html
+Disallow: /html/notifications.html
+Disallow: /html/profile.html
+Disallow: /uploads/
+Crawl-delay: 1
+
+# Указываем расположение sitemap
+Sitemap: /sitemap.xml

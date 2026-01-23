@@ -8,6 +8,20 @@ body {
 .container {
     max-width: 600px;
     margin: 0 auto;
+    padding: 20px 12px;
+}
+
+h1 {
+    text-align: center;
+    margin: 20px 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
   .btn-hide {
@@ -29,10 +43,6 @@ body {
   }
   .btn-hide.small {
     width: 40%;
-  }
-  form {
-    max-width: 600px;
-    margin: 0 auto;
   }
   input[type="text"],
   textarea {

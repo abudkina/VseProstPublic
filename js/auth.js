@@ -1,9 +1,10 @@
+// auth.js
 import * as auth from './authorizationFunctions.js';
 
 document.getElementById('registerBtn').addEventListener('click', function() {
         // Переход на страницу регистрации
         sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = '../html/registration.html';
+        window.location.href = '/html/registration.html';
     });
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -1,7 +1,30 @@
+// authorizationFunctions.js
 let tokenExpiry = null;
 let refreshTimer = null;
 
-   export function register() {
+// Инициализация при загрузке модуля
+if (typeof window !== 'undefined') {
+    // Восстанавливаем время истечения токена из localStorage, если есть
+    const savedExpiry = localStorage.getItem('tokenExpiry');
+    if (savedExpiry && localStorage.getItem('isLoggedIn') === 'true') {
+        tokenExpiry = parseInt(savedExpiry);
+        // Проверяем, не истек ли уже токен
+        if (tokenExpiry > Date.now()) {
+            startTokenRefreshTimer();
+        } else {
+            // Токен истек, пытаемся обновить
+            localStorage.removeItem('tokenExpiry');
+            refreshToken().catch(() => {
+                // Если не удалось обновить, очищаем сессию
+                if (localStorage.getItem('isLoggedIn')) {
+                    logout();
+                }
+            });
+        }
+    }
+}
+
+export function register() {
     const email = document.getElementById('email').value;
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -12,13 +35,13 @@ let refreshTimer = null;
         return;
     }
 
-    // AJAX-запрос для регистрации
-    fetch('http://127.0.0.1:8080/api/register', {
+    // Используем /api/register из registration_bp
+    fetch('/api/register', {
         method: 'POST',
         headers: {
-           'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
-        credentials: 'include',
+        credentials: 'include',  // ВАЖНО: для работы с cookies
         body: JSON.stringify({
             email: email,
             username: username,
@@ -28,21 +51,19 @@ let refreshTimer = null;
     .then(response => {
         if (!response.ok) {
             return response.json().then(err => {
-                throw new Error(err.message || 'Ошибка регистрации');
+                throw new Error(err.error || 'Ошибка регистрации');
             });
         }
         return response.json();
     })
     .then(data => {
-        console.log(data.message);
+        console.log('Регистрация успешна:', data.message);
         alert(data.message);
-        // После успешной регистрации — сохраните токены и запустите таймер (если сервер вернул их)
-        if (data.accessToken && data.expiry) {
-            accessToken = data.accessToken;
-            tokenExpiry = data.expiry;
-            startTokenRefreshTimer();
-        }
-        window.location.href = '../html/authorization.html';
+        
+        // Токены уже в cookies, перенаправляем
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/html/index.html';
+        sessionStorage.removeItem('redirectAfterLogin');
+        window.location.href = redirectUrl;
     })
     .catch(error => {
         console.error('Ошибка регистрации:', error);
@@ -51,71 +72,102 @@ let refreshTimer = null;
 }
 
 export function authorize() {
-    
     const login = document.getElementById('login').value;
     const password = document.getElementById('password').value;
 
-    // AJAX-запрос для авторизации
-    fetch('http://127.0.0.1:8080/api/login', { 
+    fetch('/api/login', { 
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        credentials: 'include', // Для работы с куками
+        credentials: 'include',
         body: JSON.stringify({
             login: login,
             password: password
         })
     })
     .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => {
-                throw new Error(err.message || 'Ошибка авторизации');
-            });
-        }
-        return response.json();
+        // Сначала получаем текст, чтобы увидеть что пришло
+        return response.text().then(text => {
+            console.log('Raw response:', text);
+            
+            // Пытаемся парсить как JSON
+            try {
+                if (!response.ok) {
+                    const err = JSON.parse(text);
+                    throw new Error(err.error || 'Ошибка авторизации');
+                }
+                return JSON.parse(text);
+            } catch (e) {
+                // Если не JSON, проверяем HTML
+                if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
+                    console.error('Server returned HTML instead of JSON');
+                    console.error('Response status:', response.status);
+                    console.error('Response headers:', response.headers);
+                    
+                    if (response.status === 404) {
+                        throw new Error('API endpoint not found (404). Check server routes.');
+                    } else if (response.status === 500) {
+                        throw new Error('Internal server error (500). Check server logs.');
+                    } else {
+                        throw new Error(`Server error: ${response.status}. Received HTML instead of JSON.`);
+                    }
+                }
+                throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+            }
+        });
     })
     .then(data => {
-        // После успешной авторизации — сохраните expiry и запустите таймер
-        if (data.token || data.accessToken) {
-            localStorage.setItem('token', data.token || data.accessToken);
-            console.log('Токен сохранен в localStorage');
-        } else {
-            console.log('Токен не пришел в ответе (возможно, в куках)');
+        console.log('Login successful:', data);
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // Сохраняем информацию о пользователе
+        if (data.userID) {
+            localStorage.setItem('userId', data.userID.toString());
         }
+        if (data.username) {
+            localStorage.setItem('username', data.username);
+        }
+        
+        // Устанавливаем время истечения токена для автоматического обновления
         if (data.accessExpiry) {
             tokenExpiry = new Date(data.accessExpiry).getTime();
-            console.log('tokenExpiry установлен:', tokenExpiry);
-            if (isNaN(tokenExpiry)) {
-                console.error('Неверная дата accessExpiry:', data.accessExpiry);
-            } else {
-                startTokenRefreshTimer();
-            }
-        } else {
-            console.warn('accessExpiry отсутствует в ответе!');
+            localStorage.setItem('tokenExpiry', tokenExpiry.toString());
+            startTokenRefreshTimer();
         }
-        localStorage.setItem('token', data.access_token);
-        localStorage.setItem('isLoggedIn', 'true');
-        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '../html/index.html';
+        
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/html/index.html';
         sessionStorage.removeItem('redirectAfterLogin');
-        window.location.href = redirectUrl; // Редирект после логина
+        window.location.href = redirectUrl;
     })
     .catch(error => {
         console.error('Ошибка авторизации:', error);
-        alert(error.message);
+        alert('Ошибка авторизации: ' + error.message);
     });
 }
 
- function startTokenRefreshTimer() {
-    // Проверка: не запускаем таймер, если сессия сброшена или уже запущена
-    if (!tokenExpiry || refreshTimer || localStorage.getItem('isLoggedIn') !== 'true') return;
+function startTokenRefreshTimer() {
+    // Очищаем предыдущий таймер, если есть
+    if (refreshTimer) {
+        clearTimeout(refreshTimer);
+        refreshTimer = null;
+    }
+    
+    // Проверка: не запускаем таймер, если сессия сброшена
+    if (!tokenExpiry || localStorage.getItem('isLoggedIn') !== 'true') {
+        return;
+    }
 
     const now = Date.now();
     const timeToExpiry = tokenExpiry - now;
-    const refreshIn = Math.max(0, timeToExpiry - (1 * 60 * 1000)); // 1 мин до expiry
+    
+    // Обновляем за 2 минуты до истечения (вместо 1 минуты для надежности)
+    const refreshIn = Math.max(60000, timeToExpiry - (2 * 60 * 1000)); // минимум 1 минута, или 2 мин до expiry
+    
+    console.log(`Таймер обновления токена установлен на ${Math.round(refreshIn / 1000)} секунд`);
 
     refreshTimer = setTimeout(() => {
-        // Повторная проверка перед обновлением: если сессия сброшена, остановить таймер
+        // Повторная проверка перед обновлением
         if (localStorage.getItem('isLoggedIn') !== 'true') {
             console.log('Сессия сброшена — обновление токена отменено');
             clearTimeout(refreshTimer);
@@ -124,22 +176,28 @@ export function authorize() {
             return;
         }
 
+        console.log('Автоматическое обновление токена...');
         refreshToken().then(() => {
             refreshTimer = null;
+            console.log('Токен успешно обновлен автоматически');
         }).catch(error => {
-            console.error('Ошибка обновления токена:', error);
-            // Опционально: вызвать logout() при ошибке обновления
-            logout();
+            console.error('Ошибка автоматического обновления токена:', error);
+            refreshTimer = null;
+            // Не вызываем logout сразу, может быть временная ошибка
+            // Только если точно unauthorized
+            if (error.message && error.message.includes('unauthorized')) {
+                logout();
+            }
         });
     }, refreshIn);
 }
 
-function refreshToken() {
-    makeAuthenticatedRequest('http://127.0.0.1:8080/api/refreshToken', {
+export function refreshToken() {
+    return fetch('/api/refreshToken', {
         method: 'POST',
         credentials: 'include' // Включаем cookies в запрос
     })
-       .then(response => {
+    .then(response => {
         if (!response.ok) {
             if (response.status === 401) {
                 logout();
@@ -153,97 +211,260 @@ function refreshToken() {
         console.log('Токен обновлён:', data.message);
         if (data.accessExpiry) {
             tokenExpiry = new Date(data.accessExpiry).getTime();
+            localStorage.setItem('tokenExpiry', tokenExpiry.toString());
             startTokenRefreshTimer();
         }
         return data;
     })
     .catch(error => {
         console.error('Ошибка обновления токена:', error);
-        logout();
+        // Не вызываем logout сразу, может быть временная ошибка сети
+        if (error.message.includes('unauthorized')) {
+            logout();
+        }
         throw error;
     });
 }
 
 export function logout() {
-    fetch('http://127.0.0.1:8080/api/logout', {
-        method: 'POST',
-        credentials: 'include'
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Logout failed');
-        return response.json();
-    })
-    .then(data => {
-        console.log(data.message);
-        // Очистка localStorage (предотвращает "вечную" сессию)
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('token');
-        // Очистка sessionStorage (существующая логика)
-        sessionStorage.clear();
-        // Остановка таймера обновления токена
+    // Остановка таймера обновления токена
+    if (refreshTimer) {
         clearTimeout(refreshTimer);
         refreshTimer = null;
-        tokenExpiry = null;
-        // Редирект
-        window.location.href = '../html/authorization.html';
-    })
-    .catch(error => {
-        console.error('Ошибка логаута:', error);
-        // В случае ошибки тоже очищаем хранилища для безопасности
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('token');
-        sessionStorage.clear();
-        // Редирект
-        window.location.href = '../html/authorization.html';
+    }
+    tokenExpiry = null;
+    
+    // Очистка localStorage
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('tokenExpiry');
+    
+    // Очистка sessionStorage
+    sessionStorage.clear();
+    
+    // Отправляем запрос на сервер (не ждем ответа)
+    fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include'
+    }).catch(error => {
+        console.error('Ошибка логаута на сервере:', error);
     });
+    
+    // Редирект
+    window.location.href = '/html/authorization.html';
 }
 
-// Перехватчик для добавления токена к запросам
-function makeAuthenticatedRequest(url, options = {}) {
-    options.credentials = 'include'; // Куки для аутентификации
-    return fetch(url, options)
+// Глобальный перехватчик fetch для автоматического обновления токена
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
+// Перехватчик для автоматического обновления токена (только для API запросов)
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+    // Нормализуем аргументы
+    let url, options = {};
+    if (typeof args[0] === 'string') {
+        url = args[0];
+        options = args[1] || {};
+    } else {
+        url = args[0].url;
+        options = { ...args[0] };
+    }
+    
+    const isApiRequest = url && url.includes('/api/');
+    
+    // Убеждаемся, что credentials включены для API запросов
+    if (isApiRequest && !options.credentials) {
+        options.credentials = 'include';
+    }
+    
+    // Создаем новый массив аргументов
+    const newArgs = typeof args[0] === 'string' 
+        ? [url, options]
+        : [{ ...args[0], ...options }];
+    
+    return originalFetch.apply(this, newArgs)
         .then(response => {
-            if (response.status === 401) {
-                // Попытка обновить токен при 401
-                return refreshToken().then(() => {
-                    // Повторить запрос (теперь с обновлёнными куками)
-                    return fetch(url, options);
-                });
+            // Если получили 401 на API запросе, пытаемся обновить токен
+            if (response.status === 401 && isApiRequest && 
+                !url.includes('/refreshToken') && 
+                !url.includes('/login') && 
+                !url.includes('/register')) {
+                
+                if (!isRefreshing) {
+                    isRefreshing = true;
+                    return refreshToken()
+                        .then(() => {
+                            isRefreshing = false;
+                            processQueue(null, true);
+                            // Повторяем оригинальный запрос с обновленными cookies
+                            return originalFetch.apply(this, newArgs);
+                        })
+                        .catch(err => {
+                            isRefreshing = false;
+                            processQueue(err, null);
+                            // Если refresh не удался и это критичный запрос
+                            if (localStorage.getItem('isLoggedIn') && 
+                                (url.includes('/validate-token') || url.includes('/users/'))) {
+                                // Для критичных запросов - редирект на логин
+                                setTimeout(() => logout(), 100);
+                            }
+                            return response;
+                        });
+                } else {
+                    // Токен уже обновляется, ждем
+                    return new Promise((resolve, reject) => {
+                        failedQueue.push({ resolve, reject });
+                    }).then(() => {
+                        return originalFetch.apply(this, newArgs);
+                    }).catch(() => response);
+                }
             }
             return response;
         });
-}
+};
 
 // Функция проверки авторизации (переиспользуемая)
 export function checkAuth(redirectIfUnauthorized = true) {
-    return fetch('http://127.0.0.1:8080/api/getUserId', {  
+    // Проверяем, есть ли сессия
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        if (redirectIfUnauthorized) {
+            sessionStorage.setItem('redirectAfterLogin', window.location.href);
+            window.location.href = '/html/authorization.html';
+        }
+        throw new Error('Не авторизован');
+    }
+    
+    // Используем cookies для валидации (токен там)
+    return fetch('/api/validate-token', {  
         method: 'GET',
-        credentials: 'include'  // Куки автоматически
+        credentials: 'include'  // ВАЖНО: для работы с cookies
     })
-    .then(response => {
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // Пытаемся обновить токен
+                    return refreshToken().then(() => {
+                        // Повторяем запрос после обновления
+                        return fetch('/api/validate-token', {
+                            method: 'GET',
+                            credentials: 'include'
+                        });
+                    }).then(response => {
+                        if (!response.ok) throw new Error('Не авторизован');
+                        return response.json();
+                    });
+                }
+                throw new Error('Ошибка сервера');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Авторизован, userID:', data.userID);
+            // Сохраняем информацию о пользователе
+            if (data.userID) {
+                localStorage.setItem('userId', data.userID.toString());
+            }
+            if (data.username) {
+                localStorage.setItem('username', data.username);
+            }
+            if (data.isAdmin !== undefined) {
+                localStorage.setItem('isAdmin', data.isAdmin.toString());
+            }
+            // Обновляем время истечения токена
+            if (data.accessExpiry) {
+                tokenExpiry = new Date(data.accessExpiry).getTime();
+                localStorage.setItem('tokenExpiry', tokenExpiry.toString());
+                startTokenRefreshTimer();
+            }
+            return data.userID;
+        })
+        .catch(error => {
+            console.error('Ошибка проверки авторизации:', error);
+            if (redirectIfUnauthorized) {
+                localStorage.removeItem('isLoggedIn');
+                sessionStorage.setItem('redirectAfterLogin', window.location.href);
+                window.location.href = '/html/authorization.html';
+            }
+            throw error;
+        });
+}
+
+// Функция для получения заголовков с токеном (если есть)
+export function getAuthHeaders(additionalHeaders = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...additionalHeaders
+    };
+    
+    // Пытаемся получить токен из localStorage
+    const token = localStorage.getItem('accessToken');
+    
+    // Добавляем Authorization только если токен есть и он валидный
+    if (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+}
+
+// Функция проверки, является ли пользователь администратором
+export async function checkIsAdmin() {
+    try {
+        // Проверяем кэш
+        const cachedIsAdmin = localStorage.getItem('isAdmin');
+        if (cachedIsAdmin === 'true') {
+            return true;
+        }
+        
+        // Используем cookies для валидации
+        const response = await fetch('/api/validate-token', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
         if (!response.ok) {
             if (response.status === 401) {
-                localStorage.removeItem('isLoggedIn');
-                if (redirectIfUnauthorized) {
-                    localStorage.setItem('redirectAfterLogin', window.location.href);
-                    window.location.href = '../html/authorization.html';  // Или куда нужно
+                // Пытаемся обновить токен
+                try {
+                    await refreshToken();
+                    const retryResponse = await fetch('/api/validate-token', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    if (!retryResponse.ok) return false;
+                    const data = await retryResponse.json();
+                    localStorage.setItem('isAdmin', data.isAdmin ? 'true' : 'false');
+                    return data.isAdmin === true;
+                } catch (e) {
+                    return false;
                 }
             }
+            return false;
         }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Авторизован, userID:', data.userID);
-        return data.userID;  // Возвращаем для использования
-    })
-    .catch(error => {
-        console.error('Ошибка проверки авторизации:', error);
-        if (redirectIfUnauthorized) {
-            localStorage.removeItem('isLoggedIn');
-            window.location.href = '../html/authorization.html';
-        }
-        throw error;
-    });
+        
+        const data = await response.json();
+        localStorage.setItem('isAdmin', data.isAdmin ? 'true' : 'false');
+        return data.isAdmin === true;
+    } catch (error) {
+        console.error('Ошибка проверки прав администратора:', error);
+        return false;
+    }
 }
 
 

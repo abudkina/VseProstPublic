@@ -45,31 +45,108 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background-color: rgba(208, 240, 216, 0.8);
-  /* светло-зеленый фон */
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(199, 210, 254, 0.2) 0%, rgba(167, 139, 250, 0.2) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   gap: 2px;
   font-weight: 700;
-  font-size: 0.95rem;
-  color: #2E7D32;
-  /* темно-зеленый текст */
+  font-size: 0.9rem;
+  color: #4c1d95;
   cursor: default;
   user-select: none;
   z-index: 10;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
   flex-direction: column;
-  /* вертикальный столбик */
-  padding: 6px 8px;
-  width: 36px;
+  padding: 8px 10px;
+  width: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.card-favorites:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.card-cart-btn {
+  position: absolute;
+  top: 60px;
+  left: 12px;
+  background: transparent;
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.rating {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, rgba(254, 240, 138, 0.95) 0%, rgba(251, 191, 36, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  color: #78350f;
+  border-radius: 16px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1em;
+  user-select: none;
+  pointer-events: none;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  z-index: 10;
+}
+
+.card-cart-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+}
+
+.card-cart-btn img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
+}
+
+.card-cart-btn.in-cart {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.4) 0%, rgba(56, 142, 60, 0.4) 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-cart-btn.in-cart img {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
 }
 
 .favorite-icon {
   width: 18px;
   height: 18px;
   display: block;
-  filter: none;
+  transition: all 0.3s ease;
+}
+
+.favorite-icon:not(.favorited) {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(95%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+  background: transparent;
+}
+
+.favorite-icon.favorited {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(95%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+  background: rgba(220, 38, 38, 0.3);
 }
 
 a {
@@ -88,6 +165,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background-attachment: fixed;
 }
 
 .custom-select {
@@ -106,7 +185,7 @@ body {
   justify-content: flex-start;
   font-style: normal;
   position: relative;
-  /* для корректного позиционирования дочерних абсолютных элементов */
+  overflow: visible !important;
 }
 
 /* Выпадающий список Choices поверх грида */
@@ -160,38 +239,43 @@ body {
 }
 
 .filters.desktop .choices__list--dropdown::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 0, 0, 0.5);
+  background-color: rgba(102, 126, 234, 0.5);
   border-radius: 3px;
 }
 
 .filters.desktop .choices {
-  /* Убираем рамку у основного контейнера */
   border: none;
   background: transparent;
-  /* или любой другой фон */
   border-radius: 20px;
-  /* Оставляем скругления */
   padding: 0 8px;
-  /* Отступы */
   position: relative;
-  /* Для позиционирования выпадающего списка */
+  overflow: visible !important;
 }
 
 /* При фокусе */
 .filters.desktop .choices__inner.is-focused {
-  border-color: red !important;
-  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3) !important;
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
 }
 
 .search-filters {
   width: 100%;
-  margin: 10px auto;
+  margin: 0 auto;
   box-sizing: border-box;
-  padding: 10px 1em;
+  padding: 5px 0.5em;
   display: flex;
   flex-direction: column;
   gap: 10px;
   font-style: normal;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 1400px;
+  overflow: visible !important;
+  position: relative;
+  z-index: 1000;
+  margin-top: 10px;
 }
 
 .search-filters .container {
@@ -213,22 +297,28 @@ body {
 .top-row #search {
   flex-grow: 1;
   font-size: 1rem;
-  padding: 8px 12px;
+  padding: 14px 20px;
   border-radius: 16px;
-  border: none;
+  border: 2px solid #e2e8f0;
   outline: none;
-  background: white;
-  color: red;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  color: #1a202c;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-style: normal;
   font-family: 'Inter', sans-serif;
 }
 
+.top-row #search:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 6px 20px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
+}
+
 .top-row #search::placeholder {
-  color: red;
-  font-weight: 700;
+  color: #a0aec0;
+  font-weight: 400;
   font-style: normal;
   font-family: 'Inter', sans-serif;
 }
@@ -239,17 +329,28 @@ body {
 }
 
 .top-row #addProblem {
-  background-color: white;
-  color: red;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   border: none;
-  padding: 9px 16px;
-  border-radius: 20px;
-  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-style: normal;
+  font-size: 0.95rem;
+}
+
+.top-row #addProblem:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.top-row #addProblem:active {
+  transform: translateY(0);
 }
 
 .filters.desktop select,
@@ -262,24 +363,31 @@ body {
   flex-grow: 1;
   min-width: 140px;
   background: white;
-  color: red;
-  font-weight: 700;
+  color: #4a5568;
+  font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   font-style: normal;
 }
 
 .filters.desktop button {
   background-color: white;
-  color: red;
+  color: #667eea;
   border: none;
   padding: 9px 16px;
   border-radius: 20px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   font-style: normal;
+}
+
+.filters.desktop button:hover {
+  background-color: #f7fafc;
+  color: #5568d3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 .filters.mobile {
@@ -313,44 +421,46 @@ body {
 
 /* Карточки */
 .cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  /* Для переноса карточек */
-  gap: 16px;
-  padding: 10px 10px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  padding: 5px;
   overflow-x: hidden;
-  /* Убираем горизонтальный скролл */
-  justify-content: flex-start;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   position: relative;
-  /* Для z-index */
   z-index: 1;
-  /* Чтобы фильтр с z-index:1000 был поверх */
+  margin-top: 10px;
 }
 
 .card {
-  width: calc((100% - 16px * 4) / 5);
-  background: #fff;
-  border-radius: 12px;
+  width: 100%;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
   font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
 }
 
 .card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: rgba(102, 126, 234, 0.3);
 }
 
 .card-image-wrapper {
   position: relative;
   width: 100%;
-  height: 160px;
+  height: 180px;
   overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .card-image-wrapper img.card-image {
@@ -404,116 +514,243 @@ body {
 
 /* Контент карточки */
 .card-content {
-  padding: 12px 16px;
+  padding: 16px 18px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* Тема проблемы */
+.problem-topic {
+  margin-bottom: 10px;
+  display: none;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  /* Скрываем полосы прокрутки */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE и Edge */
+}
+
+.problem-topic::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.problem-topic .topic-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25), 
+              0 2px 4px rgba(102, 126, 234, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.problem-topic .topic-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.problem-topic .topic-link:hover::before {
+  left: 100%;
+}
+
+.problem-topic .topic-link:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4), 
+              0 4px 8px rgba(102, 126, 234, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.problem-topic .topic-link:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 /* Теги */
+/* Теги */
+.tags-wrapper {
+  position: relative;
+  margin-bottom: 8px;
+}
+
 .tags-column {
   display: flex;
   flex-wrap: nowrap;
   gap: 6px;
-  margin-bottom: 8px;
   max-width: 100%;
-  overflow: hidden;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
   white-space: nowrap;
+  scroll-behavior: smooth;
+  /* Скрываем полосы прокрутки */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE и Edge */
 }
 
-.tag {
-  /* Исходный стиль */
-  display: inline-block;
-  padding: 4px 8px;
-  margin: 2px;
-  border-radius: 4px;
-  background-color: #eee;
-  color: #333;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.tags-column::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
-.tag:hover {
-  background-color: #28a745;
-  /* Зеленый фон при наведении */
+.tags-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  /* Белый текст для контраста */
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tags-wrapper:hover .tags-scroll-btn {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.tags-scroll-btn:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+}
+
+.tags-scroll-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.tags-scroll-btn.left {
+  left: 0;
+}
+
+.tags-scroll-btn.right {
+  right: 0;
+}
+
+.tags-scroll-btn.hidden {
+  display: none;
 }
 
 .tag {
-  background-color: #f0f0f0;
-  /* Цвет фона для тегов */
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
   border-radius: 12px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   font-size: 0.75rem;
-  /* Размер шрифта для тегов */
-  color: #555;
+  color: #667eea;
   white-space: nowrap;
   user-select: none;
-  font-weight: 500;
+  font-weight: 600;
   flex-shrink: 0;
-  max-width: 100%;
   box-sizing: border-box;
   line-height: 1.2;
   cursor: pointer;
   display: inline-block;
   margin: 2px;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.15);
+}
+
+.tag:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  border-color: rgba(102, 126, 234, 0.5);
 }
 
 /* Нижняя панель статистики */
 .card-footer {
   display: flex;
   flex-wrap: nowrap;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   width: 100%;
-  overflow-x: auto;
-  /* чтобы не выходило за пределы */
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Прячем скроллбар в Webkit браузерах */
-.card-footer::-webkit-scrollbar {
-  display: none;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-width: 0;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 4px;
-  border-radius: 16px;
-  font-weight: 300;
-  font-size: 0.4rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.7rem;
   user-select: none;
   white-space: nowrap;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  min-width: 0;
+}
+
+.stat-item:hover {
+  transform: scale(1.05);
 }
 
 /* Иконки статистики */
 .stat-icon {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   display: inline-flex;
   font-size: 0.8rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .stat-icon img {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 16px;
+  height: 16px;
   display: block;
 }
 
 /* Значения статистики */
 .stat-value {
   font-size: 0.8rem;
-  color: #555;
+  color: #2d3748;
   white-space: nowrap;
   user-select: none;
-  font-weight: 300;
+  font-weight: 600;
   display: flex;
   align-items: center;
   min-width: 10px;
@@ -522,32 +759,143 @@ body {
 
 /* Цвета статистики */
 .stat-item.views {
-  background-color: #e7e3e3;
-  color: #d4cfcf;
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+  color: #4a5568;
+  border: 1px solid rgba(74, 85, 104, 0.2);
 }
 
 .stat-item.likes {
-  background-color: #a2f3b6;
-  color: #2d8a4f;
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  color: #22543d;
+  border: 1px solid rgba(34, 84, 61, 0.2);
 }
 
 .stat-item.comments {
-  background-color: #cce3fc;
-  color: #2a6edb;
+  background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+  color: #2c5282;
+  border: 1px solid rgba(44, 82, 130, 0.2);
 }
 
 .stat-item.shares {
-  background-color: #fff0d1;
-  color: #d18b00;
+  background: linear-gradient(135deg, #fef5e7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid rgba(146, 64, 14, 0.2);
 }
 
 .stat-item.links {
-  background-color: #f8dbd3;
-  color: #fa1111;
+  background: linear-gradient(135deg, #fef5e7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid rgba(146, 64, 14, 0.2);
+}
+
+/* Стили для выпадающего списка TomSelect */
+.ts-dropdown {
+  position: absolute !important;
+  max-height: 300px !important;
+  background: white !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 0 0 20px 20px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  z-index: 10001 !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  min-width: 200px !important;
+}
+
+.ts-dropdown:not([style*="display: none"]) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ts-dropdown[style*="display: none"] {
+  display: none !important;
+}
+
+.vs-wrapper.focus .ts-dropdown,
+.vs-wrapper.input-active .ts-dropdown,
+.vs-wrapper.focus.input-active .ts-dropdown {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ts-dropdown.has-options,
+.ts-dropdown:has(.option) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ts-dropdown-content {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.ts-dropdown .option {
+  padding: 10px 14px !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  text-align: center !important;
+}
+
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active {
+  background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%) !important;
+  color: #667eea !important;
+}
+
+.ts-dropdown .option[data-selectable="false"] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.ts-dropdown-content::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.ts-dropdown-content::-webkit-scrollbar-thumb {
+  background-color: rgba(102, 126, 234, 0.5) !important;
+  border-radius: 3px !important;
+}
+
+.ts-dropdown-content::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+/* Контейнер TomSelect в фильтрах */
+.filters.desktop .vs-wrapper {
+  position: relative !important;
+  overflow: visible !important;
+  min-width: 140px !important;
+  width: 25vw !important;
+}
+
+.vs-wrapper.focus .ts-dropdown,
+.vs-wrapper.focus.input-active .ts-dropdown,
+.vs-wrapper.input-active .ts-dropdown {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body > .ts-dropdown {
+  z-index: 10001 !important;
+  position: absolute !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ts-control input[type="text"] {
+  color: #1a202c !important;
+  font-weight: 500;
 }
 
 .ts-control input[type="text"]::placeholder {
-  color: red;
+  color: #a0aec0;
   transition: color 0.2s ease;
 }
 
@@ -555,116 +903,242 @@ body {
   color: transparent !important;
 }
 
+.ts-control:not(.has-items) input[type="text"]::placeholder {
+  color: #a0aec0 !important;
+  opacity: 1 !important;
+}
+
 .ts-control .item {
-  background-color: transparent !important;
-  /* прозрачный фон */
-  color: red !important;
-  /* красный текст */
-  border: 1px solid red;
-  /* красная рамка */
-  border-radius: 4px;
-  padding: 2px 8px;
+  background-color: rgba(102, 126, 234, 0.1) !important;
+  color: #667eea !important;
+  border: 1px solid #667eea;
+  border-radius: 12px;
+  padding: 4px 10px;
   margin-right: 4px;
   font-weight: 600;
   white-space: normal !important;
   display: inline-block;
+  transition: all 0.3s ease;
 }
 
-/* При наведении на контейнер селекта скрываем placeholder */
-.ts-control:hover input::placeholder {
+.ts-control .item:hover {
+  background-color: rgba(102, 126, 234, 0.2) !important;
+  border-color: #5568d3;
+}
+
+.ts-control.has-items:hover input::placeholder {
   color: transparent;
   transition: color 0.3s;
+}
+
+.ts-control:not(.has-items):hover input::placeholder {
+  color: #a0aec0 !important;
+  opacity: 1 !important;
 }
 
 .ts-control {
   border: none !important;
   border-radius: 16px !important;
   background-color: white !important;
-  /* обязательно, чтобы тень была видна */
   box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
   position: relative;
-  /* чтобы тень нормально отрисовывалась */
   z-index: 1;
-  /* на всякий случай */
+  min-width: 140px !important;
 }
 
-.ts-wrapper.multi.has-items{
-  max-width: 20% !important;  /* ограничиваем ширину */
-  box-sizing: border-box;
+.filters.desktop .ts-control {
+  min-width: 140px !important;
+  width: 100% !important;
 }
 
-.ts-wrapper.multi.focus.input-active.has-items {
-  max-width: 20% !important;  /* ограничиваем ширину */
+.filters.desktop .ts-control input[type="text"] {
+  min-width: 100px !important;
+}
+
+.vs-wrapper.multi.has-items{
+  max-width: 20% !important;
   box-sizing: border-box;
+  min-width: 140px !important;
+}
+
+.vs-wrapper.multi.focus.input-active.has-items {
+  max-width: 20% !important;
+  box-sizing: border-box;
+  min-width: 140px !important;
+}
+
+.filters.desktop .vs-wrapper.multi:not(.has-items) {
+  min-width: 140px !important;
+  width: 25vw !important;
+}
+
+/* Стили для вкладок избранного */
+.favorites-tabs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  position: relative;
+  z-index: 10;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+  color: #4a5568;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.tab-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+.tab-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+  color: #667eea;
+}
+
+.tab-button:hover::before {
+  left: 0;
+  opacity: 0.1;
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4),
+              0 2px 8px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+.tab-button.active::before {
+  left: 0;
+  opacity: 1;
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+.tab-button.active:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5),
+              0 4px 12px rgba(102, 126, 234, 0.3);
+  transform: translateY(-3px);
+}
+
+.tab-button:active {
+  transform: translateY(0);
+}
+
+/* Адаптивность для вкладок */
+@media (max-width: 768px) {
+  .favorites-tabs {
+    margin: 15px auto;
+    padding: 6px;
+    gap: 8px;
+    max-width: 100%;
+  }
+  
+  .tab-button {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorites-tabs {
+    margin: 10px auto;
+    padding: 4px;
+    gap: 6px;
+  }
+  
+  .tab-button {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
 }
 
 /* Адаптивность */
 @media (min-width: 1200px) and (max-width: 2000px) {
-  .card {
-    width: calc(20% - 12.8px);
-    /* 5 карточек с учетом gap 16px */
+  .cards-container {
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .filters.mobile {
     display: none;
-    /* Скрываем мобильные фильтры */
   }
-
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  .card {
-    width: calc(25% - 12px);
+  .cards-container {
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .filters.mobile {
     display: none;
-    /* Скрываем мобильные фильтры */
   }
-
-
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
-  .card {
-    width: calc(33.33% - 10.7px);
+  .cards-container {
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .filters.mobile {
     display: none;
-    /* Скрываем мобильные фильтры */
   }
-
 }
 
 @media (min-width: 480px) and (max-width: 767px) {
-  .card {
-    width: calc(50% - 8px);
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .filters.desktop {
     display: none;
-    /* Скрываем фильтры */
   }
 
   #addProblem {
     display: none;
   }
-
 }
 
 @media (max-width: 479px) {
-  .card {
-    width: 100%;
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .filters.desktop {
     display: none;
-    /* Скрываем фильтры */
   }
 
   #addProblem {
     display: none;
   }
-
 }

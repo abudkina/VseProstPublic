@@ -111,12 +111,18 @@ textarea {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         display: none; /* Скрыто по умолчанию */
         justify-content: center;
         align-items: center;
         z-index: 1000;
-        animation: fadeIn 0.3s ease;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal-overlay.active {
+        display: flex;
     }
 
     @keyframes fadeIn {
@@ -126,49 +132,198 @@ textarea {
 
     /* Модальные окна */
     .modal {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        max-width: 60%;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 0;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        max-width: 450px;
         width: 90%;
         text-align: center;
         display: none; /* Скрыто по умолчанию */
+        position: relative;
+        overflow: hidden;
+        animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
+    .modal.active {
+        display: block;
+    }
+
+    /* Декоративный элемент */
+    .modal::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        z-index: 1;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(30px) scale(0.95);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
+
     .modal h2 {
-        margin-top: 0;
-        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 30px 40px 20px;
+        color: #2d3748;
+        font-family: 'Jost', 'Inter', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.5px;
+        position: relative;
     }
+
     .modal input {
-        width: 80%;
-        padding: 10px;
-        margin: 10px 0;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 16px;
+        width: calc(100% - 80px);
+        padding: 14px 18px;
+        margin: 10px 40px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+        background: #ffffff;
+        color: #2d3748;
+        box-sizing: border-box;
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    .modal input:focus {
+        border-color: #667eea;
+        box-shadow: 
+            0 0 0 4px rgba(102, 126, 234, 0.1),
+            0 4px 12px rgba(102, 126, 234, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .modal input::placeholder {
+        color: #a0aec0;
+        font-weight: 400;
+    }
+
     .modal-buttons {
         display: flex;
         justify-content: space-between;
-        margin-top: 20px;
+        gap: 12px;
+        margin: 20px 40px 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
     }
+
     .modal-buttons button {
-        padding: 10px 20px;
+        flex: 1;
+        padding: 14px 28px;
         border: none;
-        border-radius: 4px;
+        border-radius: 12px;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 15px;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: 'Inter', sans-serif;
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.3px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     .modal-buttons button:first-child {
-        background: #007bff;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
+
+    .modal-buttons button:first-child:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    .modal-buttons button:first-child:active {
+        transform: translateY(0);
+    }
+
     .modal-buttons button:last-child {
-        background: #6c757d;
+        background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
         color: white;
     }
-    .error-message {
-        color: red;
-        margin-top: 10px;
-        font-size: 14px;
+
+    .modal-buttons button:last-child:hover {
+        background: linear-gradient(135deg, #5a6c7d 0%, #3a4555 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
     }
+
+    .modal-buttons button:last-child:active {
+        transform: translateY(0);
+    }
+
+    .error-message {
+        color: #e53e3e;
+        margin: 0 40px 20px;
+        font-size: 14px;
+        min-height: 20px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .modal {
+            max-width: 95%;
+            border-radius: 16px;
+        }
+        
+        .modal h2 {
+            font-size: 24px;
+            padding: 25px 25px 15px;
+        }
+        
+        .modal input {
+            width: calc(100% - 50px);
+            margin: 10px 25px;
+        }
+        
+        .modal-buttons {
+            margin: 20px 25px 25px;
+            flex-direction: column;
+        }
+        
+        .modal-buttons button {
+            width: 100%;
+        }
+
+        .error-message {
+            margin: 0 25px 15px;
+        }
+    }
+
+/* Исправление для закрытия выпадающего списка Tom Select */
+.vs-wrapper.single .ts-dropdown[style*="display: none"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Убираем принудительное отображение для single select после выбора */
+.vs-wrapper.single:not(.focus):not(.input-active) .ts-dropdown {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}

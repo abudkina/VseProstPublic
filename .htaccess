@@ -1,0 +1,63 @@
+# Включение Passenger для Python-приложения
+PassengerEnabled On
+
+# Путь к Python в виртуальном окружении
+# ЗАМЕНИТЕ на ваш путь: /home/ПЕРВАЯ_БУКВА_ЛОГИНА/ЛОГИН/ИМЯ_САЙТА/venv/bin/python
+PassengerPython /home/v/vseprost/vseprost.beget.tech/venv/bin/python
+
+# Кодировка по умолчанию
+AddDefaultCharset UTF-8
+
+# Настройки для статических файлов
+<IfModule mod_headers.c>
+    # Кэширование статических файлов
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+        Header set Cache-Control "max-age=31536000, public"
+    </FilesMatch>
+
+    # Отключение кэширования для HTML
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# Сжатие gzip
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
+    AddOutputFilterByType DEFLATE application/javascript text/javascript
+    AddOutputFilterByType DEFLATE text/xml application/xml application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/x-httpd-php application/x-httpd-fastphp
+</IfModule>
+
+# Защита от просмотра директорий
+Options -Indexes
+
+# Запрет доступа к скрытым файлам
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Запрет доступа к конфигурационным файлам
+<FilesMatch "(\.env|\.gitignore|requirements\.txt|config\.py)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Запрет доступа к Python файлам напрямую
+<FilesMatch "\.py$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Разрешить passenger_wsgi.py (нужен для Passenger)
+<Files "passenger_wsgi.py">
+    Order deny,allow
+    Allow from all
+</Files>
+
+# Обработка ошибок
+ErrorDocument 404 /html/404.html
+ErrorDocument 500 /html/500.html

@@ -1,20 +1,27 @@
-// Функция для получения параметра из URL
-function getParameterByName(name) {
-    const url = window.location.href;
-    const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-    const results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
+// problem.js
+import * as auth from './authorizationFunctions.js';
+import { initAuthHandlers } from './common.js';
+import { updateCartIconState, addToCart, checkInCart } from './cartFunctions.js';
+import { initTagsScroll, toggleFavorite } from './problemListCommon.js';
+import { updateSEOMetaTags, addStructuredData, createProblemStructuredData } from './utils/seo.js';
+
+// Инициализация обработчиков авторизации
+initAuthHandlers();
+
+let selectedProblemsList = [];
+let currentProblem = null;
+let selectedSolutionsList = [];
+
+// Теперь используем градиентный фон вместо внешних изображений
 
 // Загружаем данные из JSON файлов
 async function loadData() {
-    const problemID = getParameterByName("problemId");
-    if (!problemID) {
-    throw new Error("Отсутствует параметр problemId в URL");
-  }
-    const response = await fetch(`http://127.0.0.1:8080/api/problem?id=${problemID}`);
+    const urlParams = new URLSearchParams(window.location.search);
+    const problemId = urlParams.get('problemId') || urlParams.get('id');
+    if (!problemId) {
+        throw new Error("Отсутствует параметр problemId в URL");
+    }
+    const response = await fetch(`/api/problems/${problemId}`);
     if (!response.ok) throw new Error('Ошибка HTTP: ' + response.status);
     const data = await response.json();
     return data.problem ?? data;
@@ -23,6 +30,7 @@ async function loadData() {
 // Отображаем информацию о проблеме и её решениях
 async function displaySolutions() {
     const problem = await loadData();
+    currentProblem = problem; // Сохраняем текущую проблему для использования в модальном окне
     console.log("Получена задача:", problem);
     const solutionContainer = document.getElementById('solutionContainer');
 
@@ -30,6 +38,22 @@ async function displaySolutions() {
         solutionContainer.innerHTML = '<p>Проблема не найдена.</p>';
         return;
     }
+
+    // Обновляем SEO мета-теги
+    const baseUrl = window.location.origin;
+    const problemUrl = `/html/problem.html?id=${problem.ID}`;
+    const problemImage = problem.Image || '/assets/og-image.png';
+    
+    updateSEOMetaTags({
+        title: `${problem.Name} - Всё Прост`,
+        description: problem.Description || `Проблема: ${problem.Name}. Найдите решения на платформе Всё Прост.`,
+        image: problemImage,
+        url: problemUrl,
+        type: 'article'
+    });
+
+    // Добавляем структурированные данные
+    addStructuredData(createProblemStructuredData(problem));
 
     // Очищаем контейнер
     solutionContainer.innerHTML = '';
@@ -39,63 +63,1666 @@ async function displaySolutions() {
     const problemInfo = problemInfoTemplate.content.cloneNode(true);
 
     const img = problemInfo.querySelector('.problem-img');
-    img.src = problem.Image;
+    img.src = problem.Image || '../images/default.png';
     img.alt = problem.Name;
 
     const title = problemInfo.querySelector('.problem-title');
     title.textContent = problem.Name;
 
+    // Заполняем статистику проблемы
+    const statItems = problemInfo.querySelectorAll('.stat-item');
+    statItems.forEach(statItem => {
+        const statNumber = statItem.querySelector('.stat-number');
+        if (statNumber) {
+            const title = statItem.getAttribute('title');
+            if (title === 'Лайки') {
+                statNumber.textContent = problem.Favourite || 0;
+                
+                // Делаем иконку избранного кликабельной
+                const favoriteIcon = statItem.querySelector('img');
+                if (favoriteIcon) {
+                    // Проверяем статус избранного и устанавливаем правильную иконку
+                    if (problem.IsFavourite === true) {
+                        favoriteIcon.src = '/assets/icons/love_6787061.png';
+                        favoriteIcon.classList.add('favorited');
+                    } else {
+                        favoriteIcon.src = '/assets/icons/love_9318199.png';
+                        favoriteIcon.classList.remove('favorited');
+                    }
+                    
+                    statItem.style.cursor = 'pointer';
+                    statItem.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Вызываем toggleFavorite и обновляем счетчик
+                        try {
+                            const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+                            const response = await fetch(`/api/problems/${problem.ID}/toggle-favourite`, {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            
+                            if (response.status === 401) {
+                                // Пробуем обновить токен
+                                const refreshResponse = await fetch('/api/auth/refresh', {
+                                    method: 'POST',
+                                    credentials: 'include'
+                                });
+                                
+                                if (refreshResponse.ok) {
+                                    // Повторяем запрос
+                                    const retryResponse = await fetch(`/api/problems/${problem.ID}/toggle-favourite`, {
+                                        method: 'POST',
+                                        credentials: 'include',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+                                    
+                                    if (retryResponse.ok) {
+                                        const data = await retryResponse.json();
+                                        // Обновляем счетчик
+                                        const currentCount = parseInt(statNumber.textContent) || 0;
+                                        statNumber.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
+                                        // Обновляем иконку
+                                        if (data.is_favourite) {
+                                            favoriteIcon.src = '/assets/icons/love_6787061.png';
+                                            favoriteIcon.classList.add('favorited');
+                                        } else {
+                                            favoriteIcon.src = '/assets/icons/love_9318199.png';
+                                            favoriteIcon.classList.remove('favorited');
+                                        }
+                                    }
+                                }
+                            } else if (response.ok) {
+                                const data = await response.json();
+                                // Обновляем счетчик
+                                const currentCount = parseInt(statNumber.textContent) || 0;
+                                statNumber.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
+                                // Обновляем иконку
+                                if (data.is_favourite) {
+                                    favoriteIcon.src = '/assets/icons/love_6787061.png';
+                                    favoriteIcon.classList.add('favorited');
+                                } else {
+                                    favoriteIcon.src = '/assets/icons/love_9318199.png';
+                                    favoriteIcon.classList.remove('favorited');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Ошибка добавления в избранное:', error);
+                        }
+                    });
+                }
+            } else if (title === 'Просмотры') {
+                statNumber.textContent = problem.Show || 0;
+            } else if (title === 'Ссылки') {
+                // Количество прилинкованных проблем
+                const linkedCount = problem.LinkedProblemsCount !== undefined 
+                    ? problem.LinkedProblemsCount 
+                    : (problem.LinkedProblems ? problem.LinkedProblems.length : 0);
+                statNumber.textContent = linkedCount;
+                
+                // Делаем иконку кликабельной
+                statItem.style.cursor = 'pointer';
+                statItem.addEventListener('click', () => {
+                    openLinkedProblemModal();
+                });
+            }
+        }
+    });
+
+    // Добавляем описание проблемы, если есть
+    if (problem.Describe) {
+        const description = problemInfo.querySelector('.problem-description');
+        if (description) {
+            description.textContent = problem.Describe;
+        }
+    }
+
+    // Добавляем информацию о проблеме в контейнер
     solutionContainer.appendChild(problemInfo);
 
-    // --- Добавляем теги ---
+    // --- Добавляем теги и кнопку добавления решения ---
+    const tagsAndButtonContainer = document.createElement('div');
+    tagsAndButtonContainer.className = 'tags-and-button-container';
+    
+    const tagsContainer = document.createElement('div');
+    tagsContainer.className = 'tags';
+    
     if (problem.Hashtags && problem.Hashtags.length > 0) {
-        const tagsContainer = document.createElement('div');
-        tagsContainer.className = 'tags';
-
         const tagTemplate = document.getElementById('tag-template');
-        problem.Hashtags.forEach(tagText => {
+        problem.Hashtags.forEach(tag => {
             const tagNode = tagTemplate.content.cloneNode(true);
-            tagNode.querySelector('.tag').textContent = `#${tagText.Name}`;
+            tagNode.querySelector('.tag').textContent = `#${tag.Name || tag.text || 'хэштег'}`;
             tagsContainer.appendChild(tagNode);
         });
-
-        solutionContainer.appendChild(tagsContainer);
     }
+    
+    tagsAndButtonContainer.appendChild(tagsContainer);
+    
+    // Добавляем кнопку добавления решения
+    const addSolutionBtnContainer = document.createElement('div');
+    addSolutionBtnContainer.className = 'add-solution-button-container';
+    const addSolutionBtn = document.createElement('button');
+    addSolutionBtn.id = 'addSolutionBtn';
+    addSolutionBtn.className = 'add-solution-btn';
+    addSolutionBtn.innerHTML = `
+        <img src="/assets/icons/idea_17401118.png" alt="Добавить решение" class="btn-icon" />
+        <span>Добавить решение</span>
+    `;
+    addSolutionBtnContainer.appendChild(addSolutionBtn);
+    tagsAndButtonContainer.appendChild(addSolutionBtnContainer);
+    
+    solutionContainer.appendChild(tagsAndButtonContainer);
 
-    // --- Добавляем карточки решений ---
-    const cardsWrapper = document.createElement('div');
+    // --- Создаем вкладки для переключения между решениями и похожими проблемами ---
+    const tabsContainer = document.createElement('div');
+    tabsContainer.className = 'tabs-container';
+    
+    const tabsWrapper = document.createElement('div');
+    tabsWrapper.className = 'tabs-wrapper';
+    
+    const solutionsTab = document.createElement('button');
+    solutionsTab.className = 'tab-button active';
+    solutionsTab.id = 'solutions-tab';
+    solutionsTab.textContent = 'Решения';
+    
+    const similarProblemsTab = document.createElement('button');
+    similarProblemsTab.className = 'tab-button';
+    similarProblemsTab.id = 'similar-problems-tab';
+    similarProblemsTab.textContent = 'Похожие проблемы';
+    
+    tabsWrapper.appendChild(solutionsTab);
+    tabsWrapper.appendChild(similarProblemsTab);
+    tabsContainer.appendChild(tabsWrapper);
+    
+    // --- Создаем контейнер для сортировки (только для решений) ---
+    const sortContainer = document.createElement('div');
+    sortContainer.className = 'sort-container';
+    sortContainer.id = 'sort-container';
+    
+    const sortLabel = document.createElement('label');
+    sortLabel.textContent = 'Сортировать по:';
+    sortLabel.className = 'sort-label';
+    
+    const sortSelect = document.createElement('select');
+    sortSelect.id = 'sort-select';
+    sortSelect.className = 'sort-select';
+    sortSelect.innerHTML = `
+        <option value="created_date_desc">Дата создания (новые)</option>
+        <option value="created_date_asc">Дата создания (старые)</option>
+        <option value="modified_date_desc">Дата изменения (новые)</option>
+        <option value="modified_date_asc">Дата изменения (старые)</option>
+        <option value="price_desc">Цена (убывание)</option>
+        <option value="price_asc">Цена (возрастание)</option>
+        <option value="efficiency_desc">Эффективность (убывание)</option>
+        <option value="efficiency_asc">Эффективность (возрастание)</option>
+        <option value="complexity_desc">Сложность (убывание)</option>
+        <option value="complexity_asc">Сложность (возрастание)</option>
+        <option value="time_desc">Время (убывание)</option>
+        <option value="time_asc">Время (возрастание)</option>
+        <option value="rating_desc">Рейтинг (убывание)</option>
+        <option value="rating_asc">Рейтинг (возрастание)</option>
+    `;
+    
+    sortContainer.appendChild(sortLabel);
+    sortContainer.appendChild(sortSelect);
+    
+    tabsContainer.appendChild(sortContainer);
+    solutionContainer.appendChild(tabsContainer);
+
+    // --- Создаем контейнер для карточек решений ---
+    let cardsWrapper = document.createElement('div');
+    cardsWrapper.id = 'solutions-cards-wrapper';
     cardsWrapper.className = 'cards-container';
-
-    const cardTemplate = document.getElementById('solution-card-template');
-
-    for (solution of problem.Solutions) {
-
-        const card = cardTemplate.content.cloneNode(true);
-
-        const link = card.querySelector('.card-title-link');
-        link.href = `../html/solution.html?solutionId=${encodeURIComponent(solution.ID)}`;
-
-        const cardImg = card.querySelector('.card-image');
-        cardImg.src = solution.Image;
-        cardImg.alt = solution.Name;
-
-        card.querySelector('.likes-number').textContent = solution.Favourite || 0;
-        card.querySelector('.rating-number').textContent = solution.Rating || 0;
-        card.querySelector('.card-title-overlay').textContent = solution.Name;
-
-        card.querySelector('.stat-item.likes .stat').innerHTML = `<img src="../assets/icons/like_5527412.png" alt="Лайки" class="icon" />${solution.like || 0}`;
-        card.querySelector('.stat-item.unlikes .stat').innerHTML = `<img src="../assets/icons/down_13646455.png" alt="НеЛайки" class="icon" />${solution.notlike || 0}`;
-        card.querySelector('.stat-item.views .stat').innerHTML = `<img src="../assets/icons/eye_8979989.png" alt="Просмотры" class="icon" />${solution.show || 0}`;
-        const commentsCount = Array.isArray(solution.Comments) ? solution.Comments.length : 0;
-        card.querySelector('.stat-item.comments .stat').innerHTML = `<img src="../assets/icons/message_2629755.png" alt="Комментарии" class="icon" />${commentsCount}`;
-        card.querySelector('.stat-item.links .stat').innerHTML = `<img src="../assets/icons/link_13925097.png" alt="Ссылки" class="icon" />${solution.reply || 0}`;
-
-        cardsWrapper.appendChild(card);
-    }
-
     solutionContainer.appendChild(cardsWrapper);
+    
+    // --- Создаем контейнер для похожих проблем ---
+    let similarProblemsWrapper = document.createElement('div');
+    similarProblemsWrapper.id = 'similar-problems-wrapper';
+    similarProblemsWrapper.className = 'cards-container';
+    similarProblemsWrapper.style.display = 'none';
+    solutionContainer.appendChild(similarProblemsWrapper);
+
+    // Сохраняем решения для сортировки
+    let currentSolutions = problem.Solutions || [];
+    
+    // Функция сортировки решений
+    function sortSolutions(solutions, sortType) {
+        const sorted = [...solutions];
+        const [field, direction] = sortType.split('_');
+        const isDesc = direction === 'desc';
+        
+        sorted.sort((a, b) => {
+            let aVal, bVal;
+            
+            switch(field) {
+                case 'created':
+                    aVal = a.CreatedDate ? new Date(a.CreatedDate) : new Date(0);
+                    bVal = b.CreatedDate ? new Date(b.CreatedDate) : new Date(0);
+                    break;
+                case 'modified':
+                    aVal = a.ModifiedDate ? new Date(a.ModifiedDate) : new Date(0);
+                    bVal = b.ModifiedDate ? new Date(b.ModifiedDate) : new Date(0);
+                    break;
+                case 'price':
+                    aVal = a.Price || 0;
+                    bVal = b.Price || 0;
+                    break;
+                case 'efficiency':
+                    aVal = a.Efficiency || 0;
+                    bVal = b.Efficiency || 0;
+                    break;
+                case 'complexity':
+                    aVal = a.Complexity || 0;
+                    bVal = b.Complexity || 0;
+                    break;
+                case 'time':
+                    aVal = a.Time || 0;
+                    bVal = b.Time || 0;
+                    break;
+                case 'rating':
+                    aVal = a.Rating || 0;
+                    bVal = b.Rating || 0;
+                    break;
+                default:
+                    return 0;
+            }
+            
+            if (aVal < bVal) return isDesc ? 1 : -1;
+            if (aVal > bVal) return isDesc ? -1 : 1;
+            return 0;
+        });
+        
+        return sorted;
+    }
+    
+    // Функция отображения решений
+    function renderSolutions(solutions) {
+        cardsWrapper.innerHTML = '';
+        
+        if (!solutions || solutions.length === 0) {
+            cardsWrapper.innerHTML = '<p class="no-solutions">Решений для этой проблемы пока нет.</p>';
+            return;
+        }
+        
+        const cardTemplate = document.getElementById('solution-card-template');
+        
+        solutions.forEach(solution => {
+            const card = cardTemplate.content.cloneNode(true);
+
+            const link = card.querySelector('.card-title-link');
+            if (link) {
+                link.href = `/html/solution.html?solutionId=${encodeURIComponent(solution.ID)}`;
+            }
+
+            const cardImg = card.querySelector('.card-image');
+            const cardImageWrapper = card.querySelector('.card-image-wrapper');
+            
+            if (cardImg) {
+                // Функция для генерации SVG изображения с градиентом и названием
+                function getImageFromInternet(solutionName) {
+                    if (!solutionName || solutionName.trim() === '') {
+                        return null;
+                    }
+                    
+                    // Создаем хеш от названия для получения стабильного изображения
+                    let hash = 0;
+                    for (let i = 0; i < solutionName.length; i++) {
+                        const char = solutionName.charCodeAt(i);
+                        hash = ((hash << 5) - hash) + char;
+                        hash = hash & hash;
+                    }
+                    
+                    const imageId = Math.abs(hash) % 1000;
+                    
+                    // Цвета для градиента на основе хеша
+                    const colors = [
+                        ['#667eea', '#764ba2'], ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'],
+                        ['#43e97b', '#38f9d7'], ['#fa709a', '#fee140'], ['#30cfd0', '#330867'],
+                        ['#a8edea', '#fed6e3'], ['#d299c2', '#fef9d7'], ['#ff9a9e', '#fecfef'],
+                        ['#ffecd2', '#fcb69f'],
+                    ];
+                    
+                    const colorPair = colors[imageId % colors.length];
+                    const displayText = solutionName.trim().replace(/[<>]/g, '').substring(0, 30);
+                    
+                    const svg = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+                            <defs>
+                                <linearGradient id="grad${imageId}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:${colorPair[0]};stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:${colorPair[1]};stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="400" height="300" fill="url(#grad${imageId})"/>
+                            <text x="50%" y="50%" text-anchor="middle" fill="white" font-family="Arial, sans-serif" 
+                                  font-size="24" font-weight="bold" dy=".3em">
+                                ${displayText}
+                            </text>
+                        </svg>
+                    `;
+                    
+                    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+                }
+                
+                let imageSrc = solution.Image;
+                
+                // Если у решения нет картинки или это внешний URL, ищем в интернете
+                if (!imageSrc || imageSrc.trim() === '' || imageSrc === '../images/default.png' || 
+                    imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+                    // Ищем изображение в интернете по названию
+                    const internetImage = getImageFromInternet(solution.Name);
+                    if (internetImage) {
+                        cardImg.src = internetImage;
+                        cardImg.style.display = 'block';
+                        if (cardImageWrapper) {
+                            cardImageWrapper.style.background = 'none';
+                        }
+                        
+                        cardImg.onerror = function() {
+                            this.style.display = 'none';
+                            if (cardImageWrapper) {
+                                cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                            }
+                        };
+                    } else {
+                        // Используем градиентный фон
+                        cardImg.style.display = 'none';
+                        if (cardImageWrapper) {
+                            cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        }
+                    }
+                } else {
+                    // Локальный файл - исправляем пути и пытаемся загрузить
+                    if (!imageSrc.startsWith('/')) {
+                        if (imageSrc.startsWith('../images/')) {
+                            imageSrc = imageSrc.replace('../images/', '/images/');
+                        } else if (imageSrc.startsWith('../assets/')) {
+                            imageSrc = imageSrc.replace('../assets/', '/assets/');
+                        } else {
+                            imageSrc = '/images/' + imageSrc;
+                        }
+                    }
+                    cardImg.src = imageSrc;
+                    cardImg.alt = solution.Name || 'Решение';
+                    cardImg.style.display = 'block';
+                    if (cardImageWrapper) {
+                        cardImageWrapper.style.background = 'none';
+                    }
+                    
+                    // Обработка ошибки загрузки локального изображения - пробуем интернет
+                    cardImg.onerror = function() {
+                        const internetImage = getImageFromInternet(solution.Name);
+                        if (internetImage) {
+                            this.src = internetImage;
+                            this.style.display = 'block';
+                            if (cardImageWrapper) {
+                                cardImageWrapper.style.background = 'none';
+                            }
+                        } else {
+                            this.style.display = 'none';
+                            if (cardImageWrapper) {
+                                cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                            }
+                        }
+                    };
+                }
+            }
+
+            // Заполняем данные карточки
+            const favoriteCount = card.querySelector('.favorite-count');
+            if (favoriteCount) favoriteCount.textContent = solution.Favourite || 0;
+
+            const favoriteIcon = card.querySelector('.favorite-icon');
+            if (favoriteIcon) {
+                favoriteIcon.src = solution.IsFavourite ? '/assets/icons/love_6787061.png' : '/assets/icons/love_9318199.png';
+                if (solution.IsFavourite) {
+                    favoriteIcon.classList.add('favorited');
+                }
+                favoriteIcon.style.cursor = 'pointer';
+                favoriteIcon.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await toggleSolutionFavorite(solution.ID, favoriteIcon, favoriteCount);
+                });
+            }
+
+            const ratingNumber = card.querySelector('.rating-number');
+            if (ratingNumber) ratingNumber.textContent = solution.Rating || 0;
+
+            const cardTitleText = card.querySelector('.card-title-text');
+            if (cardTitleText) {
+                cardTitleText.href = `/html/solution.html?solutionId=${encodeURIComponent(solution.ID)}`;
+                cardTitleText.textContent = solution.Name || 'Решение';
+            }
+
+            // Отображаем темы из связанных проблем
+            const topicElement = card.querySelector('.problem-topic');
+            if (topicElement) {
+                topicElement.innerHTML = '';
+                // Собираем уникальные темы из всех связанных проблем
+                const topicsMap = new Map();
+                // Решение связано с текущей проблемой, используем её тему
+                if (problem && problem.TopicInfo && problem.TopicInfo.Name) {
+                    const topicId = problem.TopicInfo.ID;
+                    if (!topicsMap.has(topicId)) {
+                        topicsMap.set(topicId, problem.TopicInfo);
+                    }
+                }
+                // Также проверяем, есть ли информация о проблемах в самом решении
+                if (solution.Problems && Array.isArray(solution.Problems)) {
+                    solution.Problems.forEach(prob => {
+                        if (prob.TopicInfo && prob.TopicInfo.Name) {
+                            const topicId = prob.TopicInfo.ID;
+                            if (!topicsMap.has(topicId)) {
+                                topicsMap.set(topicId, prob.TopicInfo);
+                            }
+                        }
+                    });
+                }
+                
+                // Отображаем темы (берем первую, как в карточках проблем)
+                if (topicsMap.size > 0) {
+                    const firstTopic = Array.from(topicsMap.values())[0];
+                    const topicLink = document.createElement('a');
+                    topicLink.className = 'topic-link';
+                    topicLink.href = '/';
+                    topicLink.textContent = firstTopic.Name;
+                    topicLink.setAttribute('data-topic-id', firstTopic.ID);
+                    topicLink.style.cursor = 'pointer';
+                    topicLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = `/?topic=${firstTopic.ID}`;
+                    });
+                    topicElement.appendChild(topicLink);
+                    topicElement.style.display = 'block';
+                } else {
+                    topicElement.style.display = 'none';
+                }
+            }
+
+            // Теги (хэштеги из связанных проблем)
+            const tagsColumn = card.querySelector('.tags-column');
+            if (tagsColumn) {
+                tagsColumn.innerHTML = '';
+                if (solution.Problems && Array.isArray(solution.Problems)) {
+                    solution.Problems.forEach(problem => {
+                        if (problem.Hashtags && Array.isArray(problem.Hashtags)) {
+                            problem.Hashtags.forEach(tag => {
+                                const tagElement = document.createElement('span');
+                                tagElement.className = 'tag';
+                                tagElement.setAttribute('data-id', tag.ID);
+                                tagElement.textContent = tag.Name;
+                                tagElement.style.cursor = 'pointer';
+                                // Обработчик клика по тегу - переход на главную страницу с фильтром
+                                tagElement.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    window.location.href = `/?hashtags=${tag.ID}`;
+                                });
+                                tagsColumn.appendChild(tagElement);
+                            });
+                        }
+                    });
+                }
+            }
+
+            // Статистика
+            const statViewsValue = card.querySelector('.stat-item.views .stat-value');
+            if (statViewsValue) statViewsValue.textContent = solution.Show || 0;
+
+            const commentsCount = Array.isArray(solution.Comments) ? solution.Comments.length : (solution.CommentSolutions?.length || 0);
+            const statCommentsValue = card.querySelector('.stat-item.comments .stat-value');
+            if (statCommentsValue) statCommentsValue.textContent = commentsCount;
+
+            // Ссылки (Reply)
+            const statSharesValue = card.querySelector('.stat-item.shares .stat-value');
+            if (statSharesValue) statSharesValue.textContent = solution.Reply || 0;
+            
+            // Линки (связанные решения)
+            const linksValue = solution.LinkedSolutionsCount || solution.LinkedSolutions?.length || 0;
+            const statLinksValue = card.querySelector('.stat-item.links .stat-value');
+            if (statLinksValue) statLinksValue.textContent = linksValue;
+
+            // Кнопка добавления в корзину
+            const cartBtn = card.querySelector('.card-cart-btn');
+            if (cartBtn) {
+                const cartImg = cartBtn.querySelector('img');
+                
+                cartBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await handleAddToCart(solution.ID, cartBtn, cartImg);
+                });
+                
+                // Проверяем, есть ли уже в корзине
+                checkInCart(solution.ID).then(inCart => {
+                    if (inCart) {
+                        cartBtn.classList.add('in-cart');
+                        cartBtn.title = 'Уже в корзине';
+                        // Меняем иконку на shopping-bag_4505309 (зеленая заливка)
+                        if (cartImg && cartImg.src.includes('shopping-bag_7945129')) {
+                            cartImg.src = cartImg.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
+                        }
+                    } else {
+                        // Убеждаемся, что иконка shopping-bag_7945129 (зеленый ободок)
+                        if (cartImg && cartImg.src.includes('shopping-bag_4505309')) {
+                            cartImg.src = cartImg.src.replace('shopping-bag_4505309.png', 'shopping-bag_7945129.png');
+                        }
+                    }
+                });
+            }
+
+            cardsWrapper.appendChild(card);
+        });
+    }
+    
+    // Переключение избранного для решений
+    async function toggleSolutionFavorite(solutionId, iconElement, countElement) {
+        try {
+            const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+            const response = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.status === 401) {
+                // Пробуем обновить токен
+                const refreshResponse = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                if (refreshResponse.ok) {
+                    // Повторяем запрос
+                    const retryResponse = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (retryResponse.ok) {
+                        const data = await retryResponse.json();
+                        if (countElement) {
+                            const currentCount = parseInt(countElement.textContent) || 0;
+                            countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
+                        }
+                        if (data.is_favourite) {
+                            iconElement.src = '/assets/icons/love_6787061.png';
+                            iconElement.classList.add('favorited');
+                        } else {
+                            iconElement.src = '/assets/icons/love_9318199.png';
+                            iconElement.classList.remove('favorited');
+                        }
+                    }
+                }
+            } else if (response.ok) {
+                const data = await response.json();
+                if (countElement) {
+                    const currentCount = parseInt(countElement.textContent) || 0;
+                    countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
+                }
+                if (data.is_favourite) {
+                    iconElement.src = '/assets/icons/love_6787061.png';
+                    iconElement.classList.add('favorited');
+                } else {
+                    iconElement.src = '/assets/icons/love_9318199.png';
+                    iconElement.classList.remove('favorited');
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка добавления решения в избранное:', error);
+        }
+    }
+    
+    // Обработчик добавления в корзину
+    async function handleAddToCart(solutionId, button, img) {
+        const result = await addToCart(solutionId);
+        
+        if (result.success) {
+            button.classList.add('in-cart');
+            button.title = 'Уже в корзине';
+            // Меняем иконку на shopping-bag_4505309 (зеленая заливка)
+            if (img && img.src.includes('shopping-bag_7945129')) {
+                img.src = img.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
+            }
+            alert(result.message || 'Решение добавлено в корзину');
+        } else {
+            alert(result.error || 'Не удалось добавить в корзину');
+        }
+    }
+    
+    // Функция отображения похожих проблем
+    function renderSimilarProblems(problems) {
+        similarProblemsWrapper.innerHTML = '';
+        
+        if (!problems || problems.length === 0) {
+            similarProblemsWrapper.innerHTML = '<p class="no-solutions">Похожих проблем пока нет.</p>';
+            return;
+        }
+        
+        // Создаем карточки для похожих проблем, используя структуру, аналогичную главной странице
+        problems.forEach(linkedProblem => {
+            const problemCard = document.createElement('article');
+            problemCard.className = 'card';
+            
+            // Обертка для изображения
+            const imageWrapper = document.createElement('div');
+            imageWrapper.className = 'card-image-wrapper';
+            
+            // Ссылка на изображение
+            const imageLink = document.createElement('a');
+            imageLink.href = `/html/problem.html?problemId=${encodeURIComponent(linkedProblem.ID)}`;
+            imageLink.className = 'card-title-link';
+            
+            const img = document.createElement('img');
+            let imageSrc = linkedProblem.Image || '../images/default.png';
+            // Исправляем пути к изображениям
+            if (imageSrc && !imageSrc.startsWith('http') && !imageSrc.startsWith('/')) {
+                if (imageSrc.startsWith('../images/')) {
+                    imageSrc = imageSrc.replace('../images/', '/images/');
+                } else if (imageSrc.startsWith('../assets/')) {
+                    imageSrc = imageSrc.replace('../assets/', '/assets/');
+                } else if (!imageSrc.startsWith('/')) {
+                    imageSrc = '/images/' + imageSrc;
+                }
+            }
+            img.src = imageSrc;
+            img.alt = linkedProblem.Name || 'Проблема';
+            img.className = 'card-image';
+            
+            imageLink.appendChild(img);
+            imageWrapper.appendChild(imageLink);
+            
+            // Overlay для названия
+            const titleOverlay = document.createElement('div');
+            titleOverlay.className = 'card-title-overlay';
+            imageWrapper.appendChild(titleOverlay);
+            
+            // Название проблемы (ссылка)
+            const titleLink = document.createElement('a');
+            titleLink.href = `/html/problem.html?problemId=${encodeURIComponent(linkedProblem.ID)}`;
+            titleLink.className = 'card-title-text';
+            titleLink.textContent = linkedProblem.Name || 'Без названия';
+            imageWrapper.appendChild(titleLink);
+            
+            // Избранное
+            const favoritesDiv = document.createElement('div');
+            favoritesDiv.className = 'card-favorites';
+            const favoriteIcon = document.createElement('img');
+            favoriteIcon.src = linkedProblem.IsFavourite ? '/assets/icons/love_6787061.png' : '/assets/icons/love_9318199.png';
+            favoriteIcon.alt = 'Избранное';
+            favoriteIcon.className = 'favorite-icon';
+            if (linkedProblem.IsFavourite) {
+                favoriteIcon.classList.add('favorited');
+            }
+            const favoriteCount = document.createElement('span');
+            favoriteCount.className = 'favorite-count';
+            favoriteCount.textContent = linkedProblem.FavouriteUsers ? linkedProblem.FavouriteUsers.length : (linkedProblem.Favourite || 0);
+            favoritesDiv.appendChild(favoriteIcon);
+            favoritesDiv.appendChild(favoriteCount);
+            imageWrapper.appendChild(favoritesDiv);
+            
+            problemCard.appendChild(imageWrapper);
+            
+            // Контент карточки
+            const cardContent = document.createElement('div');
+            cardContent.className = 'card-content';
+            
+            // Тема проблемы
+            const topicElement = document.createElement('div');
+            topicElement.className = 'problem-topic';
+            if (linkedProblem.TopicInfo && linkedProblem.TopicInfo.Name) {
+                const topicLink = document.createElement('a');
+                topicLink.className = 'topic-link';
+                topicLink.href = '#';
+                topicLink.textContent = linkedProblem.TopicInfo.Name;
+                topicLink.setAttribute('data-topic-id', linkedProblem.TopicInfo.ID);
+                topicLink.style.cursor = 'pointer';
+                topicLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = `/?topic=${linkedProblem.TopicInfo.ID}`;
+                });
+                topicElement.appendChild(topicLink);
+                topicElement.style.display = 'block';
+            } else {
+                topicElement.style.display = 'none';
+            }
+            cardContent.appendChild(topicElement);
+            
+            // Теги/хэштеги (аналогично главной странице)
+            const tagsColumn = document.createElement('div');
+            tagsColumn.className = 'tags-column';
+            if (linkedProblem.Hashtags && Array.isArray(linkedProblem.Hashtags) && linkedProblem.Hashtags.length > 0) {
+                linkedProblem.Hashtags.forEach(hashtag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.setAttribute('data-id', hashtag.ID);
+                    tagElement.textContent = hashtag.Name;
+                    tagElement.style.cursor = 'pointer';
+                    // Обработчик клика по тегу - переход на главную страницу с фильтром
+                    tagElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        window.location.href = `/?hashtags=${hashtag.ID}`;
+                    });
+                    tagsColumn.appendChild(tagElement);
+                });
+            }
+            cardContent.appendChild(tagsColumn);
+            
+            // Футер со статистикой
+            const cardFooter = document.createElement('div');
+            cardFooter.className = 'card-footer';
+            
+            // Просмотры
+            const viewsStat = document.createElement('div');
+            viewsStat.className = 'stat-item views';
+            const viewsIcon = document.createElement('div');
+            viewsIcon.className = 'stat-icon';
+            viewsIcon.title = 'Просмотры';
+            const viewsIconImg = document.createElement('img');
+            viewsIconImg.src = '/assets/icons/eye_8979989.png';
+            viewsIconImg.alt = 'Просмотры';
+            viewsIcon.appendChild(viewsIconImg);
+            const viewsValue = document.createElement('div');
+            viewsValue.className = 'stat-value';
+            viewsValue.textContent = linkedProblem.Views || linkedProblem.Show || 0;
+            viewsStat.appendChild(viewsIcon);
+            viewsStat.appendChild(viewsValue);
+            cardFooter.appendChild(viewsStat);
+            
+            // Комментарии/Подтверждения
+            const commentsStat = document.createElement('div');
+            commentsStat.className = 'stat-item comments';
+            const commentsIcon = document.createElement('div');
+            commentsIcon.className = 'stat-icon';
+            commentsIcon.title = 'Подтверждения';
+            const commentsIconImg = document.createElement('img');
+            commentsIconImg.src = '/assets/icons/check-mark_3906842.png';
+            commentsIconImg.alt = 'Подтверждения';
+            commentsIcon.appendChild(commentsIconImg);
+            const commentsValue = document.createElement('div');
+            commentsValue.className = 'stat-value';
+            commentsValue.textContent = linkedProblem.Confirmations || (linkedProblem.Solutions?.length || 0);
+            commentsStat.appendChild(commentsIcon);
+            commentsStat.appendChild(commentsValue);
+            cardFooter.appendChild(commentsStat);
+            
+            // Ссылки
+            const sharesStat = document.createElement('div');
+            sharesStat.className = 'stat-item shares';
+            const sharesIcon = document.createElement('div');
+            sharesIcon.className = 'stat-icon';
+            sharesIcon.title = 'Ссылки';
+            const sharesIconImg = document.createElement('img');
+            sharesIconImg.src = '/assets/icons/reply_17222221.png';
+            sharesIconImg.alt = 'Ссылки';
+            sharesIcon.appendChild(sharesIconImg);
+            const sharesValue = document.createElement('div');
+            sharesValue.className = 'stat-value';
+            sharesValue.textContent = linkedProblem.Shares || linkedProblem.Reply || 0;
+            sharesStat.appendChild(sharesIcon);
+            sharesStat.appendChild(sharesValue);
+            cardFooter.appendChild(sharesStat);
+            
+            // Связанные проблемы
+            const linksStat = document.createElement('div');
+            linksStat.className = 'stat-item links';
+            const linksIcon = document.createElement('div');
+            linksIcon.className = 'stat-icon';
+            linksIcon.title = 'Ссылки';
+            const linksIconImg = document.createElement('img');
+            linksIconImg.src = '/assets/icons/link_13925097.png';
+            linksIconImg.alt = 'Ссылки';
+            linksIcon.appendChild(linksIconImg);
+            const linksValue = document.createElement('div');
+            linksValue.className = 'stat-value';
+            linksValue.textContent = linkedProblem.ProblemLinks ? linkedProblem.ProblemLinks.length : 0;
+            linksStat.appendChild(linksIcon);
+            linksStat.appendChild(linksValue);
+            cardFooter.appendChild(linksStat);
+            
+            cardContent.appendChild(cardFooter);
+            problemCard.appendChild(cardContent);
+            
+            // Обработчик избранного
+            favoriteIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                toggleFavorite(linkedProblem.ID, favoriteIcon);
+            });
+            
+            similarProblemsWrapper.appendChild(problemCard);
+        });
+        
+        // Инициализируем прокрутку тегов после рендеринга
+        setTimeout(() => {
+            initTagsScroll();
+        }, 100);
+    }
+    
+    // Обработчик сортировки
+    sortSelect.addEventListener('change', (e) => {
+        const sorted = sortSolutions(currentSolutions, e.target.value);
+        renderSolutions(sorted);
+    });
+    
+    // Обработчики переключения вкладок
+    solutionsTab.addEventListener('click', () => {
+        solutionsTab.classList.add('active');
+        similarProblemsTab.classList.remove('active');
+        cardsWrapper.style.display = '';
+        similarProblemsWrapper.style.display = 'none';
+        sortContainer.style.display = 'flex';
+    });
+    
+    similarProblemsTab.addEventListener('click', () => {
+        similarProblemsTab.classList.add('active');
+        solutionsTab.classList.remove('active');
+        cardsWrapper.style.display = 'none';
+        similarProblemsWrapper.style.display = '';
+        sortContainer.style.display = 'none';
+    });
+
+    // --- Отображаем карточки решений ---
+    renderSolutions(currentSolutions);
+    
+    // --- Отображаем похожие проблемы ---
+    renderSimilarProblems(problem.LinkedProblems || []);
 }
 
 displaySolutions();
 
+// Переменные для модального окна похожих проблем
+let selectedLinkedProblemsList = [];
+let linkedProblemSearchTimeout = null;
+
+// Функции для работы с модальным окном похожих проблем
+function openLinkedProblemModal() {
+    try {
+        // Проверяем авторизацию
+        auth.checkAuth(true).then(() => {
+            const modalOverlay = document.getElementById('linked-problem-modal-overlay');
+            if (modalOverlay) {
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                selectedLinkedProblemsList = [];
+                updateSelectedLinkedProblems();
+            }
+        }).catch(error => {
+            console.error('Ошибка авторизации:', error);
+            alert('Для добавления похожих проблем необходимо авторизоваться');
+        });
+    } catch (error) {
+        console.error('Ошибка открытия модального окна:', error);
+    }
+}
+
+function closeLinkedProblemModal() {
+    const modalOverlay = document.getElementById('linked-problem-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        const searchInput = document.getElementById('linkedProblemSearch');
+        if (searchInput) searchInput.value = '';
+        const dropdown = document.getElementById('linkedProblemDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+        selectedLinkedProblemsList = [];
+        updateSelectedLinkedProblems();
+    }
+}
+
+function updateSelectedLinkedProblems() {
+    const container = document.getElementById('selectedLinkedProblems');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    selectedLinkedProblemsList.forEach(problem => {
+        const div = document.createElement('div');
+        div.className = 'selected-problem';
+        div.innerHTML = `${problem.title} <span class="remove" data-id="${problem.id}">×</span>`;
+        container.appendChild(div);
+    });
+    
+    // Добавляем обработчики удаления
+    container.querySelectorAll('.remove').forEach(removeBtn => {
+        removeBtn.addEventListener('click', (e) => {
+            const id = parseInt(e.target.dataset.id);
+            selectedLinkedProblemsList = selectedLinkedProblemsList.filter(p => p.id !== id);
+            updateSelectedLinkedProblems();
+        });
+    });
+}
+
+async function searchLinkedProblems(query) {
+    if (!query || query.length < 2) {
+        const dropdown = document.getElementById('linkedProblemDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const currentProblemId = currentProblem ? currentProblem.ID : null;
+        
+        // Исключаем текущую проблему из поиска
+        let url = `/api/problems?search=${encodeURIComponent(query)}&limit=10`;
+        if (currentProblemId) {
+            url += `&exclude=${currentProblemId}`;
+        }
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const problems = await response.json();
+            const dropdown = document.getElementById('linkedProblemDropdown');
+            if (!dropdown) return;
+            
+            dropdown.innerHTML = '';
+            
+            // Фильтруем проблемы: исключаем текущую и уже выбранные
+            const filteredProblems = problems.filter(problem => {
+                if (currentProblemId && problem.ID === currentProblemId) return false;
+                if (selectedLinkedProblemsList.some(p => p.id === problem.ID)) return false;
+                return true;
+            });
+            
+            if (filteredProblems.length === 0) {
+                dropdown.innerHTML = '<div class="dropdown-item">Проблемы не найдены</div>';
+            } else {
+                filteredProblems.forEach(problem => {
+                    const div = document.createElement('div');
+                    div.className = 'dropdown-item';
+                    div.textContent = problem.Name || 'Без названия';
+                    div.setAttribute('data-id', problem.ID);
+                    
+                    div.addEventListener('click', () => {
+                        // Проверяем, не выбрана ли уже эта проблема
+                        if (!selectedLinkedProblemsList.some(p => p.id === problem.ID)) {
+                            selectedLinkedProblemsList.push({
+                                id: problem.ID,
+                                title: problem.Name || 'Без названия'
+                            });
+                            updateSelectedLinkedProblems();
+                        }
+                        const searchInput = document.getElementById('linkedProblemSearch');
+                        if (searchInput) searchInput.value = '';
+                        dropdown.style.display = 'none';
+                    });
+                    
+                    dropdown.appendChild(div);
+                });
+            }
+            
+            dropdown.style.display = 'block';
+        } else {
+            console.error('Ошибка поиска проблем:', response.status);
+        }
+    } catch (error) {
+        console.error('Ошибка поиска проблем:', error);
+    }
+}
+
+async function saveLinkedProblems() {
+    if (!currentProblem || selectedLinkedProblemsList.length === 0) {
+        alert('Выберите хотя бы одну проблему');
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const problemId = currentProblem.ID;
+        
+        // Добавляем связи для каждой выбранной проблемы
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const linkedProblem of selectedLinkedProblemsList) {
+            try {
+                const response = await fetch(`/api/problems/${problemId}/link`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        linked_problem_id: linkedProblem.id
+                    })
+                });
+                
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    const error = await response.json();
+                    if (error.error && error.error.includes('уже существует')) {
+                        // Связь уже существует - это не ошибка
+                        successCount++;
+                    } else {
+                        errorCount++;
+                        console.error('Ошибка добавления связи:', error);
+                    }
+                }
+            } catch (error) {
+                errorCount++;
+                console.error('Ошибка добавления связи:', error);
+            }
+        }
+        
+        if (successCount > 0) {
+            alert(`Успешно добавлено связей: ${successCount}${errorCount > 0 ? `. Ошибок: ${errorCount}` : ''}`);
+            closeLinkedProblemModal();
+            // Перезагружаем страницу для обновления данных
+            displaySolutions();
+        } else if (errorCount > 0) {
+            alert(`Ошибка при добавлении связей. Попробуйте еще раз.`);
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения связей:', error);
+        alert('Ошибка при сохранении. Попробуйте еще раз.');
+    }
+}
+
+// Инициализация модального окна для добавления решения
+document.addEventListener('DOMContentLoaded', function() {
+    // Обновляем состояние корзины при загрузке страницы
+    updateCartIconState();
+    const solutionModalOverlay = document.getElementById('solution-modal-overlay');
+    const solutionModal = document.getElementById('solution-modal');
+    const closeSolutionModalBtn = document.getElementById('closeSolutionModal');
+    const form = document.getElementById('solutionForm');
+    const clearBtn = document.getElementById('clearSolutionBtn');
+    const problemSearch = document.getElementById('problemSearch');
+    const problemDropdown = document.getElementById('problemDropdown');
+    const selectedProblems = document.getElementById('selectedProblems');
+
+    if (!solutionModalOverlay || !solutionModal || !form) {
+        console.error('Не найдены необходимые элементы DOM для модального окна решения');
+        return;
+    }
+
+    // Функция для обновления отображения выбранных проблем
+    function updateSelectedProblems() {
+        if (!selectedProblems) return;
+        
+        selectedProblems.innerHTML = '';
+        selectedProblemsList.forEach(problem => {
+            const div = document.createElement('div');
+            div.className = 'selected-problem';
+            div.innerHTML = `${problem.title} <span class="remove" data-id="${problem.id}">×</span>`;
+            selectedProblems.appendChild(div);
+        });
+    }
+
+    // Элементы для выбора типа решения
+    const solutionTypeSelection = document.getElementById('solution-type-selection');
+    const existingSolutionForm = document.getElementById('existing-solution-form');
+    const selectExistingSolutionBtn = document.getElementById('selectExistingSolution');
+    const createNewSolutionBtn = document.getElementById('createNewSolution');
+    const switchToNewSolutionBtn = document.getElementById('switchToNewSolutionBtn');
+    const switchToExistingSolutionBtn = document.getElementById('switchToExistingSolutionBtn');
+    const solutionSearch = document.getElementById('solutionSearch');
+    const solutionDropdown = document.getElementById('solutionDropdown');
+    const selectedSolutions = document.getElementById('selectedSolutions');
+    const clearExistingSolutionBtn = document.getElementById('clearExistingSolutionBtn');
+    const addExistingSolutionBtn = document.getElementById('addExistingSolutionBtn');
+
+    // Функция для обновления отображения выбранных решений
+    function updateSelectedSolutions() {
+        if (!selectedSolutions) return;
+        
+        selectedSolutions.innerHTML = '';
+        selectedSolutionsList.forEach(solution => {
+            const div = document.createElement('div');
+            div.className = 'selected-solution';
+            div.innerHTML = `${solution.title} <span class="remove" data-id="${solution.id}">×</span>`;
+            selectedSolutions.appendChild(div);
+        });
+    }
+
+    // Функции для открытия/закрытия модального окна
+    function openSolutionModal() {
+        // Сбрасываем состояние
+        resetSolutionModal();
+        
+        solutionModalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSolutionModal() {
+        solutionModalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        resetSolutionModal();
+    }
+
+    function resetSolutionModal() {
+        // Показываем выбор типа
+        if (solutionTypeSelection) solutionTypeSelection.style.display = 'block';
+        if (existingSolutionForm) existingSolutionForm.style.display = 'none';
+        if (form) form.style.display = 'none';
+        
+        // Очищаем формы
+        if (form) form.reset();
+        if (solutionSearch) solutionSearch.value = '';
+        selectedProblemsList = [];
+        selectedSolutionsList = [];
+        updateSelectedProblems();
+        updateSelectedSolutions();
+        if (problemDropdown) problemDropdown.style.display = 'none';
+        if (solutionDropdown) solutionDropdown.style.display = 'none';
+    }
+
+    // Обработчики выбора типа решения
+    if (selectExistingSolutionBtn) {
+        selectExistingSolutionBtn.addEventListener('click', () => {
+            if (solutionTypeSelection) solutionTypeSelection.style.display = 'none';
+            if (existingSolutionForm) existingSolutionForm.style.display = 'block';
+            if (form) form.style.display = 'none';
+        });
+    }
+
+    if (createNewSolutionBtn) {
+        createNewSolutionBtn.addEventListener('click', () => {
+            // Предзаполняем текущую проблему
+            if (currentProblem && !selectedProblemsList.some(p => p.id === currentProblem.ID)) {
+                selectedProblemsList.push({
+                    id: currentProblem.ID,
+                    title: currentProblem.Name || 'Без названия'
+                });
+                updateSelectedProblems();
+            }
+            
+            if (solutionTypeSelection) solutionTypeSelection.style.display = 'none';
+            if (existingSolutionForm) existingSolutionForm.style.display = 'none';
+            if (form) form.style.display = 'block';
+        });
+    }
+
+    if (switchToNewSolutionBtn) {
+        switchToNewSolutionBtn.addEventListener('click', () => {
+            // Предзаполняем текущую проблему
+            if (currentProblem && !selectedProblemsList.some(p => p.id === currentProblem.ID)) {
+                selectedProblemsList.push({
+                    id: currentProblem.ID,
+                    title: currentProblem.Name || 'Без названия'
+                });
+                updateSelectedProblems();
+            }
+            
+            if (existingSolutionForm) existingSolutionForm.style.display = 'none';
+            if (form) form.style.display = 'block';
+        });
+    }
+
+    if (switchToExistingSolutionBtn) {
+        switchToExistingSolutionBtn.addEventListener('click', () => {
+            if (form) form.style.display = 'none';
+            if (existingSolutionForm) existingSolutionForm.style.display = 'block';
+        });
+    }
+
+    // Обработчики событий для кнопки добавления решения
+    // Используем делегирование событий, так как кнопка создается динамически
+    document.addEventListener('click', async (e) => {
+        if (e.target.closest('#addSolutionBtn')) {
+            try {
+                await auth.checkAuth(true);
+                openSolutionModal();
+            } catch (error) {
+                console.error('Ошибка авторизации:', error);
+            }
+        }
+    });
+
+    if (closeSolutionModalBtn) {
+        closeSolutionModalBtn.addEventListener('click', closeSolutionModal);
+    }
+
+    solutionModalOverlay.addEventListener('click', (e) => {
+        if (e.target === solutionModalOverlay) {
+            closeSolutionModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && solutionModalOverlay.classList.contains('active')) {
+            closeSolutionModal();
+        }
+    });
+
+    // Поиск существующих решений
+    if (solutionSearch && solutionDropdown) {
+        solutionSearch.addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            if (query.length > 2) {
+                try {
+                    const token = localStorage.getItem('accessToken');
+                    const response = await fetch(`/api/solutions?search=${encodeURIComponent(query)}&limit=10`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const solutions = await response.json();
+                        solutionDropdown.innerHTML = '';
+                        
+                        // Исключаем решения, которые уже связаны с текущей проблемой
+                        const currentProblemSolutionIds = (currentProblem && currentProblem.Solutions && Array.isArray(currentProblem.Solutions))
+                            ? currentProblem.Solutions.map(s => s.ID || s.id) 
+                            : [];
+                        
+                        solutions.forEach(solution => {
+                            // Проверяем, не выбрано ли уже это решение
+                            if (selectedSolutionsList.some(s => s.id === solution.ID)) {
+                                return;
+                            }
+                            
+                            // Проверяем, не связано ли уже это решение с текущей проблемой
+                            if (currentProblemSolutionIds.includes(solution.ID)) {
+                                return;
+                            }
+                            
+                            const div = document.createElement('div');
+                            div.className = 'dropdown-item';
+                            div.innerHTML = `
+                                <div class="solution-item">
+                                    <strong>${solution.Name || 'Без названия'}</strong>
+                                    ${solution.Describe ? `<div class="solution-description">${solution.Describe.substring(0, 100)}${solution.Describe.length > 100 ? '...' : ''}</div>` : ''}
+                                </div>
+                            `;
+                            div.setAttribute('data-id', solution.ID);
+                            
+                            div.addEventListener('click', () => {
+                                selectedSolutionsList.push({ 
+                                    id: solution.ID, 
+                                    title: solution.Name || 'Без названия' 
+                                });
+                                updateSelectedSolutions();
+                                solutionSearch.value = '';
+                                solutionDropdown.style.display = 'none';
+                            });
+                            
+                            solutionDropdown.appendChild(div);
+                        });
+                        
+                        if (solutions.length > 0) {
+                            solutionDropdown.style.display = 'block';
+                        } else {
+                            solutionDropdown.innerHTML = '<div class="dropdown-item">Решения не найдены</div>';
+                            solutionDropdown.style.display = 'block';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка поиска решений:', error);
+                    solutionDropdown.style.display = 'none';
+                }
+            } else {
+                solutionDropdown.style.display = 'none';
+            }
+        });
+    }
+
+    // Удаление выбранного решения
+    if (selectedSolutions) {
+        selectedSolutions.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove')) {
+                const id = parseInt(e.target.dataset.id);
+                selectedSolutionsList = selectedSolutionsList.filter(s => s.id !== id);
+                updateSelectedSolutions();
+            }
+        });
+    }
+
+    // Скрыть dropdown при клике вне
+    document.addEventListener('click', (e) => {
+        if (solutionSearch && solutionDropdown && 
+            !solutionSearch.contains(e.target) && 
+            !solutionDropdown.contains(e.target)) {
+            solutionDropdown.style.display = 'none';
+        }
+    });
+
+    // Очистка формы существующих решений
+    if (clearExistingSolutionBtn) {
+        clearExistingSolutionBtn.addEventListener('click', () => {
+            selectedSolutionsList = [];
+            updateSelectedSolutions();
+            if (solutionSearch) solutionSearch.value = '';
+            if (solutionDropdown) solutionDropdown.style.display = 'none';
+        });
+    }
+
+    // Добавление существующего решения к проблеме
+    if (addExistingSolutionBtn) {
+        addExistingSolutionBtn.addEventListener('click', async () => {
+            if (!currentProblem || selectedSolutionsList.length === 0) {
+                alert('Выберите хотя бы одно решение');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('accessToken');
+                const problemId = currentProblem.ID;
+                
+                // Добавляем решения для каждой выбранной проблемы
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (const solution of selectedSolutionsList) {
+                    try {
+                        const response = await fetch(`/api/problems/${problemId}/add-solution`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                solution_id: solution.id
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            successCount++;
+                        } else {
+                            const error = await response.json();
+                            if (error.error && error.error.includes('уже связано')) {
+                                // Решение уже связано - это не ошибка
+                                successCount++;
+                            } else {
+                                errorCount++;
+                                console.error('Ошибка добавления решения:', error);
+                            }
+                        }
+                    } catch (error) {
+                        errorCount++;
+                        console.error('Ошибка добавления решения:', error);
+                    }
+                }
+                
+                if (successCount > 0) {
+                    alert(`Успешно добавлено решений: ${successCount}${errorCount > 0 ? `. Ошибок: ${errorCount}` : ''}`);
+                    closeSolutionModal();
+                    // Перезагружаем страницу для обновления данных
+                    displaySolutions();
+                } else if (errorCount > 0) {
+                    alert(`Ошибка при добавлении решений. Попробуйте еще раз.`);
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения решений:', error);
+                alert('Ошибка при сохранении. Попробуйте еще раз.');
+            }
+        });
+    }
+
+    // Инициализация
+    updateSelectedProblems();
+    updateSelectedSolutions();
+
+    // Поиск проблем
+    if (problemSearch && problemDropdown) {
+        problemSearch.addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            if (query.length > 2) {
+                try {
+                    const token = localStorage.getItem('accessToken');
+                    const response = await fetch(`/api/problems?search=${encodeURIComponent(query)}&limit=10`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const problems = await response.json();
+                        problemDropdown.innerHTML = '';
+                        
+                        problems.forEach(problem => {
+                            // Проверяем, не выбрана ли уже эта проблема
+                            if (selectedProblemsList.some(p => p.id === problem.ID)) {
+                                return;
+                            }
+                            
+                            const div = document.createElement('div');
+                            div.className = 'dropdown-item';
+                            div.textContent = problem.Name || 'Без названия';
+                            div.setAttribute('data-id', problem.ID);
+                            
+                            div.addEventListener('click', () => {
+                                selectedProblemsList.push({ 
+                                    id: problem.ID, 
+                                    title: problem.Name || 'Без названия' 
+                                });
+                                updateSelectedProblems();
+                                problemSearch.value = '';
+                                problemDropdown.style.display = 'none';
+                            });
+                            
+                            problemDropdown.appendChild(div);
+                        });
+                        
+                        if (problems.length > 0) {
+                            problemDropdown.style.display = 'block';
+                        } else {
+                            problemDropdown.style.display = 'none';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка поиска проблем:', error);
+                    problemDropdown.style.display = 'none';
+                }
+            } else {
+                problemDropdown.style.display = 'none';
+            }
+        });
+    }
+
+    // Удаление выбранной проблемы
+    if (selectedProblems) {
+        selectedProblems.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove')) {
+                const id = parseInt(e.target.dataset.id);
+                // Не позволяем удалить текущую проблему
+                if (currentProblem && id === currentProblem.ID) {
+                    alert('Нельзя удалить текущую проблему');
+                    return;
+                }
+                selectedProblemsList = selectedProblemsList.filter(p => p.id !== id);
+                updateSelectedProblems();
+            }
+        });
+    }
+
+    // Скрыть dropdown при клике вне
+    document.addEventListener('click', (e) => {
+        if (problemSearch && problemDropdown && 
+            !problemSearch.contains(e.target) && 
+            !problemDropdown.contains(e.target)) {
+            problemDropdown.style.display = 'none';
+        }
+    });
+
+    // Очистка формы
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            form.reset();
+            selectedProblemsList = [];
+            // Снова добавляем текущую проблему
+            if (currentProblem) {
+                selectedProblemsList.push({
+                    id: currentProblem.ID,
+                    title: currentProblem.Name || 'Без названия'
+                });
+            }
+            updateSelectedProblems();
+            if (problemDropdown) problemDropdown.style.display = 'none';
+        });
+    }
+
+    // Обработчик отправки формы
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Валидация
+        const solutionName = document.getElementById('solution').value.trim();
+        const solutionDetails = document.getElementById('details').value.trim();
+        
+        if (!solutionName) {
+            alert('Пожалуйста, введите название решения');
+            return;
+        }
+        
+        if (!solutionDetails) {
+            alert('Пожалуйста, введите описание решения');
+            return;
+        }
+        
+        if (selectedProblemsList.length === 0) {
+            alert('Пожалуйста, выберите хотя бы одну связанную проблему');
+            return;
+        }
+
+        // Собрать данные в FormData
+        const formData = new FormData();
+        formData.append('solution', solutionName);
+        formData.append('details', solutionDetails);
+        
+        // Передача ID выбранных проблем через запятую
+        const selectedIds = selectedProblemsList.map(p => p.id).join(',');
+        formData.append('relatedProblems', selectedIds);
+        
+        formData.append('canBuy', document.getElementById('canBuy').checked ? 'on' : 'off');
+        formData.append('canEvaluate', document.getElementById('canEvaluate').checked ? 'on' : 'off');
+
+        // Добавить файлы
+        const mainImage = document.getElementById('mainImage').files[0];
+        const additionalImage = document.getElementById('additionalImage').files[0];
+        if (mainImage) formData.append('image', mainImage);
+        if (additionalImage) formData.append('additionalImage', additionalImage);
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch('/api/solutions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.status === 401) {
+                const refreshed = await auth.refreshToken();
+                if (refreshed) {
+                    // Повторяем отправку формы
+                    form.dispatchEvent(new Event('submit', { cancelable: true }));
+                    return;
+                }
+                throw new Error('Требуется авторизация');
+            }
+            
+            if (response.ok) {
+                const result = await response.json();
+                alert('Решение успешно добавлено!');
+                closeSolutionModal();
+                
+                // Перезагружаем страницу для обновления списка решений
+                displaySolutions();
+            } else {
+                const error = await response.json();
+                alert('Ошибка: ' + (error.error || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            alert('Ошибка сети: ' + error.message);
+        }
+    });
+    
+    // Инициализация модального окна похожих проблем
+    const linkedProblemModalOverlay = document.getElementById('linked-problem-modal-overlay');
+    const linkedProblemModal = document.getElementById('linked-problem-modal');
+    const closeLinkedProblemModalBtn = document.getElementById('closeLinkedProblemModal');
+    const linkedProblemSearch = document.getElementById('linkedProblemSearch');
+    const linkedProblemDropdown = document.getElementById('linkedProblemDropdown');
+    const clearLinkedProblemBtn = document.getElementById('clearLinkedProblemBtn');
+    const saveLinkedProblemBtn = document.getElementById('saveLinkedProblemBtn');
+    
+    if (linkedProblemModalOverlay && linkedProblemModal) {
+        // Закрытие модального окна
+        if (closeLinkedProblemModalBtn) {
+            closeLinkedProblemModalBtn.addEventListener('click', closeLinkedProblemModal);
+        }
+        
+        linkedProblemModalOverlay.addEventListener('click', (e) => {
+            if (e.target === linkedProblemModalOverlay) {
+                closeLinkedProblemModal();
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && linkedProblemModalOverlay.classList.contains('active')) {
+                closeLinkedProblemModal();
+            }
+        });
+        
+        // Поиск проблем
+        if (linkedProblemSearch && linkedProblemDropdown) {
+            linkedProblemSearch.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                
+                // Очищаем предыдущий таймаут
+                if (linkedProblemSearchTimeout) {
+                    clearTimeout(linkedProblemSearchTimeout);
+                }
+                
+                // Устанавливаем новый таймаут для задержки запроса
+                linkedProblemSearchTimeout = setTimeout(() => {
+                    searchLinkedProblems(query);
+                }, 300);
+            });
+        }
+        
+        // Скрыть dropdown при клике вне
+        document.addEventListener('click', (e) => {
+            if (linkedProblemSearch && linkedProblemDropdown && 
+                !linkedProblemSearch.contains(e.target) && 
+                !linkedProblemDropdown.contains(e.target)) {
+                linkedProblemDropdown.style.display = 'none';
+            }
+        });
+        
+        // Очистка
+        if (clearLinkedProblemBtn) {
+            clearLinkedProblemBtn.addEventListener('click', () => {
+                selectedLinkedProblemsList = [];
+                updateSelectedLinkedProblems();
+                if (linkedProblemSearch) linkedProblemSearch.value = '';
+                if (linkedProblemDropdown) linkedProblemDropdown.style.display = 'none';
+            });
+        }
+        
+        // Сохранение
+        if (saveLinkedProblemBtn) {
+            saveLinkedProblemBtn.addEventListener('click', saveLinkedProblems);
+        }
+    }
+});
 

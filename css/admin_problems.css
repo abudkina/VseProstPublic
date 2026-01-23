@@ -1,0 +1,37 @@
+/* Стили модального окна теперь в admin_modal.css */
+
+#newBtn {
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+#newBtn:hover {
+    background: #0056b3;
+}
+
+#newBtn.active {
+    background: #28a745;
+}
+
+#newBtn.active:hover {
+    background: #218838;
+}
+
+#currentImagePreview img {
+    border: 2px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#relatedInfo {
+    font-size: 13px;
+    color: #666;
+}
+
+#relatedInfo p {
+    margin: 5px 0;
+}

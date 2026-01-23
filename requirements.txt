@@ -1,0 +1,73 @@
+# =============================================================================
+# Core Flask Dependencies
+# =============================================================================
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+python-dotenv==1.0.0
+
+# =============================================================================
+# Security Dependencies
+# =============================================================================
+# Rate limiting to prevent brute force attacks
+Flask-Limiter==3.5.0
+
+# CSRF protection
+Flask-WTF==1.2.1
+
+# Security headers
+Flask-Talisman==1.1.0
+
+# Password hashing
+bcrypt==4.1.2
+
+# JWT authentication
+PyJWT==2.8.0
+
+# Input validation and sanitization
+bleach==6.1.0
+
+# =============================================================================
+# Database Dependencies
+# =============================================================================
+PyMySQL==1.1.0
+mysqlclient==2.2.0
+
+# Redis for rate limiting storage (optional but recommended for production)
+redis==5.0.1
+
+# =============================================================================
+# API and HTTP
+# =============================================================================
+requests==2.31.0
+
+# =============================================================================
+# Cloud Storage Dependencies
+# =============================================================================
+# Yandex Object Storage (S3-compatible API)
+boto3==1.34.0
+botocore==1.34.0
+
+# =============================================================================
+# AI/ML Dependencies
+# =============================================================================
+# OpenAI API for image generation
+openai==1.12.0
+
+# ML Dependencies for Recommendations
+sentence-transformers>=2.2.0
+numpy>=1.24.0
+# torch will be installed automatically with sentence-transformers
+
+# =============================================================================
+# Testing Dependencies
+# =============================================================================
+pytest==7.4.3
+pytest-flask==1.3.0
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# Security testing
+bandit==1.7.5  # Security linter
+safety==2.3.5  # Dependency vulnerability scanner
