@@ -84,3 +84,14 @@ dmypy.json
 # Logs
 *.log
 
+# Database backups and dumps
+*.sql
+*.sql.gz
+backup_*.sql
+dump*.sql
+
+# Uploads and temporary files
+uploads/
+tmp/
+temp/
+

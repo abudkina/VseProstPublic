@@ -1,17 +1,27 @@
 # -*- coding: utf-8 -*-
 """
 WSGI entry point for Beget hosting (Passenger)
+
+Конфигурация через переменные окружения:
+- PROJECT_DIR: путь к директории проекта (формат: /home/ПЕРВАЯ_БУКВА_ЛОГИНА/ЛОГИН/ИМЯ_САЙТА)
+- VENV_PACKAGES: путь к виртуальному окружению (формат: /home/ПЕРВАЯ_БУКВА_ЛОГИНА/ЛОГИН/ИМЯ_САЙТА/venv/lib/pythonX.X/site-packages)
+
+Если переменные не установлены, используются значения по умолчанию.
 """
 import os
 import sys
 
-# Путь к директории проекта - ЗАМЕНИТЕ на ваш путь!
-# Формат: /home/ПЕРВАЯ_БУКВА_ЛОГИНА/ЛОГИН/ИМЯ_САЙТА
-PROJECT_DIR = '/home/v/vseprost/vseprost.beget.tech'
+# Используем переменные окружения с fallback на значения по умолчанию
+PROJECT_DIR = os.environ.get(
+    'PROJECT_DIR',
+    '/home/v/vseprost/vseprost.beget.tech'
+)
 
-# Путь к виртуальному окружению - ЗАМЕНИТЕ на ваш путь!
-# Формат: /home/ПЕРВАЯ_БУКВА_ЛОГИНА/ЛОГИН/ИМЯ_САЙТА/venv/lib/pythonX.X/site-packages
-VENV_PACKAGES = '/home/v/vseprost/vseprost.beget.tech/venv/lib/python3.10/site-packages'
+# Путь к виртуальному окружению
+VENV_PACKAGES = os.environ.get(
+    'VENV_PACKAGES',
+    '/home/v/vseprost/vseprost.beget.tech/venv/lib/python3.10/site-packages'
+)
 
 # Добавляем пути в sys.path
 if PROJECT_DIR not in sys.path:

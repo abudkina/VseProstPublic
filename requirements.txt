@@ -31,10 +31,11 @@ bleach==6.1.0
 # =============================================================================
 # Database Dependencies
 # =============================================================================
+# Using PyMySQL as the primary database driver (pure Python implementation)
+# Preferred for compatibility and ease of deployment
 PyMySQL==1.1.0
-mysqlclient==2.2.0
 
-# Redis for rate limiting storage (optional but recommended for production)
+# Redis for rate limiting storage (recommended for production)
 redis==5.0.1
 
 # =============================================================================
@@ -71,3 +72,20 @@ pytest-mock==3.12.0
 # Security testing
 bandit==1.7.5  # Security linter
 safety==2.3.5  # Dependency vulnerability scanner
+
+# =============================================================================
+# Performance & Optimization Dependencies
+# =============================================================================
+# Caching
+Flask-Caching==2.0.2
+redis==5.0.1
+
+# Compression for responses
+Flask-Compress==1.14
+
+# Query optimization and profiling
+Flask-DebugToolbar==0.13.1  # for development profiling
+SQLAlchemy-Utils==0.41.1     # useful utilities for SQLAlchemy
+
+# Image optimization
+Pillow==10.0.0  # For image processing

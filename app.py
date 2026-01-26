@@ -9,6 +9,7 @@ from logic.model import db
 from logic.utils.logger import setup_logger
 from logic.utils.rate_limiter import init_limiter
 from logic.database import init_database, create_directories
+from logic.performance_optimization import setup_performance_optimization
 
 # Импорт blueprint'ов
 from logic.authorization import auth_bp
@@ -28,6 +29,7 @@ from logic.cart import cart_bp
 from logic.image_proxy import image_proxy_bp
 from logic.password_reset import password_reset_bp
 from logic.image_generation import image_generation_bp
+from logic.sitemap import sitemap_bp
 
 
 def create_app(config=None):
@@ -73,6 +75,9 @@ def create_app(config=None):
     # Регистрация обработчиков ошибок
     _register_error_handlers(app)
 
+    # Оптимизация производительности для SEO
+    setup_performance_optimization(app)
+
     return app
 
 
@@ -85,11 +90,11 @@ def _init_security(app):
 
     # Security Headers (только для production)
     if app.config['ENV'] == 'production':
-        # Content Security Policy
+        # Content Security Policy - исключаем unsafe-inline для безопасности
         csp = {
             'default-src': "'self'",
-            'script-src': ["'self'", "'unsafe-inline'"],  # Временно unsafe-inline, потом убрать
-            'style-src': ["'self'", "'unsafe-inline'"],
+            'script-src': ["'self'"],  # Нет unsafe-inline - используем отдельные файлы
+            'style-src': ["'self'"],   # Нет unsafe-inline - используем внешние CSS
             'img-src': ['*', 'data:', 'blob:'],
             'font-src': ["'self'", 'data:'],
             'connect-src': ["'self'"],
@@ -135,7 +140,8 @@ def _register_blueprints(app):
         cart_bp,
         image_proxy_bp,
         password_reset_bp,
-        image_generation_bp
+        image_generation_bp,
+        sitemap_bp
     ]
 
     for blueprint in blueprints:
@@ -146,6 +152,19 @@ def _register_blueprints(app):
 
 def _register_static_routes(app):
     """Регистрация маршрутов для статических файлов"""
+    def _resolve_favicon_path():
+        """Возвращает путь к favicon (PNG) если найден"""
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            os.path.join(project_root, 'assets', 'images', 'Screenshot_4-ww78noDj9-transformed.png'),
+            os.path.join(project_root, 'assets', 'images', 'logo1-Photoroom11.png'),
+            os.path.join(project_root, 'assets', 'images', 'logo1-Photoroom1.png'),
+            os.path.join(project_root, 'assets', 'images', 'logo1.jpg'),
+        ]
+        for candidate in candidates:
+            if os.path.exists(candidate):
+                return candidate
+        return None
 
     @app.route('/api/<path:path>', methods=['OPTIONS'])
     def handle_options(path):
@@ -199,6 +218,31 @@ def _register_static_routes(app):
         except Exception as e:
             app.logger.error(f"Ошибка при обслуживании файла {filename}: {e}", exc_info=True)
             return f"Ошибка при загрузке файла {filename}", 500
+
+    @app.route('/favicon.ico')
+    def favicon():
+        """Favicon для поисковых систем и браузеров"""
+        icon_path = _resolve_favicon_path()
+        if not icon_path:
+            return "Favicon не найден", 404
+        return send_from_directory(
+            os.path.dirname(icon_path),
+            os.path.basename(icon_path),
+            mimetype='image/png'
+        )
+
+    @app.route('/apple-touch-icon.png')
+    @app.route('/apple-touch-icon')
+    def apple_touch_icon():
+        """Иконка для iOS"""
+        icon_path = _resolve_favicon_path()
+        if not icon_path:
+            return "Favicon не найден", 404
+        return send_from_directory(
+            os.path.dirname(icon_path),
+            os.path.basename(icon_path),
+            mimetype='image/png'
+        )
 
     @app.route('/fonts/<path:filename>')
     def serve_fonts(filename):
@@ -333,6 +377,7 @@ def _register_static_routes(app):
 
 def _register_error_handlers(app):
     """Регистрация обработчиков ошибок"""
+    from logic.utils.error_handler import ErrorResponse, AppError
 
     @app.errorhandler(404)
     def not_found_error(error):
@@ -351,39 +396,64 @@ def _register_error_handlers(app):
         if not any(request.path.startswith(path) for path in ignored_paths):
             app.logger.warning(f"404 ошибка: {request.method} {request.path} - {error}")
         
-        return {"error": "Ресурс не найден"}, 404
+        response, status_code = ErrorResponse.create_response(
+            error,
+            include_details=app.config.get('ENV') == 'development'
+        )
+        return response, status_code
 
     @app.errorhandler(500)
     def internal_error(error):
         """Обработка ошибки 500"""
         app.logger.error(f"500 ошибка: {error}", exc_info=True)
         db.session.rollback()
-        return {"error": "Внутренняя ошибка сервера"}, 500
+        response, status_code = ErrorResponse.create_response(
+            error,
+            include_details=app.config.get('ENV') == 'development'
+        )
+        return response, status_code
 
     @app.errorhandler(429)
     def rate_limit_error(error):
         """Обработка ошибки 429 (Rate Limit Exceeded)"""
         from flask import request
         from flask_limiter.errors import RateLimitExceeded
-        if isinstance(error, RateLimitExceeded):
-            message = error.description or "Слишком много запросов. Пожалуйста, попробуйте позже."
-        else:
-            message = "Слишком много запросов. Пожалуйста, попробуйте позже."
+        from logic.utils.error_handler import RateLimitError
         
-        app.logger.warning(f"429 Rate Limit: {request.method} {request.path} - {message}")
-        return {"error": message}, 429
+        if isinstance(error, RateLimitExceeded):
+            app_error = RateLimitError(error.description or "Слишком много запросов")
+        else:
+            app_error = RateLimitError("Слишком много запросов")
+        
+        app.logger.warning(f"429 Rate Limit: {request.method} {request.path}")
+        response, status_code = ErrorResponse.create_response(app_error)
+        return response, status_code
 
     @app.errorhandler(Exception)
     def handle_exception(error):
         """Обработка всех необработанных исключений"""
-        # Пропускаем RateLimitExceeded, так как у него есть отдельный обработчик
         from flask_limiter.errors import RateLimitExceeded
+        # Пропускаем RateLimitExceeded, так как у него есть отдельный обработчик
         if isinstance(error, RateLimitExceeded):
             raise  # Позволяем Flask-Limiter обработать это через errorhandler(429)
         
+        # Проверяем, это ли AppError
+        if isinstance(error, AppError):
+            app.logger.warning(f"AppError: {error.message}")
+            response, status_code = ErrorResponse.create_response(
+                error,
+                include_details=app.config.get('ENV') == 'development'
+            )
+            return response, status_code
+        
+        # Для неожиданных ошибок
         app.logger.error(f"Необработанное исключение: {error}", exc_info=True)
         db.session.rollback()
-        return {"error": "Внутренняя ошибка сервера"}, 500
+        response, status_code = ErrorResponse.create_response(
+            error,
+            include_details=app.config.get('ENV') == 'development'
+        )
+        return response, status_code
 
 
 # Создаем приложение
