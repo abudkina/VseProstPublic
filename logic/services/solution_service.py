@@ -19,6 +19,7 @@ from logic.utils.error_handler import (
 )
 from logic.utils.logger import get_logger
 from logic.recommendations import track_user_activity, create_embedding
+from logic.cache_config import cache, CACHE_TIMEOUTS
 
 logger = get_logger(__name__)
 
@@ -33,6 +34,7 @@ class SolutionService:
     MAX_DESCRIPTION_LENGTH = 10000
     
     @staticmethod
+    @cache.memoize(timeout=CACHE_TIMEOUTS['solutions'])
     def get_all_solutions(
         problem_id: Optional[int] = None,
         search: str = '',
@@ -42,6 +44,9 @@ class SolutionService:
     ) -> tuple[List[Dict[str, Any]], int]:
         """
         Получение списка решений с фильтрацией и пагинацией.
+        
+        Использует кэширование для повышения производительности.
+        Eager loading для избежания N+1 queries.
         
         Args:
             problem_id: ID проблемы (опционально для фильтра)
@@ -60,8 +65,13 @@ class SolutionService:
         if offset < 0:
             offset = 0
         
-        # Базовый запрос
-        query = Solution.query.filter(Solution.show.isnot(None))
+        # Базовый запрос с eager loading для избежания N+1 queries
+        from sqlalchemy.orm import joinedload
+        query = Solution.query.options(
+            joinedload(Solution.creator),      # Загружаем создателя
+            joinedload(Solution.hashtags),      # Загружаем хэштеги
+            joinedload(Solution.problem)        # Загружаем проблему
+        ).filter(Solution.show.isnot(None))
         
         # Фильтр по проблеме
         if problem_id:
@@ -95,9 +105,13 @@ class SolutionService:
         return solutions_list, total_count
     
     @staticmethod
+    @cache.memoize(timeout=CACHE_TIMEOUTS['solutions'])
     def get_solution_by_id(solution_id: int, user_id: Optional[int] = None) -> Dict[str, Any]:
         """
         Получение решения по ID.
+        
+        Использует кэширование для повышения производительности.
+        Eager loading для избежания N+1 queries.
         
         Args:
             solution_id: ID решения
@@ -109,7 +123,13 @@ class SolutionService:
         Raises:
             ResourceNotFoundError: Если решение не найдено
         """
-        solution = Solution.query.get(solution_id)
+        # Eager loading для избежания N+1 queries
+        from sqlalchemy.orm import joinedload
+        solution = Solution.query.options(
+            joinedload(Solution.creator),
+            joinedload(Solution.hashtags),
+            joinedload(Solution.problem)
+        ).get(solution_id)
         
         if not solution:
             raise ResourceNotFoundError('Solution', solution_id)
@@ -187,6 +207,9 @@ class SolutionService:
                 logger.warning(f"Ошибка при создании embedding для решения: {e}")
             
             db.session.commit()
+            
+            # Инвалидируем кэш списка решений
+            cache.delete_memoized(SolutionService.get_all_solutions)
             
             # Трекируем активность пользователя
             try:
@@ -272,6 +295,11 @@ class SolutionService:
                     logger.warning(f"Ошибка при обновлении embedding: {e}")
             
             db.session.commit()
+            
+            # Инвалидируем кэш
+            cache.delete_memoized(SolutionService.get_all_solutions)
+            cache.delete_memoized(SolutionService.get_solution_by_id, solution_id)
+            
             logger.info(f"Обновлено решение ID={solution_id}")
             
             return SolutionService._format_solution_response(solution, user_id)
@@ -308,6 +336,11 @@ class SolutionService:
         try:
             db.session.delete(solution)
             db.session.commit()
+            
+            # Инвалидируем кэш
+            cache.delete_memoized(SolutionService.get_all_solutions)
+            cache.delete_memoized(SolutionService.get_solution_by_id, solution_id)
+            
             logger.info(f"Удалено решение ID={solution_id}")
         except Exception as e:
             db.session.rollback()

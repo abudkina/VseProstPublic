@@ -20,6 +20,7 @@ from logic.utils.error_handler import (
 from logic.utils.logger import get_logger
 from logic.utils.validators import parse_int_list, parse_bool
 from logic.recommendations import track_user_activity, create_embedding
+from logic.cache_config import cache, CACHE_TIMEOUTS
 
 logger = get_logger(__name__)
 
@@ -34,6 +35,7 @@ class ProblemService:
     MAX_DESCRIPTION_LENGTH = 10000
     
     @staticmethod
+    @cache.memoize(timeout=CACHE_TIMEOUTS['problems_list'])
     def get_all_problems(
         search: str = '',
         category_id: Optional[int] = None,
@@ -46,6 +48,9 @@ class ProblemService:
     ) -> tuple[List[Dict[str, Any]], int]:
         """
         Получение списка проблем с фильтрацией и пагинацией.
+        
+        Использует кэширование для повышения производительности.
+        Eager loading для избежания N+1 queries.
         
         Args:
             search: Строка поиска по названию/описанию
@@ -67,8 +72,13 @@ class ProblemService:
         if offset < 0:
             offset = 0
         
-        # Базовый запрос
-        query = Problem.query.filter(Problem.show.isnot(None))
+        # Базовый запрос с eager loading для избежания N+1 queries
+        from sqlalchemy.orm import joinedload
+        query = Problem.query.options(
+            joinedload(Problem.creator),      # Загружаем создателя
+            joinedload(Problem.hashtags),      # Загружаем хэштеги
+            joinedload(Problem.category_obj)   # Загружаем категорию (если есть связь)
+        ).filter(Problem.show.isnot(None))
         
         # Поиск по названию/описанию
         if search:
@@ -221,6 +231,9 @@ class ProblemService:
             
             db.session.commit()
             
+            # Инвалидируем кэш списка проблем
+            cache.delete_memoized(ProblemService.get_all_problems)
+            
             # Трекируем активность пользователя
             try:
                 track_user_activity(user_id, 'problem', 'create', problem.id)
@@ -313,6 +326,11 @@ class ProblemService:
                     logger.warning(f"Ошибка при обновлении embedding: {e}")
             
             db.session.commit()
+            
+            # Инвалидируем кэш
+            cache.delete_memoized(ProblemService.get_all_problems)
+            cache.delete_memoized(ProblemService.get_problem_by_id, problem_id)
+            
             logger.info(f"Обновлена проблема ID={problem_id}")
             
             return ProblemService._format_problem_response(problem, user_id)
@@ -349,6 +367,11 @@ class ProblemService:
         try:
             db.session.delete(problem)
             db.session.commit()
+            
+            # Инвалидируем кэш
+            cache.delete_memoized(ProblemService.get_all_problems)
+            cache.delete_memoized(ProblemService.get_problem_by_id, problem_id)
+            
             logger.info(f"Удалена проблема ID={problem_id}")
         except Exception as e:
             db.session.rollback()
