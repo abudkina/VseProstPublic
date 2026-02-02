@@ -123,6 +123,15 @@
     flex-shrink: 0 !important;
 }
 
+/* Исключение для solution-modal - форма должна быть видна */
+#solution-modal-overlay #solution-modal.modal-content,
+#solution-modal-overlay.active #solution-modal.modal-content,
+#solution-modal.modal-content {
+    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
 /* Дополнительное центрирование для контента в editModal */
 #editModal .modal-content,
 #editModal[style*="flex"] .modal-content,
@@ -471,14 +480,14 @@
 }
 
 /* Стили для TomSelect в модальном окне */
-.modal .ts-control {
+.modal .vs-control {
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     padding: 12px 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.modal .ts-control.focus {
+.modal .vs-control.focus {
     border-color: #667eea;
     box-shadow: 
         0 0 0 4px rgba(102, 126, 234, 0.1),
@@ -674,25 +683,153 @@
     transform: rotate(90deg) scale(1.1);
 }
 
+/* ============================================
+   КРИТИЧЕСКИЕ СТИЛИ ДЛЯ SOLUTION-MODAL
+   Переопределяют все остальные стили
+   ============================================ */
+
+/* Переопределяем overflow для solution-modal */
+#solution-modal-overlay #solution-modal,
+#solution-modal.modal-content,
+#solution-modal {
+    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 90vh !important;
+    min-height: 600px !important;
+    height: auto !important;
+}
+
+/* Убеждаемся, что modal-header не скрывает форму */
+#solution-modal .modal-header {
+    flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО: Форма должна быть видна */
+#solution-modal-overlay #solution-modal form#solutionForm,
+#solution-modal form#solutionForm,
+#solution-modal form {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 1 1 auto !important;
+    min-height: 500px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-y: auto !important;
+    position: relative !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+    padding: 30px 40px 40px !important;
+    gap: 20px !important;
+    box-sizing: border-box !important;
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО: Все элементы формы должны быть видны */
+#solution-modal-overlay #solution-modal form#solutionForm > *,
+#solution-modal form#solutionForm > *,
+#solution-modal form > * {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+}
+
+#solution-modal form#solutionForm input,
+#solution-modal form#solutionForm textarea,
+#solution-modal form#solutionForm select {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+}
+
+#solution-modal form#solutionForm button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#solution-modal form#solutionForm .problem-search-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+}
+
+#solution-modal form#solutionForm .file-inputs {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+}
+
+#solution-modal form#solutionForm .checkbox-group {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+}
+
+#solution-modal form#solutionForm .buttons {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+}
+
 /* Стили для форм в модальных окнах добавления */
-#problem-modal .modal-content form,
-#solution-modal .modal-content form {
+#problem-modal .modal-content form {
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding: 30px 40px 40px;
     overflow-y: auto;
     flex: 1;
+    min-height: 0;
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО для solution-modal form - форма должна быть видна */
+#solution-modal form,
+#solution-modal form#solutionForm {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    padding: 30px 40px 40px !important;
+    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 auto !important;
+    min-height: 500px !important;
+    height: auto !important;
+    max-height: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
 }
 
 #problem-modal .modal-content input[type="text"],
 #problem-modal .modal-content textarea,
 #problem-modal .modal-content select,
 #problem-modal .modal-content input[type="file"],
-#solution-modal .modal-content input[type="text"],
-#solution-modal .modal-content textarea,
-#solution-modal .modal-content select,
-#solution-modal .modal-content input[type="file"] {
+#solution-modal input[type="text"],
+#solution-modal textarea,
+#solution-modal select,
+#solution-modal input[type="file"] {
     padding: 14px 18px;
     font-size: 15px;
     border: 2px solid #e2e8f0;
@@ -709,9 +846,9 @@
 #problem-modal .modal-content input[type="text"]:focus,
 #problem-modal .modal-content textarea:focus,
 #problem-modal .modal-content select:focus,
-#solution-modal .modal-content input[type="text"]:focus,
-#solution-modal .modal-content textarea:focus,
-#solution-modal .modal-content select:focus {
+#solution-modal input[type="text"]:focus,
+#solution-modal textarea:focus,
+#solution-modal select:focus {
     border-color: #667eea;
     box-shadow: 
         0 0 0 4px rgba(102, 126, 234, 0.1),
@@ -721,14 +858,14 @@
 
 #problem-modal .modal-content input[type="text"]::placeholder,
 #problem-modal .modal-content textarea::placeholder,
-#solution-modal .modal-content input[type="text"]::placeholder,
-#solution-modal .modal-content textarea::placeholder {
+#solution-modal input[type="text"]::placeholder,
+#solution-modal textarea::placeholder {
     color: #a0aec0;
     font-weight: 400;
 }
 
 #problem-modal .modal-content textarea,
-#solution-modal .modal-content textarea {
+#solution-modal textarea {
     resize: vertical;
     min-height: 120px;
     font-family: 'Inter', sans-serif;
@@ -736,7 +873,7 @@
 }
 
 #problem-modal .modal-content input[type="file"],
-#solution-modal .modal-content input[type="file"] {
+#solution-modal input[type="file"] {
     padding: 16px;
     border: 2px dashed #cbd5e0;
     border-radius: 12px;
@@ -746,7 +883,7 @@
 }
 
 #problem-modal .modal-content input[type="file"]:hover,
-#solution-modal .modal-content input[type="file"]:hover {
+#solution-modal input[type="file"]:hover {
     border-color: #667eea;
     background: linear-gradient(145deg, #edf2f7 0%, #e2e8f0 100%);
     transform: translateY(-2px);
@@ -754,7 +891,7 @@
 }
 
 #problem-modal .modal-content .add-button,
-#solution-modal .modal-content .add-button {
+#solution-modal .add-button {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
@@ -770,25 +907,26 @@
 }
 
 #problem-modal .modal-content .add-button:hover,
-#solution-modal .modal-content .add-button:hover {
+#solution-modal .add-button:hover {
     background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
 #problem-modal .modal-content .add-button:active,
-#solution-modal .modal-content .add-button:active {
+#solution-modal .add-button:active {
     transform: translateY(0);
 }
 
 #problem-modal .modal-content .problem-search-container,
-#solution-modal .modal-content .problem-search-container {
+#solution-modal .problem-search-container {
     position: relative;
     width: 100%;
 }
 
 #problem-modal .modal-content #problemDropdown,
-#solution-modal .modal-content #problemDropdown {
+#problem-modal .modal-content #hashtagDropdown,
+#solution-modal #problemDropdown {
     position: absolute;
     top: 100%;
     left: 0;
@@ -805,7 +943,7 @@
 }
 
 #problem-modal .modal-content .dropdown-item,
-#solution-modal .modal-content .dropdown-item {
+#solution-modal .dropdown-item {
     padding: 12px 18px;
     cursor: pointer;
     border-bottom: 1px solid #e2e8f0;
@@ -815,12 +953,13 @@
 }
 
 #problem-modal .modal-content .dropdown-item:hover,
-#solution-modal .modal-content .dropdown-item:hover {
+#solution-modal .dropdown-item:hover {
     background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
 }
 
 #problem-modal .modal-content #selectedProblems,
-#solution-modal .modal-content #selectedProblems {
+#problem-modal .modal-content #selectedHashtags,
+#solution-modal #selectedProblems {
     margin-top: 10px;
     display: flex;
     flex-wrap: wrap;
@@ -828,7 +967,7 @@
 }
 
 #problem-modal .modal-content .selected-problem,
-#solution-modal .modal-content .selected-problem {
+#solution-modal .selected-problem {
     display: inline-flex;
     align-items: center;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -842,7 +981,7 @@
 }
 
 #problem-modal .modal-content .selected-problem .remove,
-#solution-modal .modal-content .selected-problem .remove {
+#solution-modal .selected-problem .remove {
     margin-left: 8px;
     cursor: pointer;
     color: white;
@@ -852,18 +991,18 @@
 }
 
 #problem-modal .modal-content .selected-problem .remove:hover,
-#solution-modal .modal-content .selected-problem .remove:hover {
+#solution-modal .selected-problem .remove:hover {
     transform: scale(1.2);
 }
 
 #problem-modal .modal-content .file-inputs,
-#solution-modal .modal-content .file-inputs {
+#solution-modal .file-inputs {
     display: flex;
     gap: 12px;
 }
 
 #problem-modal .modal-content .checkbox-group,
-#solution-modal .modal-content .checkbox-group {
+#solution-modal .checkbox-group {
     display: flex;
     justify-content: space-between;
     gap: 20px;
@@ -874,7 +1013,7 @@
 }
 
 #problem-modal .modal-content .checkbox-group label,
-#solution-modal .modal-content .checkbox-group label {
+#solution-modal .checkbox-group label {
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -887,12 +1026,12 @@
 }
 
 #problem-modal .modal-content .checkbox-group label:hover,
-#solution-modal .modal-content .checkbox-group label:hover {
+#solution-modal .checkbox-group label:hover {
     color: #2d3748;
 }
 
 #problem-modal .modal-content .checkbox-group input[type="checkbox"],
-#solution-modal .modal-content .checkbox-group input[type="checkbox"] {
+#solution-modal .checkbox-group input[type="checkbox"] {
     width: 20px;
     height: 20px;
     cursor: pointer;
@@ -902,15 +1041,15 @@
 }
 
 #problem-modal .modal-content .checkbox-group input[type="checkbox"]:hover,
-#solution-modal .modal-content .checkbox-group input[type="checkbox"]:hover {
+#solution-modal .checkbox-group input[type="checkbox"]:hover {
     transform: scale(1.1);
 }
 
 /* Кнопки в модальных окнах проблем и решений */
 #problem-modal .modal-content .form-buttons,
 #problem-modal .modal-content .buttons,
-#solution-modal .modal-content .form-buttons,
-#solution-modal .modal-content .buttons {
+#solution-modal .form-buttons,
+#solution-modal .buttons {
     display: flex;
     justify-content: space-between;
     gap: 12px;
@@ -922,8 +1061,8 @@
 
 #problem-modal .modal-content .clear-btn,
 #problem-modal .modal-content .clear,
-#solution-modal .modal-content .clear-btn,
-#solution-modal .modal-content .clear {
+#solution-modal .clear-btn,
+#solution-modal .clear {
     flex: 1;
     background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
     color: white;
@@ -941,8 +1080,8 @@
 
 #problem-modal .modal-content .clear-btn:hover,
 #problem-modal .modal-content .clear:hover,
-#solution-modal .modal-content .clear-btn:hover,
-#solution-modal .modal-content .clear:hover {
+#solution-modal .clear-btn:hover,
+#solution-modal .clear:hover {
     background: linear-gradient(135deg, #5a6c7d 0%, #3a4555 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
@@ -950,15 +1089,15 @@
 
 #problem-modal .modal-content .clear-btn:active,
 #problem-modal .modal-content .clear:active,
-#solution-modal .modal-content .clear-btn:active,
-#solution-modal .modal-content .clear:active {
+#solution-modal .clear-btn:active,
+#solution-modal .clear:active {
     transform: translateY(0);
 }
 
 #problem-modal .modal-content .save-btn,
 #problem-modal .modal-content .save,
-#solution-modal .modal-content .save-btn,
-#solution-modal .modal-content .save {
+#solution-modal .save-btn,
+#solution-modal .save {
     flex: 1;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -976,8 +1115,8 @@
 
 #problem-modal .modal-content .save-btn:hover,
 #problem-modal .modal-content .save:hover,
-#solution-modal .modal-content .save-btn:hover,
-#solution-modal .modal-content .save:hover {
+#solution-modal .save-btn:hover,
+#solution-modal .save:hover {
     background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
@@ -985,14 +1124,14 @@
 
 #problem-modal .modal-content .save-btn:active,
 #problem-modal .modal-content .save:active,
-#solution-modal .modal-content .save-btn:active,
-#solution-modal .modal-content .save:active {
+#solution-modal .save-btn:active,
+#solution-modal .save:active {
     transform: translateY(0);
 }
 
 /* Стили для select в модальных окнах проблем и решений */
 #problem-modal .modal-content select,
-#solution-modal .modal-content select {
+#solution-modal select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -1001,21 +1140,65 @@
     padding-right: 40px;
 }
 
+/* Заголовок "Добавить проблему" — тёмно-красный (отключаем градиент полностью) */
+#problem-modal-overlay #problem-modal .modal-header h2,
+#problem-modal .modal-header h2 {
+    color: #8B0000 !important;
+    background: none !important;
+    background-image: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #8B0000 !important;
+}
+
 /* Стили для TomSelect в модальных окнах проблем и решений */
-#problem-modal .modal-content .ts-control,
-#solution-modal .modal-content .ts-control {
+#problem-modal .modal-content .vs-control,
+#solution-modal .vs-control {
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     padding: 12px 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#problem-modal .modal-content .ts-control.focus,
-#solution-modal .modal-content .ts-control.focus {
+#problem-modal .modal-content .vs-control.focus,
+#solution-modal .vs-control.focus {
     border-color: #667eea;
     box-shadow: 
         0 0 0 4px rgba(102, 126, 234, 0.1),
         0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+/* problem-modal: vs-control как ts-control — красный фокус и чипы хэштегов */
+#problem-modal .modal-content .vs-control.focus {
+    border-color: #dc2626;
+    box-shadow: 
+        0 0 0 4px rgba(220, 38, 38, 0.1),
+        0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+#problem-modal .modal-content .vs-control .item {
+    background-color: rgba(220, 38, 38, 0.1) !important;
+    color: #dc2626 !important;
+    border: 1px solid #dc2626;
+    border-radius: 12px;
+    padding: 4px 10px;
+    margin-right: 4px;
+    font-weight: 600;
+    white-space: normal !important;
+}
+
+#problem-modal .modal-content .vs-control .item:hover {
+    background-color: rgba(220, 38, 38, 0.2) !important;
+    border-color: #b91c1c;
+}
+
+/* Поле хэштегов в problem-modal: не сужать при выборе (отменяем max-width: 20% из index/filters) */
+#problem-modal .vs-wrapper,
+#problem-modal .vs-wrapper.multi.has-items,
+#problem-modal .vs-wrapper.multi.focus.input-active.has-items {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
 }
 
 /* Стили для скроллбара в модальных окнах проблем и решений */
@@ -1025,7 +1208,7 @@
 }
 
 #problem-modal .modal-content::-webkit-scrollbar-track,
-#solution-modal .modal-content::-webkit-scrollbar-track {
+#solution-modal::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
@@ -1037,38 +1220,38 @@
 }
 
 #problem-modal .modal-content::-webkit-scrollbar-thumb:hover,
-#solution-modal .modal-content::-webkit-scrollbar-thumb:hover {
+#solution-modal::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
 }
 
 /* Адаптивность для модальных окон проблем и решений */
 @media (max-width: 768px) {
     #problem-modal .modal-content,
-    #solution-modal .modal-content {
+    #solution-modal {
         max-width: 95%;
         border-radius: 16px;
     }
     
-    #problem-modal .modal-content .modal-header,
-    #solution-modal .modal-content .modal-header {
+    #problem-modal .modal-header,
+    #solution-modal .modal-header {
         padding: 25px 25px 15px;
     }
     
-    #problem-modal .modal-content .modal-header h2,
-    #solution-modal .modal-content .modal-header h2 {
+    #problem-modal .modal-header h2,
+    #solution-modal .modal-header h2 {
         font-size: 24px;
     }
     
     #problem-modal .modal-content form,
-    #solution-modal .modal-content form {
+    #solution-modal form {
         padding: 20px 25px 30px;
         gap: 15px;
     }
     
     #problem-modal .modal-content .form-buttons,
     #problem-modal .modal-content .buttons,
-    #solution-modal .modal-content .form-buttons,
-    #solution-modal .modal-content .buttons {
+    #solution-modal .form-buttons,
+    #solution-modal .buttons {
         flex-direction: column;
     }
     
@@ -1076,10 +1259,10 @@
     #problem-modal .modal-content .clear-btn,
     #problem-modal .modal-content .save,
     #problem-modal .modal-content .clear,
-    #solution-modal .modal-content .save-btn,
-    #solution-modal .modal-content .clear-btn,
-    #solution-modal .modal-content .save,
-    #solution-modal .modal-content .clear {
+    #solution-modal .save-btn,
+    #solution-modal .clear-btn,
+    #solution-modal .save,
+    #solution-modal .clear {
         width: 100%;
     }
 }
@@ -1543,5 +1726,159 @@ html body div.modal#editModal.active > .modal-content {
     overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
+}
+
+/* ============================================
+   КРИТИЧЕСКИЕ СТИЛИ ДЛЯ SOLUTION-MODAL
+   Должны быть в конце файла для максимальной специфичности
+   ============================================ */
+
+/* Гарантируем, что solution-modal показывает форму */
+html body div#solution-modal-overlay.active #solution-modal.modal-content {
+    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 90vh !important;
+    min-height: 500px !important;
+    height: auto !important;
+}
+
+/* Гарантируем видимость формы */
+html body div#solution-modal-overlay.active #solution-modal.modal-content form#solutionForm {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 1 1 auto !important;
+    min-height: 500px !important;
+    height: auto !important;
+    max-height: calc(90vh - 150px) !important;
+    overflow: visible !important;
+    overflow-y: auto !important;
+    padding: 30px 40px 40px !important;
+    gap: 20px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+}
+
+/* Гарантируем видимость всех элементов формы */
+html body div#solution-modal-overlay.active #solution-modal.modal-content form#solutionForm > * {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+html body div#solution-modal-overlay.active #solution-modal.modal-content form#solutionForm .file-inputs,
+html body div#solution-modal-overlay.active #solution-modal.modal-content form#solutionForm .checkbox-group,
+html body div#solution-modal-overlay.active #solution-modal.modal-content form#solutionForm .buttons {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ============================================
+   ФИНАЛЬНОЕ ПРАВИЛО - МАКСИМАЛЬНАЯ СПЕЦИФИЧНОСТЬ
+   Гарантирует видимость формы в solution-modal
+   ============================================ */
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 500px !important;
+    max-height: calc(90vh - 150px) !important;
+    overflow: visible !important;
+    overflow-y: auto !important;
+    padding: 30px 40px 40px !important;
+    gap: 20px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 10 !important;
+    flex: 1 1 auto !important;
+}
+
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm input,
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm textarea,
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm select,
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm button,
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm div {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: 100% !important;
+}
+
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm .file-inputs,
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm .checkbox-group,
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm .buttons {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+}
+
+/* ============================================
+   ПРОСТОЕ И ПРЯМОЕ РЕШЕНИЕ
+   Если ничего не помогло, это должно сработать
+   ============================================ */
+#solution-modal-overlay.active #solution-modal {
+    overflow: visible !important;
+    overflow-y: auto !important;
+}
+
+#solution-modal-overlay.active #solution-modal form {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 500px !important;
+    padding: 30px 40px 40px !important;
+    gap: 20px !important;
+}
+
+#solution-modal-overlay.active #solution-modal form * {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#solution-modal-overlay.active #solution-modal form .file-inputs,
+#solution-modal-overlay.active #solution-modal form .checkbox-group,
+#solution-modal-overlay.active #solution-modal form .buttons {
+    display: flex !important;
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО: Переопределяем overflow для solution-modal */
+html body div#solution-modal-overlay.active div#solution-modal.modal-content {
+    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: 90vh !important;
+    min-height: 600px !important;
+    height: auto !important;
+}
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО: Форма должна быть видна */
+html body div#solution-modal-overlay.active div#solution-modal.modal-content form#solutionForm {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 500px !important;
+    max-height: calc(90vh - 150px) !important;
+    overflow: visible !important;
+    overflow-y: auto !important;
+    padding: 30px 40px 40px !important;
+    gap: 20px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 10 !important;
+    flex: 1 1 auto !important;
+    margin: 0 !important;
 }
 

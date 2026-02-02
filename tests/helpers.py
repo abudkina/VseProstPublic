@@ -97,8 +97,8 @@ class TestDataFactory:
 
     @staticmethod
     def create_user_data(username: str = "testuser", email: str = "test@example.com",
-                        password: str = "testpassword123") -> Dict[str, str]:
-        """Создает данные пользователя для регистрации"""
+                        password: str = "TestPassword123!") -> Dict[str, str]:
+        """Создает данные пользователя для регистрации (пароль минимум 12 символов)"""
         return {
             'username': username,
             'email': email,
@@ -106,7 +106,7 @@ class TestDataFactory:
         }
 
     @staticmethod
-    def create_login_data(login: str = "testuser", password: str = "testpassword123") -> Dict[str, str]:
+    def create_login_data(login: str = "testuser", password: str = "TestPassword123!") -> Dict[str, str]:
         """Создает данные для входа"""
         return {
             'login': login,

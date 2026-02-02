@@ -61,6 +61,7 @@ def _create_missing_tables(db, existing_tables):
     _check_and_create_association_tables(db, existing_tables, table_name_mapping)
     _check_and_create_recommendation_tables(db, existing_tables, table_name_mapping)
     _check_and_create_password_reset_table(db, existing_tables, table_name_mapping)
+    _check_and_create_user_knowledge_table(db, existing_tables, table_name_mapping)
 
 
 def _get_table_name_mapping(existing_tables):
@@ -217,6 +218,19 @@ def _check_and_create_association_tables(db, existing_tables, table_mapping):
             """
         },
         {
+            'name': 'hashtag_solution',
+            'alt_names': ['hashtag_solutions'],
+            'sql': f"""
+                CREATE TABLE IF NOT EXISTS `hashtag_solution` (
+                    `solution_id` INT NOT NULL,
+                    `hashtag_id` INT NOT NULL,
+                    PRIMARY KEY (`solution_id`, `hashtag_id`),
+                    FOREIGN KEY (`solution_id`) REFERENCES `{table_mapping['solution']}`(`id`) ON DELETE CASCADE,
+                    FOREIGN KEY (`hashtag_id`) REFERENCES `{table_mapping['hashtag']}`(`id`) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            """
+        },
+        {
             'name': 'problem_link_problem',
             'sql': f"""
                 CREATE TABLE IF NOT EXISTS `problem_link_problem` (
@@ -339,6 +353,38 @@ def _check_and_create_password_reset_table(db, existing_tables, table_mapping):
         _execute_sql(db, create_sql, "Таблица 'password_reset_token' успешно создана")
     else:
         logger.info("✅ Таблица 'password_reset_token' существует")
+
+
+def _check_and_create_user_knowledge_table(db, existing_tables, table_mapping):
+    """Проверяет и создает таблицу user_knowledge для персональных знаний пользователя"""
+    if 'user_knowledge' not in existing_tables:
+        logger.info("⚠️ Таблица 'user_knowledge' не найдена. Создаю таблицу...")
+
+        create_sql = f"""
+            CREATE TABLE IF NOT EXISTS `user_knowledge` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `user_id` INT NOT NULL,
+                `top_categories` JSON NULL,
+                `top_hashtags` JSON NULL,
+                `top_topics` JSON NULL,
+                `search_keywords` JSON NULL,
+                `viewed_problems` INT DEFAULT 0 NOT NULL,
+                `viewed_solutions` INT DEFAULT 0 NOT NULL,
+                `favorite_problems` INT DEFAULT 0 NOT NULL,
+                `favorite_solutions` INT DEFAULT 0 NOT NULL,
+                `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+                `created_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `unique_user_knowledge` (`user_id`),
+                INDEX `idx_user_knowledge_user` (`user_id`),
+                INDEX `idx_user_knowledge_updated` (`last_updated`),
+                FOREIGN KEY (`user_id`) REFERENCES `{table_mapping['user']}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """
+
+        _execute_sql(db, create_sql, "Таблица 'user_knowledge' успешно создана")
+    else:
+        logger.info("✅ Таблица 'user_knowledge' существует")
 
 
 def _execute_sql(db, sql, success_message):

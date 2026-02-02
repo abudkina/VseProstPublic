@@ -92,8 +92,10 @@ class TestRefreshToken:
         """Тест успешного обновления токена"""
         refresh_token = _create_refresh_token(test_user.id, db_session)
 
+        # Устанавливаем cookie перед запросом
+        client.set_cookie('refresh_token', refresh_token)
+
         response = client.post('/api/refreshToken',
-                              cookies={'refresh_token': refresh_token},
                               content_type='application/json')
 
         data = ResponseHelper.assert_success(response)
@@ -112,8 +114,10 @@ class TestLogout:
         """Тест успешного выхода"""
         refresh_token = _create_refresh_token(test_user.id, db_session)
 
+        # Устанавливаем cookie перед запросом
+        client.set_cookie('refresh_token', refresh_token)
+
         response = client.post('/api/logout',
-                              cookies={'refresh_token': refresh_token},
                               content_type='application/json')
 
         data = ResponseHelper.assert_success(response)

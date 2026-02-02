@@ -1,0 +1,12 @@
+# requirements-seo.txt
+# Дополнительные зависимости для SEO оптимизации
+
+# Для генерации slug'ов из текста (опционально, но рекомендуется)
+python-slugify==5.0.2
+
+# Уже установлены в основном requirements.txt:
+# Flask==2.3.x
+# Flask-SQLAlchemy==3.x
+# Flask-CORS==4.x
+# Flask-Talisman==1.x
+# python-dotenv==1.x

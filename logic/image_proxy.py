@@ -2,6 +2,9 @@
 from flask import Blueprint, request, Response, jsonify
 import requests
 from urllib.parse import urlparse
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 image_proxy_bp = Blueprint('image_proxy', __name__, url_prefix='/api')
 
@@ -15,19 +18,19 @@ def proxy_image():
         image_url = request.args.get('url')
         
         if not image_url:
-            print("Ошибка: URL не указан")
+            logger.warning("Ошибка: URL не указан")
             return jsonify({'error': 'URL не указан'}), 400
         
         # Декодируем URL если нужно
         from urllib.parse import unquote
         image_url = unquote(image_url)
         
-        print(f"Запрос прокси для изображения: {image_url}")
+        logger.debug(f"Запрос прокси для изображения: {image_url}")
         
         # Проверяем, что URL валидный
         parsed = urlparse(image_url)
         if not parsed.scheme or not parsed.netloc:
-            print(f"Ошибка: Некорректный URL - {image_url}")
+            logger.warning(f"Ошибка: Некорректный URL - {image_url}")
             return jsonify({'error': 'Некорректный URL'}), 400
         
         # Разрешаем только определенные домены для безопасности
@@ -49,12 +52,12 @@ def proxy_image():
                 break
         
         if not domain_allowed:
-            print(f"Ошибка: Домен не разрешен - {parsed.netloc}")
+            logger.warning(f"Ошибка: Домен не разрешен - {parsed.netloc}")
             return jsonify({'error': 'Домен не разрешен', 'domain': parsed.netloc}), 403
         
         # Загружаем изображение
         try:
-            print(f"Загружаем изображение с {image_url}")
+            logger.debug(f"Загружаем изображение с {image_url}")
             response = requests.get(
                 image_url,
                 timeout=15,
@@ -66,18 +69,18 @@ def proxy_image():
             )
             response.raise_for_status()
             
-            print(f"Изображение загружено, статус: {response.status_code}, content-type: {response.headers.get('content-type')}")
+            logger.debug(f"Изображение загружено, статус: {response.status_code}, content-type: {response.headers.get('content-type')}")
             
             # Проверяем, что это изображение
             content_type = response.headers.get('content-type', '')
             if 'image' not in content_type.lower():
-                print(f"Ошибка: Не является изображением - {content_type}")
+                logger.warning(f"Ошибка: Не является изображением - {content_type}")
                 return jsonify({'error': 'Не является изображением', 'content_type': content_type}), 400
             
             # Читаем содержимое
             image_data = response.content
             
-            print(f"Изображение успешно загружено, размер: {len(image_data)} байт")
+            logger.debug(f"Изображение успешно загружено, размер: {len(image_data)} байт")
             
             # Возвращаем изображение с правильными заголовками
             return Response(
@@ -92,17 +95,13 @@ def proxy_image():
             )
             
         except requests.exceptions.Timeout:
-            print(f"Ошибка: Таймаут при загрузке изображения {image_url}")
+            logger.warning(f"Ошибка: Таймаут при загрузке изображения {image_url}")
             return jsonify({'error': 'Таймаут при загрузке изображения'}), 504
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка загрузки изображения {image_url}: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception(f"Ошибка загрузки изображения {image_url}: {e}")
             return jsonify({'error': 'Ошибка загрузки изображения', 'details': str(e)}), 500
-            
+
     except Exception as e:
-        print(f"Ошибка прокси изображения: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка прокси изображения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера', 'details': str(e)}), 500
 

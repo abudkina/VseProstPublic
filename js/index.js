@@ -44,11 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const topicParam = urlParams.get('topic');
     if (topicParam) {
-        try {
-            currentFilters.topic = parseInt(topicParam, 10);
-        } catch (e) {
-            console.error('Ошибка парсинга topic из URL:', e);
-        }
+        const topicId = parseInt(topicParam, 10);
+        if (Number.isInteger(topicId)) currentFilters.topic = topicId;
     }
     
     // Загружаем категории
@@ -59,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentFilters.hashtags = instance.getValue().map(v => parseInt(v, 10));
         currentFilters.offset = 0;
         reloadCards();
-        document.querySelector('.ts-control')?.classList.add('has-items');
+        document.querySelector('.vs-control')?.classList.add('has-items');
     });
     
     // Обработчик удаления хэштегов
@@ -80,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     reloadCards();
                     if (choicesInstance.items.length == 0) {
-                        const tsControl = document.querySelector('.ts-control');
+                        const tsControl = document.querySelector('.vs-control');
                         if (tsControl) {
                             tsControl.classList.remove('has-items');
                             // Убеждаемся, что плейсхолдер виден

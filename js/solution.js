@@ -12,6 +12,20 @@ initAuthHandlers();
 
 // Теперь используем градиентный фон вместо внешних изображений
 
+function setFavoriteIconState(iconElement, isFavorite) {
+  if (!iconElement) return;
+  const isFavoriteFlag = isFavorite === true || isFavorite === 1 || isFavorite === '1';
+  iconElement.classList.add('fa-heart');
+  iconElement.classList.toggle('favorited', isFavoriteFlag);
+  iconElement.classList.toggle('liked', isFavoriteFlag);
+  iconElement.classList.toggle('fas', isFavoriteFlag);
+  iconElement.classList.toggle('far', !isFavoriteFlag);
+  const favoritesWrapper = iconElement.closest('.card-favorites');
+  if (favoritesWrapper) {
+    favoritesWrapper.classList.toggle('favorited', isFavoriteFlag);
+  }
+}
+
 // Создаёт элемент с указанным тегом, классом и текстом (опционально)
 function createElem(tag, className, text) {
   const el = document.createElement(tag);
@@ -20,11 +34,14 @@ function createElem(tag, className, text) {
   return el;
 }
 
-// Создаёт блок с иконкой и числом (иконки можно заменить на SVG или картинки)
-function createIconWithCount(iconHTML, count, title) {
+// Создаёт блок с иконкой и числом
+function createIconWithCount(iconClass, count, title) {
   const wrapper = createElem('div', 'icon-item');
   wrapper.title = title;
-  wrapper.innerHTML = iconHTML + `<span>${count}</span>`;
+  const icon = createElem('i', `icon ${iconClass}`);
+  const countSpan = createElem('span');
+  countSpan.textContent = count;
+  wrapper.append(icon, countSpan);
   return wrapper;
 }
 
@@ -47,12 +64,12 @@ function createComment(comment) {
 
   const votesDiv = createElem('div', 'comment-votes');
 
-  // Лайк и дизлайк иконки (простой текст вместо иконок, можно заменить SVG)
+  // Лайк и дизлайк иконки
   const likeBtn = createElem('button', 'like-btn');
-  likeBtn.innerHTML = `<img src="../assets/icons/like_5527412.png" alt="Лайки" class="icon" />${comment.LikeCount}`;
+  likeBtn.innerHTML = `<i class="fas fa-thumbs-up icon" aria-hidden="true"></i>${comment.LikeCount}`;
 
   const unlikeBtn = createElem('button', 'unlike-btn');
-  unlikeBtn.innerHTML = `<img src="../assets/icons/down_13646455.png" alt="НеЛайки" class="icon" />${comment.NotLikeCount}`;
+  unlikeBtn.innerHTML = `<i class="fas fa-thumbs-down icon" aria-hidden="true"></i>${comment.NotLikeCount}`;
 
   votesDiv.append(likeBtn, unlikeBtn);
   commentDiv.append(textDiv, votesDiv);
@@ -83,7 +100,7 @@ function createInteractiveStars(solutionID, ratingType) {
     try {
       const token = localStorage.getItem('accessToken');
       if (token && token !== 'null' && token !== 'undefined') {
-        const response = await fetch(`/api/solutions/${solutionID}/rating`, {
+        const response = await fetch(API_CONFIG.buildURL(`/solutions/${solutionID}/rating`), {
           method: 'GET',
           headers: getAuthHeaders(),
           credentials: 'include'
@@ -134,7 +151,7 @@ function createInteractiveStars(solutionID, ratingType) {
           return;
         }
         
-        const response = await fetch(`/api/solutions/${solutionID}/rating`, {
+        const response = await fetch(API_CONFIG.buildURL(`/solutions/${solutionID}/rating`), {
           method: 'POST',
           headers: getAuthHeaders(),
           credentials: 'include',
@@ -297,6 +314,20 @@ function createSolutionCard(item) {
     };
   }
   
+  // Добавляем обработчик клика для открытия модального окна
+  if (cardImg) {
+    cardImg.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const imageSrc = cardImg.src;
+      const imageAlt = cardImg.alt || item.Name || 'Решение';
+      // Пропускаем SVG изображения и изображения, которые скрыты
+      if (imageSrc && !imageSrc.startsWith('data:image/svg+xml') && cardImg.style.display !== 'none') {
+        openImageViewer(imageSrc, imageAlt);
+      }
+    });
+  }
+  
   imageLink.appendChild(cardImg);
   imageWrapper.appendChild(imageLink);
   
@@ -312,12 +343,9 @@ function createSolutionCard(item) {
   
   // Избранное
   const cardFavorites = createElem('div', 'card-favorites');
-  const favoriteIcon = createElem('img', 'favorite-icon');
-  favoriteIcon.src = (item.IsFavourite === true) ? '/assets/icons/love_6787061.png' : '/assets/icons/love_9318199.png';
-  favoriteIcon.alt = 'Избранное';
-  if (item.IsFavourite === true) {
-    favoriteIcon.classList.add('favorited');
-  }
+  const favoriteIcon = createElem('i', 'fas fa-heart favorite-icon');
+  favoriteIcon.setAttribute('aria-label', 'Избранное');
+  setFavoriteIconState(favoriteIcon, item.IsFavourite);
   favoriteIcon.style.cursor = 'pointer';
   const favoriteCount = createElem('span', 'favorite-count');
   favoriteCount.textContent = item.Favourite || 0;
@@ -336,15 +364,13 @@ function createSolutionCard(item) {
   // Кнопка корзины
   const cartBtn = createElem('button', 'card-cart-btn');
   cartBtn.title = 'Добавить в корзину';
-  const cartImg = createElem('img');
-  cartImg.src = '/assets/icons/shopping-bag_7945129.png';
-  cartImg.alt = 'В корзину';
-  cartBtn.appendChild(cartImg);
+  const cartIcon = createElem('i', 'fas fa-shopping-basket icon');
+  cartBtn.appendChild(cartIcon);
   
   cartBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await handleAddToCartForCard(item.ID, cartBtn, cartImg);
+    await handleAddToCartForCard(item.ID, cartBtn, cartIcon);
   });
   
   // Проверяем, есть ли уже в корзине
@@ -352,9 +378,9 @@ function createSolutionCard(item) {
     if (inCart) {
       cartBtn.classList.add('in-cart');
       cartBtn.title = 'Уже в корзине';
-      if (cartImg.src.includes('shopping-bag_7945129')) {
-        cartImg.src = cartImg.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
-      }
+      cartIcon.classList.add('cart-in-cart');
+    } else {
+      cartIcon.classList.remove('cart-in-cart');
     }
   });
   
@@ -432,9 +458,7 @@ function createSolutionCard(item) {
   const statViews = createElem('div', 'stat-item views');
   const statIconViews = createElem('div', 'stat-icon');
   statIconViews.title = 'Просмотры';
-  const iconViews = createElem('img');
-  iconViews.src = '/assets/icons/eye_8979989.png';
-  iconViews.alt = 'Просмотры';
+  const iconViews = createElem('i', 'fas fa-eye');
   statIconViews.appendChild(iconViews);
   const statValueViews = createElem('div', 'stat-value');
   statValueViews.textContent = item.Show || 0;
@@ -446,9 +470,7 @@ function createSolutionCard(item) {
   const statComments = createElem('div', 'stat-item comments');
   const statIconComments = createElem('div', 'stat-icon');
   statIconComments.title = 'Подтверждения';
-  const iconComments = createElem('img');
-  iconComments.src = '/assets/icons/check-mark_3906842.png';
-  iconComments.alt = 'Подтверждения';
+  const iconComments = createElem('i', 'fas fa-check');
   statIconComments.appendChild(iconComments);
   const statValueComments = createElem('div', 'stat-value');
   statValueComments.textContent = (item.CommentSolutions && item.CommentSolutions.length) || (item.Comments && item.Comments.length) || 0;
@@ -460,9 +482,7 @@ function createSolutionCard(item) {
   const statShares = createElem('div', 'stat-item shares');
   const statIconShares = createElem('div', 'stat-icon');
   statIconShares.title = 'Ссылки';
-  const iconShares = createElem('img');
-  iconShares.src = '/assets/icons/link_13925097.png';
-  iconShares.alt = 'Ссылки';
+  const iconShares = createElem('i', 'fas fa-link');
   statIconShares.appendChild(iconShares);
   const statValueShares = createElem('div', 'stat-value');
   statValueShares.textContent = item.Reply || 0;
@@ -474,9 +494,7 @@ function createSolutionCard(item) {
   const statLinks = createElem('div', 'stat-item links');
   const statIconLinks = createElem('div', 'stat-icon');
   statIconLinks.title = 'Линки';
-  const iconLinks = createElem('img');
-  iconLinks.src = '/assets/icons/link_13925097.png';
-  iconLinks.alt = 'Линки';
+  const iconLinks = createElem('i', 'fas fa-link');
   statIconLinks.appendChild(iconLinks);
   const statValueLinks = createElem('div', 'stat-value');
   statValueLinks.textContent = item.LinkedSolutionsCount || item.LinkedSolutions?.length || 0;
@@ -491,14 +509,14 @@ function createSolutionCard(item) {
 }
 
 // Функция для добавления в корзину (для карточек)
-async function handleAddToCartForCard(solutionId, button, img) {
+async function handleAddToCartForCard(solutionId, button, icon) {
   const result = await addToCart(solutionId);
   
   if (result.success) {
     button.classList.add('in-cart');
     button.title = 'Уже в корзине';
-    if (img && img.src.includes('shopping-bag_7945129')) {
-      img.src = img.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
+    if (icon) {
+      icon.classList.add('cart-in-cart');
     }
     alert(result.message || 'Решение добавлено в корзину');
   } else {
@@ -508,9 +526,19 @@ async function handleAddToCartForCard(solutionId, button, img) {
 
 // Функция для переключения избранного (для карточек)
 async function toggleSolutionFavoriteForCard(solutionId, iconElement, countElement) {
+  if (!iconElement || iconElement.dataset.pending === '1') {
+    return;
+  }
+  iconElement.dataset.pending = '1';
+  iconElement.style.pointerEvents = 'none';
+  const wrapper = iconElement.closest('.card-favorites');
+  if (wrapper) {
+    wrapper.style.pointerEvents = 'none';
+  }
+
   try {
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-    const response = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+    const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -521,14 +549,14 @@ async function toggleSolutionFavoriteForCard(solutionId, iconElement, countEleme
     
     if (response.status === 401) {
       // Пробуем обновить токен
-      const refreshResponse = await fetch('/api/auth/refresh', {
+      const refreshResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
         method: 'POST',
         credentials: 'include'
       });
       
       if (refreshResponse.ok) {
         // Повторяем запрос
-        const retryResponse = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+        const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -542,13 +570,7 @@ async function toggleSolutionFavoriteForCard(solutionId, iconElement, countEleme
             const currentCount = parseInt(countElement.textContent) || 0;
             countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
           }
-          if (data.is_favourite) {
-            iconElement.src = '/assets/icons/love_6787061.png';
-            iconElement.classList.add('favorited');
-          } else {
-            iconElement.src = '/assets/icons/love_9318199.png';
-            iconElement.classList.remove('favorited');
-          }
+          setFavoriteIconState(iconElement, data.is_favourite);
         }
       }
     } else if (response.ok) {
@@ -557,16 +579,16 @@ async function toggleSolutionFavoriteForCard(solutionId, iconElement, countEleme
         const currentCount = parseInt(countElement.textContent) || 0;
         countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
       }
-      if (data.is_favourite) {
-        iconElement.src = '/assets/icons/love_6787061.png';
-        iconElement.classList.add('favorited');
-      } else {
-        iconElement.src = '/assets/icons/love_9318199.png';
-        iconElement.classList.remove('favorited');
-      }
+      setFavoriteIconState(iconElement, data.is_favourite);
     }
   } catch (error) {
     console.error('Ошибка добавления решения в избранное:', error);
+  } finally {
+    iconElement.dataset.pending = '0';
+    iconElement.style.pointerEvents = '';
+    if (wrapper) {
+      wrapper.style.pointerEvents = '';
+    }
   }
 }
 
@@ -591,7 +613,7 @@ async function renderSolutionPage() {
   
   try {
     // Используйте решение по ID
-    const response = await fetch(`/api/solutions/${solutionID}`);
+    const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_BY_ID(solutionID)));
     
     if (!response.ok) {
       let errorMessage = 'Не удалось загрузить решение';
@@ -655,7 +677,7 @@ async function renderSolutionPage() {
     
     updateSEOMetaTags({
         title: `${solution.Name} - Всё Прост`,
-        description: solution.Details || `Решение: ${solution.Name}. Подробное описание на платформе Всё Прост.`,
+        description: solution.Details || `Решение: ${solution.Name}. Подробное описание на платформе Всё Прост (VseProst, ВсеПрост, Все Просто, ВсёПрост).`,
         image: solutionImage,
         url: solutionUrl,
         type: 'article'
@@ -678,26 +700,21 @@ async function renderSolutionPage() {
   const cartButton = createElem('button', 'icon-item');
   cartButton.style.cursor = 'pointer';
   cartButton.title = 'Добавить в корзину';
-  cartButton.innerHTML = '<img src="../assets/icons/shopping-bag_7945129.png" alt="В корзину" class="icon" />';
+  const cartIcon = createElem('i', 'fas fa-shopping-basket icon');
+  cartButton.appendChild(cartIcon);
   
   // Функция для установки зеленого цвета иконки корзины
   const setCartIconGreen = (button) => {
     button.classList.add('in-cart');
-    const img = button.querySelector('img');
-    if (img) {
-      // Добавляем класс к иконке, чтобы убрать черный фильтр
-      img.classList.add('cart-in-cart');
-      // Меняем иконку на зеленую версию
-      if (img.src && !img.src.includes('shopping-bag_4505309')) {
-        img.src = img.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
-      }
+    const icon = button.querySelector('i');
+    if (icon) {
+      icon.classList.add('cart-in-cart');
     }
   };
   
   cartButton.addEventListener('click', async () => {
     const result = await addToCart(solutionID);
     if (result.success) {
-      cartButton.innerHTML = '<img src="../assets/icons/shopping-bag_4505309.png" alt="В корзине" class="icon cart-in-cart" />';
       cartButton.title = 'В корзине';
       cartButton.disabled = true;
       setCartIconGreen(cartButton);
@@ -712,7 +729,6 @@ async function renderSolutionPage() {
   // Проверяем, есть ли уже в корзине
   checkInCart(solutionID).then(inCart => {
     if (inCart) {
-      cartButton.innerHTML = '<img src="../assets/icons/shopping-bag_4505309.png" alt="В корзине" class="icon cart-in-cart" />';
       cartButton.title = 'В корзине';
       cartButton.disabled = true;
       setCartIconGreen(cartButton);
@@ -720,15 +736,12 @@ async function renderSolutionPage() {
   });
   
   topBlock.appendChild(cartButton);
-  topBlock.appendChild(createIconWithCount('<img src="../assets/icons/eye_8979989.png" alt="Просмотры" class="icon" />', solution.Show, 'Просмотры'));
+  topBlock.appendChild(createIconWithCount('fas fa-eye', solution.Show, 'Просмотры'));
   
   // Создаем иконку избранного с возможностью клика
-  const favoriteIconSrc = solution.IsFavourite === true ? '../assets/icons/love_6787061.png' : '../assets/icons/love_9318199.png';
-  const favoriteIconWrapper = createIconWithCount(`<img src="${favoriteIconSrc}" alt="Избранное" class="icon" />`, solution.Favourite, 'Избранное');
-  const favoriteIcon = favoriteIconWrapper.querySelector('img');
-  if (solution.IsFavourite === true) {
-    favoriteIcon.classList.add('favorited');
-  }
+  const favoriteIconWrapper = createIconWithCount('fas fa-heart', solution.Favourite, 'Избранное');
+  const favoriteIcon = favoriteIconWrapper.querySelector('.icon');
+  setFavoriteIconState(favoriteIcon, solution.IsFavourite);
   
   // Делаем иконку кликабельной
   favoriteIconWrapper.style.cursor = 'pointer';
@@ -742,7 +755,7 @@ async function renderSolutionPage() {
   topBlock.appendChild(favoriteIconWrapper);
   
   // Кнопка для добавления похожих решений
-  const linkButton = createIconWithCount('<img src="../assets/icons/link_13925097.png" alt="Ссылки" class="icon" />', solution.Reply, 'Ссылки');
+  const linkButton = createIconWithCount('fas fa-link', solution.Reply, 'Ссылки');
   linkButton.style.cursor = 'pointer';
   linkButton.addEventListener('click', () => {
     openLinkedSolutionModal(solutionID);
@@ -759,6 +772,17 @@ async function renderSolutionPage() {
   img.src = solution.Image;
   img.alt = solution.Name;
   img.className = 'solution-image';
+  
+  // Добавляем обработчик клика для открытия модального окна
+  img.addEventListener('click', () => {
+    const imageSrc = img.src;
+    const imageAlt = img.alt || solution.Name || 'Решение';
+    // Пропускаем SVG изображения
+    if (imageSrc && !imageSrc.startsWith('data:image/svg+xml')) {
+      openImageViewer(imageSrc, imageAlt);
+    }
+  });
+  
   mainBlock.appendChild(img);
 
   // Описание + рейтинги в одном блоке справа от картинки
@@ -905,9 +929,19 @@ let currentSolutionId = null;
 
 // Переключение избранного для решений
 async function toggleSolutionFavorite(solutionId, iconElement, countElement) {
+  if (!iconElement || iconElement.dataset.pending === '1') {
+    return;
+  }
+  iconElement.dataset.pending = '1';
+  iconElement.style.pointerEvents = 'none';
+  const wrapper = iconElement.closest('.icon-item');
+  if (wrapper) {
+    wrapper.style.pointerEvents = 'none';
+  }
+
   try {
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-    const response = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+    const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -918,14 +952,14 @@ async function toggleSolutionFavorite(solutionId, iconElement, countElement) {
     
     if (response.status === 401) {
       // Пробуем обновить токен
-      const refreshResponse = await fetch('/api/auth/refresh', {
+      const refreshResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
         method: 'POST',
         credentials: 'include'
       });
       
       if (refreshResponse.ok) {
         // Повторяем запрос
-        const retryResponse = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+        const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -941,13 +975,7 @@ async function toggleSolutionFavorite(solutionId, iconElement, countElement) {
             countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
           }
           // Обновляем иконку
-          if (data.is_favourite) {
-            iconElement.src = '../assets/icons/love_6787061.png';
-            iconElement.classList.add('favorited');
-          } else {
-            iconElement.src = '../assets/icons/love_9318199.png';
-            iconElement.classList.remove('favorited');
-          }
+          setFavoriteIconState(iconElement, data.is_favourite);
         }
       }
     } else if (response.ok) {
@@ -958,16 +986,16 @@ async function toggleSolutionFavorite(solutionId, iconElement, countElement) {
         countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
       }
       // Обновляем иконку
-      if (data.is_favourite) {
-        iconElement.src = '../assets/icons/love_6787061.png';
-        iconElement.classList.add('favorited');
-      } else {
-        iconElement.src = '../assets/icons/love_9318199.png';
-        iconElement.classList.remove('favorited');
-      }
+      setFavoriteIconState(iconElement, data.is_favourite);
     }
   } catch (error) {
     console.error('Ошибка добавления решения в избранное:', error);
+  } finally {
+    iconElement.dataset.pending = '0';
+    iconElement.style.pointerEvents = '';
+    if (wrapper) {
+      wrapper.style.pointerEvents = '';
+    }
   }
 }
 
@@ -1163,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (const linkedSolution of selectedLinkedSolutionsList) {
           try {
-            const response = await fetch(`/api/solutions/${currentSolutionId}/link`, {
+            const response = await fetch(API_CONFIG.buildURL(`/solutions/${currentSolutionId}/link`), {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1224,4 +1252,52 @@ renderSolutionPage().catch(error => {
 // Обновляем бейдж корзины при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   updateCartIconState();
+});
+
+// Функции для работы с модальным окном просмотра изображений
+function openImageViewer(imageSrc, imageAlt) {
+  const modal = document.getElementById('image-viewer-modal');
+  const viewerImage = document.getElementById('viewer-image');
+  
+  if (modal && viewerImage) {
+    viewerImage.src = imageSrc;
+    viewerImage.alt = imageAlt || 'Изображение';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeImageViewer() {
+  const modal = document.getElementById('image-viewer-modal');
+  
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// Инициализация обработчиков модального окна просмотра изображений
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('image-viewer-modal');
+  const closeBtn = document.getElementById('closeImageViewer');
+  
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeImageViewer);
+  }
+  
+  if (modal) {
+    // Закрытие при клике на overlay
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.classList.contains('image-viewer-overlay')) {
+        closeImageViewer();
+      }
+    });
+    
+    // Закрытие при нажатии Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        closeImageViewer();
+      }
+    });
+  }
 });

@@ -2,8 +2,6 @@
 import * as auth from './authorizationFunctions.js';
 import { updateCartIconState } from './cartFunctions.js';
 
-const API_BASE = window.location.origin + '/api';
-
 let currentUser = null;
 let refreshTimer = null;
 let tokenExpiry = null;
@@ -11,6 +9,11 @@ let tokenExpiry = null;
 // Обновляем состояние корзины при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     updateCartIconState();
+});
+
+// Кнопка выхода
+document.getElementById('logout-btn')?.addEventListener('click', () => {
+    auth.logout();
 });
 
 // Проверяем авторизацию при загрузке
@@ -33,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Загрузка профиля
 async function loadProfile() {
     try {
-        const response = await fetch(`${API_BASE}/user/profile`, {
+        const response = await fetch(`${API_CONFIG.API_URL}/user/profile`, {
             method: 'GET',
             credentials: 'include', // Включаем cookies для отправки токена
             headers: {
@@ -79,10 +82,14 @@ async function loadProfile() {
 function displayProfile(userData) {
     // Аватар
     const avatarImg = document.getElementById('avatar-img');
+    const avatarIcon = document.getElementById('avatar-icon');
     if (userData.image) {
         avatarImg.src = `/${userData.image}`;
+        avatarImg.classList.remove('is-hidden');
+        avatarIcon?.classList.add('is-hidden');
     } else {
-        avatarImg.src = '/assets/icons/user-list_18357678.png';
+        avatarImg.classList.add('is-hidden');
+        avatarIcon?.classList.remove('is-hidden');
     }
 
     // Имя пользователя
@@ -124,6 +131,11 @@ function displayStats(stats) {
     if (favSolutionsCountEl) {
         favSolutionsCountEl.textContent = stats.favourite_solutions || 0;
     }
+
+    const problemsBtn = document.getElementById('tab-btn-problems');
+    const solutionsBtn = document.getElementById('tab-btn-solutions');
+    if (problemsBtn) problemsBtn.style.display = (stats.problems_created || 0) > 0 ? '' : 'none';
+    if (solutionsBtn) solutionsBtn.style.display = (stats.solutions_created || 0) > 0 ? '' : 'none';
 }
 
 // Загрузка аватара
@@ -147,7 +159,7 @@ document.getElementById('avatar-input')?.addEventListener('change', async (e) =>
     formData.append('avatar', file);
 
     try {
-        const response = await fetch(`${API_BASE}/user/profile/avatar`, {
+        const response = await fetch(`${API_CONFIG.API_URL}/user/profile/avatar`, {
             method: 'POST',
             credentials: 'include', // Используем cookies для авторизации
             body: formData
@@ -167,7 +179,11 @@ document.getElementById('avatar-input')?.addEventListener('change', async (e) =>
         }
 
         const data = await response.json();
-        document.getElementById('avatar-img').src = `/${data.image}`;
+        const avatarImg = document.getElementById('avatar-img');
+        const avatarIcon = document.getElementById('avatar-icon');
+        avatarImg.src = `/${data.image}`;
+        avatarImg.classList.remove('is-hidden');
+        avatarIcon?.classList.add('is-hidden');
         showToast('Аватар успешно загружен', 'success');
     } catch (error) {
         console.error('Ошибка загрузки аватара:', error);
@@ -192,7 +208,7 @@ document.getElementById('edit-profile-form')?.addEventListener('submit', async (
     }
 
     try {
-        const response = await fetch(`${API_BASE}/user/profile`, {
+        const response = await fetch(`${API_CONFIG.API_URL}/user/profile`, {
             method: 'PUT',
             credentials: 'include', // Включаем cookies для отправки токена
             headers: {
@@ -246,7 +262,7 @@ document.getElementById('change-password-form')?.addEventListener('submit', asyn
     }
 
     try {
-        const response = await fetch(`${API_BASE}/user/profile/password`, {
+        const response = await fetch(`${API_CONFIG.API_URL}/user/profile/password`, {
             method: 'PUT',
             credentials: 'include', // Включаем cookies для отправки токена
             headers: {
@@ -327,7 +343,7 @@ async function loadUserProblems() {
             throw new Error('Не удалось получить ID пользователя');
         }
 
-        const response = await fetch(`${API_BASE}/problems/user/${userId}`, {
+        const response = await fetch(`${API_CONFIG.API_URL}/problems/user/${userId}`, {
             method: 'GET',
             credentials: 'include', // Включаем cookies для отправки токена
             headers: {
@@ -354,7 +370,11 @@ async function loadUserProblems() {
                 const card = createProblemCard(problem);
                 listContainer.appendChild(card);
             });
+            const btn = document.getElementById('tab-btn-problems');
+            if (btn) btn.style.display = '';
         } else {
+            const btn = document.getElementById('tab-btn-problems');
+            if (btn) btn.style.display = 'none';
             emptyEl.style.display = 'block';
         }
     } catch (error) {
@@ -391,7 +411,7 @@ async function loadUserSolutions() {
             throw new Error('Не удалось получить ID пользователя');
         }
 
-        const response = await fetch(`${API_BASE}/solutions/user/${userId}`, {
+        const response = await fetch(`${API_CONFIG.API_URL}/solutions/user/${userId}`, {
             method: 'GET',
             credentials: 'include', // Включаем cookies для отправки токена
             headers: {
@@ -418,8 +438,11 @@ async function loadUserSolutions() {
                 const card = createSolutionCard(solution);
                 listContainer.appendChild(card);
             });
+            const btn = document.getElementById('tab-btn-solutions');
+            if (btn) btn.style.display = '';
         } else {
-            emptyEl.style.display = 'block';
+            const btn = document.getElementById('tab-btn-solutions');
+            if (btn) btn.style.display = 'none';
         }
     } catch (error) {
         console.error('Ошибка загрузки решений:', error);
@@ -501,47 +524,3 @@ function showToast(message, type = 'info') {
         toast.classList.remove('show');
     }, 3000);
 }
-
-// Функция выхода
-function logout() {
-    fetch(`${API_BASE}/logout`, {
-        method: 'POST',
-        credentials: 'include', // Включаем cookies для отправки токена
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Logout failed');
-        return response.json();
-    })
-    .then(data => {
-        console.log(data.message);
-        // Очистка
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        sessionStorage.clear();
-        
-        // Остановка таймера обновления токена
-        if (refreshTimer) {
-            clearTimeout(refreshTimer);
-            refreshTimer = null;
-        }
-        
-        // Редирект на страницу авторизации
-        window.location.href = '/html/authorization.html';
-    })
-    .catch(error => {
-        console.error('Ошибка логаута:', error);
-        // В случае ошибки тоже очищаем
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        sessionStorage.clear();
-        window.location.href = '/html/authorization.html';
-    });
-}
-
-// Экспорт функции logout для использования в других файлах
-export { logout };

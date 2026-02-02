@@ -7,6 +7,9 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from logic.utils.file_utils import allowed_file, save_file, delete_file
 from logic.utils.validators import validate_email
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 user_bp = Blueprint('user', __name__, url_prefix='/api')
 
@@ -30,7 +33,7 @@ def count_user():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета пользователей: {e}")
+        logger.error(f"Ошибка подсчета пользователей: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @user_bp.route('/users', methods=['GET'])
@@ -53,7 +56,7 @@ def get_users():
         return jsonify(users_list), 200
         
     except Exception as e:
-        print(f"Ошибка получения пользователей: {e}")
+        logger.error(f"Ошибка получения пользователей: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
@@ -77,7 +80,7 @@ def get_user_by_id(user_id):
         return jsonify(user.to_dict()), 200
         
     except Exception as e:
-        print(f"Ошибка получения пользователя: {e}")
+        logger.error(f"Ошибка получения пользователя: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @user_bp.route('/users/<int:user_id>', methods=['PUT'])
@@ -144,7 +147,7 @@ def update_user(user_id):
         return jsonify(user.to_dict()), 200
         
     except Exception as e:
-        print(f"Ошибка обновления пользователя: {e}")
+        logger.error(f"Ошибка обновления пользователя: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @user_bp.route('/users/<int:user_id>', methods=['DELETE'])
@@ -179,7 +182,7 @@ def delete_user(user_id):
         return jsonify({'message': 'Пользователь успешно удален'}), 200
         
     except Exception as e:
-        print(f"Ошибка удаления пользователя: {e}")
+        logger.error(f"Ошибка удаления пользователя: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 # ============ ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ============
@@ -214,7 +217,7 @@ def get_profile():
         return jsonify(profile_data), 200
         
     except Exception as e:
-        print(f"Ошибка получения профиля: {e}")
+        logger.error(f"Ошибка получения профиля: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @user_bp.route('/user/profile', methods=['PUT'])
@@ -272,7 +275,7 @@ def update_profile():
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()
-                print(f"Ошибка обновления профиля: {e}")
+                logger.error(f"Ошибка обновления профиля: {e}")
                 return jsonify({'error': 'Ошибка обновления профиля'}), 500
         
         return jsonify({
@@ -281,7 +284,7 @@ def update_profile():
         }), 200
         
     except Exception as e:
-        print(f"Ошибка обновления профиля: {e}")
+        logger.error(f"Ошибка обновления профиля: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @user_bp.route('/user/profile/avatar', methods=['POST'])
@@ -324,7 +327,7 @@ def upload_avatar():
         except Exception as e:
             db.session.rollback()
             delete_file(image_path)
-            print(f"Ошибка сохранения аватара: {e}")
+            logger.error(f"Ошибка сохранения аватара: {e}")
             return jsonify({'error': 'Ошибка сохранения аватара'}), 500
         
         return jsonify({
@@ -334,7 +337,7 @@ def upload_avatar():
         }), 200
         
     except Exception as e:
-        print(f"Ошибка загрузки аватара: {e}")
+        logger.error(f"Ошибка загрузки аватара: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @user_bp.route('/user/profile/password', methods=['PUT'])
@@ -375,11 +378,84 @@ def change_password():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка смены пароля: {e}")
+            logger.error(f"Ошибка смены пароля: {e}")
             return jsonify({'error': 'Ошибка смены пароля'}), 500
         
         return jsonify({'message': 'Пароль успешно изменен'}), 200
         
     except Exception as e:
-        print(f"Ошибка смены пароля: {e}")
+        logger.error(f"Ошибка смены пароля: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
+
+# ============ ПЕРСОНАЛЬНЫЕ ЗНАНИЯ ============
+
+@user_bp.route('/user/knowledge', methods=['GET'])
+@token_required
+def get_user_knowledge():
+    """Получение персональных знаний пользователя"""
+    try:
+        user_id = getattr(g, 'user_id', None)
+        if not user_id:
+            return jsonify({'error': 'Не авторизован'}), 401
+        
+        from logic.user_knowledge import get_user_knowledge
+        
+        knowledge = get_user_knowledge(user_id, auto_update=True)
+        
+        if not knowledge:
+            return jsonify({
+                'message': 'Персональные знания еще не сформированы',
+                'knowledge': None
+            }), 200
+        
+        return jsonify({
+            'knowledge': knowledge
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Ошибка получения персональных знаний: {e}")
+        return jsonify({'error': 'Ошибка базы данных'}), 500
+
+@user_bp.route('/user/knowledge/interests', methods=['GET'])
+@token_required
+def get_user_interests():
+    """Получение краткой сводки интересов пользователя"""
+    try:
+        user_id = getattr(g, 'user_id', None)
+        if not user_id:
+            return jsonify({'error': 'Не авторизован'}), 401
+        
+        from logic.user_knowledge import get_user_interests_summary
+        
+        interests = get_user_interests_summary(user_id)
+        
+        return jsonify(interests), 200
+        
+    except Exception as e:
+        logger.error(f"Ошибка получения интересов: {e}")
+        return jsonify({'error': 'Ошибка базы данных'}), 500
+
+@user_bp.route('/user/knowledge/update', methods=['POST'])
+@token_required
+def update_user_knowledge_endpoint():
+    """Принудительное обновление персональных знаний пользователя"""
+    try:
+        user_id = getattr(g, 'user_id', None)
+        if not user_id:
+            return jsonify({'error': 'Не авторизован'}), 401
+        
+        from logic.user_knowledge import update_user_knowledge
+        
+        knowledge = update_user_knowledge(user_id, force_update=True)
+        
+        if not knowledge:
+            return jsonify({'error': 'Не удалось обновить знания'}), 500
+        
+        return jsonify({
+            'message': 'Персональные знания успешно обновлены',
+            'knowledge': knowledge.to_dict()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Ошибка обновления персональных знаний: {e}")
+        return jsonify({'error': 'Ошибка базы данных'}), 500

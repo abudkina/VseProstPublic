@@ -5,6 +5,9 @@ from logic.model import Category, User
 from logic.middleware import token_required
 from logic.model import db
 from logic.utils.normalizers import normalize_category_name
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 category_bp = Blueprint('category', __name__, url_prefix='/api')
 
@@ -50,7 +53,7 @@ def add_category():
                     return jsonify({'error': 'Категория с таким именем уже существует'}), 400
         
         except Exception as e:
-            print(f"Ошибка проверки уникальности: {e}")
+            logger.error(f"Ошибка проверки уникальности: {e}")
             return jsonify({'error': 'Ошибка проверки уникальности'}), 500
         
         # Создаем новую категорию
@@ -67,7 +70,7 @@ def add_category():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка создания категории: {e}")
+            logger.error(f"Ошибка создания категории: {e}")
             return jsonify({'error': 'Ошибка создания категории'}), 500
         
         # Возвращаем созданную категорию
@@ -81,7 +84,7 @@ def add_category():
         }), 201
         
     except Exception as e:
-        print(f"Общая ошибка: {e}")
+        logger.exception(f"Общая ошибка: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @category_bp.route('/categories/count', methods=['GET'])
@@ -103,7 +106,7 @@ def count_category():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета категорий: {e}")
+        logger.exception(f"Ошибка подсчета категорий: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @category_bp.route('/categories', methods=['GET'])
@@ -134,7 +137,7 @@ def get_categories():
         return jsonify(categories_list), 200
         
     except Exception as e:
-        print(f"Ошибка получения категорий: {e}")
+        logger.exception(f"Ошибка получения категорий: {e}")
         return jsonify({'error': 'Ошибка получения категорий'}), 500
 
 @category_bp.route('/categories/<int:category_id>', methods=['PUT'])
@@ -191,7 +194,7 @@ def update_category(category_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка обновления категории: {e}")
+        logger.exception(f"Ошибка обновления категории: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @category_bp.route('/categories/<int:category_id>', methods=['DELETE'])
@@ -218,7 +221,7 @@ def delete_category(category_id):
         return jsonify({'message': 'Категория успешно удалена'}), 200
         
     except Exception as e:
-        print(f"Ошибка удаления категории: {e}")
+        logger.exception(f"Ошибка удаления категории: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @category_bp.route('/categories/<int:category_id>/mark-as-read', methods=['PUT'])
@@ -248,5 +251,5 @@ def mark_category_as_read(category_id):
         return jsonify({'message': 'Категория отмечена как прочитанная'}), 200
         
     except Exception as e:
-        print(f"Ошибка обновления категории: {e}")
+        logger.exception(f"Ошибка обновления категории: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500

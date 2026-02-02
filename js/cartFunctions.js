@@ -15,7 +15,7 @@ export async function addToCart(solutionId) {
 
   try {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/cart/${solutionId}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/cart/${solutionId}`), {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -29,7 +29,7 @@ export async function addToCart(solutionId) {
       try {
         await auth.refreshToken();
         const newToken = localStorage.getItem('accessToken');
-        const retryResponse = await fetch(`/api/cart/${solutionId}`, {
+        const retryResponse = await fetch(API_CONFIG.buildURL(`/cart/${solutionId}`), {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -84,7 +84,7 @@ export async function addToCart(solutionId) {
 export async function removeFromCart(solutionId) {
   try {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/cart/${solutionId}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/cart/${solutionId}`), {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -97,7 +97,7 @@ export async function removeFromCart(solutionId) {
       try {
         await auth.refreshToken();
         const newToken = localStorage.getItem('accessToken');
-        const retryResponse = await fetch(`/api/cart/${solutionId}`, {
+        const retryResponse = await fetch(API_CONFIG.buildURL(`/cart/${solutionId}`), {
           method: 'DELETE',
           credentials: 'include',
           headers: {
@@ -147,7 +147,7 @@ export async function checkInCart(solutionId) {
 
   try {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/cart/check/${solutionId}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/cart/check/${solutionId}`), {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -160,7 +160,7 @@ export async function checkInCart(solutionId) {
       try {
         await auth.refreshToken();
         const newToken = localStorage.getItem('accessToken');
-        const retryResponse = await fetch(`/api/cart/check/${solutionId}`, {
+        const retryResponse = await fetch(API_CONFIG.buildURL(`/cart/check/${solutionId}`), {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -209,7 +209,7 @@ export async function getCartCount() {
     // Токен хранится в HttpOnly cookies, поэтому не нужно его получать из localStorage
     // Просто отправляем запрос с credentials: 'include', и сервер сам проверит токен из cookies
     console.log('getCartCount: отправка запроса на /api/cart/count');
-    const response = await fetch('/api/cart/count', {
+    const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CART_COUNT), {
       method: 'GET',
       credentials: 'include', // Включаем cookies (токен там)
       headers: {
@@ -223,7 +223,7 @@ export async function getCartCount() {
       try {
         await auth.refreshToken();
         // После обновления токена повторяем запрос (токен в cookies)
-        const retryResponse = await fetch('/api/cart/count', {
+        const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CART_COUNT), {
           method: 'GET',
           credentials: 'include', // Токен в cookies
           headers: {
@@ -288,7 +288,13 @@ export async function updateCartIconState() {
       console.log('Найдено ссылок (альтернативный селектор):', altCartLinks.length);
       cartLinks = altCartLinks.filter(link => {
         const img = link.querySelector('img');
-        return img && (img.src.includes('shopping') || link.textContent.includes('Корзина'));
+        const icon = link.querySelector('i');
+        const hasIcon = icon
+          ? (icon.classList.contains('fa-shopping-basket')
+            || icon.classList.contains('fa-shopping-bag')
+            || icon.classList.contains('fa-shopping-cart'))
+          : false;
+        return (img && img.src.includes('shopping')) || hasIcon || link.textContent.includes('Корзина');
       });
       console.log('Отфильтровано ссылок:', cartLinks.length);
     }
@@ -302,7 +308,9 @@ export async function updateCartIconState() {
         const title = link.getAttribute('title') || '';
         const img = link.querySelector('img');
         const imgSrc = img ? img.getAttribute('src') || img.src : '';
-        console.log(`Ссылка ${index}: href="${href}", title="${title}", img="${imgSrc}"`);
+        const icon = link.querySelector('i');
+        const iconClass = icon ? icon.className : '';
+        console.log(`Ссылка ${index}: href="${href}", title="${title}", img="${imgSrc}", icon="${iconClass}"`);
       });
       console.warn('Ссылки на корзину не найдены в header');
       return;
@@ -313,42 +321,16 @@ export async function updateCartIconState() {
     cartLinks.forEach((link, index) => {
       console.log(`Обработка ссылки ${index}:`, link);
       const img = link.querySelector('img');
-      if (!img) {
+      const icon = link.querySelector('i');
+      if (!img && !icon) {
         console.warn('Иконка не найдена в ссылке корзины');
         return;
       }
       
-      // Проверяем, является ли это desktop-menu
-      const isDesktopMenu = link.closest('.desktop-menu') !== null;
-      console.log(`Ссылка ${index}: isDesktopMenu=${isDesktopMenu}, count=${count}`);
+      console.log(`Ссылка ${index}: count=${count}`);
       
       if (count > 0) {
-        if (isDesktopMenu) {
-          // Для desktop-menu: не меняем иконку, не закрашиваем, только показываем бейдж
-          link.classList.remove('cart-filled');
-          
-          // Убеждаемся, что иконка shopping-basket
-          const currentSrc = img.src || img.getAttribute('src');
-          if (currentSrc && currentSrc.includes('shopping-bag_4505309')) {
-            img.src = currentSrc.replace('shopping-bag_4505309.png', 'shopping-basket_11981486.png');
-            img.setAttribute('src', img.src);
-          }
-        } else {
-          // Для mobile-menu: меняем иконку и закрашиваем
-          link.classList.add('cart-filled');
-          
-          // Заменяем иконку на shopping-bag_4505309 (полная корзина)
-          const currentSrc = img.src || img.getAttribute('src');
-          if (currentSrc && currentSrc.includes('shopping-basket_11981486')) {
-            img.src = currentSrc.replace('shopping-basket_11981486.png', 'shopping-bag_4505309.png');
-            img.setAttribute('src', img.src);
-          } else if (currentSrc && !currentSrc.includes('shopping-bag_4505309')) {
-            // Если путь другой, используем абсолютный путь
-            const basePath = currentSrc.substring(0, currentSrc.lastIndexOf('/'));
-            img.src = `${basePath}/shopping-bag_4505309.png`;
-            img.setAttribute('src', img.src);
-          }
-        }
+        link.classList.add('cart-filled');
         
         // Добавляем или обновляем счетчик товаров
         let badge = link.querySelector('.cart-badge');
@@ -377,18 +359,6 @@ export async function updateCartIconState() {
         // Если корзина пуста
         link.classList.remove('cart-filled');
         
-        // Возвращаем иконку shopping-basket (пустая корзина)
-        const currentSrc = img.src || img.getAttribute('src');
-        if (currentSrc && currentSrc.includes('shopping-bag_4505309')) {
-          img.src = currentSrc.replace('shopping-bag_4505309.png', 'shopping-basket_11981486.png');
-          img.setAttribute('src', img.src);
-        } else if (currentSrc && !currentSrc.includes('shopping-basket_11981486')) {
-          // Если путь другой, используем абсолютный путь
-          const basePath = currentSrc.substring(0, currentSrc.lastIndexOf('/'));
-          img.src = `${basePath}/shopping-basket_11981486.png`;
-          img.setAttribute('src', img.src);
-        }
-        
         // Скрываем счетчик товаров
         const badge = link.querySelector('.cart-badge');
         if (badge) {
@@ -415,7 +385,7 @@ export async function getUnreadNotificationsCount() {
   try {
     // Токен хранится в HttpOnly cookies, поэтому не нужно его получать из localStorage
     // Просто отправляем запрос с credentials: 'include', и сервер сам проверит токен из cookies
-    const response = await fetch('/api/notifications/count-unread', {
+    const response = await fetch(API_CONFIG.buildURL('/notifications/count-unread'), {
       method: 'GET',
       credentials: 'include', // Включаем cookies (токен там)
       headers: {
@@ -427,7 +397,7 @@ export async function getUnreadNotificationsCount() {
       try {
         await auth.refreshToken();
         // После обновления токена повторяем запрос (токен в cookies)
-        const retryResponse = await fetch('/api/notifications/count-unread', {
+        const retryResponse = await fetch(API_CONFIG.buildURL('/notifications/count-unread'), {
           method: 'GET',
           credentials: 'include', // Токен в cookies
           headers: {
@@ -474,7 +444,9 @@ export async function updateNotificationIconState() {
       const altNotificationLinks = Array.from(document.querySelectorAll('header a[href*="notification"], nav a[href*="notification"]'));
       notificationLinks = altNotificationLinks.filter(link => {
         const img = link.querySelector('img');
-        return img && (img.src.includes('notification') || link.textContent.includes('Уведомления'));
+        const icon = link.querySelector('i');
+        const hasIcon = icon ? icon.classList.contains('fa-bell') : false;
+        return (img && img.src.includes('notification')) || hasIcon || link.textContent.includes('Уведомления');
       });
     }
     
@@ -484,7 +456,8 @@ export async function updateNotificationIconState() {
     
     notificationLinks.forEach((link) => {
       const img = link.querySelector('img');
-      if (!img) {
+      const icon = link.querySelector('i');
+      if (!img && !icon) {
         return;
       }
       

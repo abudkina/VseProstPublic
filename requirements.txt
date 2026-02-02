@@ -1,91 +1,89 @@
 # =============================================================================
 # Core Flask Dependencies
 # =============================================================================
-Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
-Flask-CORS==4.0.0
-Werkzeug==2.3.7
-python-dotenv==1.0.0
+Flask>=3.0.0
+Flask-SQLAlchemy>=3.1.1
+Flask-CORS>=4.0.0
+Werkzeug>=3.0.1
+python-dotenv>=1.0.1
 
 # =============================================================================
 # Security Dependencies
 # =============================================================================
 # Rate limiting to prevent brute force attacks
-Flask-Limiter==3.5.0
-
-# CSRF protection
-Flask-WTF==1.2.1
+Flask-Limiter>=3.8.0
 
 # Security headers
-Flask-Talisman==1.1.0
+Flask-Talisman>=1.1.0
 
 # Password hashing
-bcrypt==4.1.2
+bcrypt>=4.2.0
 
 # JWT authentication
-PyJWT==2.8.0
-
-# Input validation and sanitization
-bleach==6.1.0
+PyJWT>=2.9.0
 
 # =============================================================================
 # Database Dependencies
 # =============================================================================
 # Using PyMySQL as the primary database driver (pure Python implementation)
-# Preferred for compatibility and ease of deployment
-PyMySQL==1.1.0
+PyMySQL>=1.1.1
 
-# Redis for rate limiting storage (recommended for production)
-redis==5.0.1
+# SQLAlchemy utilities
+SQLAlchemy>=2.0.30
+
+# Redis for rate limiting and caching storage (recommended for production)
+redis>=5.0.8
 
 # =============================================================================
 # API and HTTP
 # =============================================================================
-requests==2.31.0
+requests>=2.32.3
 
 # =============================================================================
 # Cloud Storage Dependencies
 # =============================================================================
 # Yandex Object Storage (S3-compatible API)
-boto3==1.34.0
-botocore==1.34.0
+boto3>=1.35.0
+botocore>=1.35.0
 
 # =============================================================================
 # AI/ML Dependencies
 # =============================================================================
 # OpenAI API for image generation
-openai==1.12.0
+openai>=1.50.0
 
-# ML Dependencies for Recommendations
-sentence-transformers>=2.2.0
-numpy>=1.24.0
-# torch will be installed automatically with sentence-transformers
-
-# =============================================================================
-# Testing Dependencies
-# =============================================================================
-pytest==7.4.3
-pytest-flask==1.3.0
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-
-# Security testing
-bandit==1.7.5  # Security linter
-safety==2.3.5  # Dependency vulnerability scanner
+# ML Dependencies for Recommendations and RAG Search
+sentence-transformers>=3.0.0
+numpy>=1.26.0
+transformers>=4.44.0
+torch>=2.4.0
 
 # =============================================================================
 # Performance & Optimization Dependencies
 # =============================================================================
 # Caching
-Flask-Caching==2.0.2
-redis==5.0.1
+Flask-Caching>=2.3.0
 
 # Compression for responses
-Flask-Compress==1.14
-
-# Query optimization and profiling
-Flask-DebugToolbar==0.13.1  # for development profiling
-SQLAlchemy-Utils==0.41.1     # useful utilities for SQLAlchemy
+Flask-Compress>=1.15
 
 # Image optimization
-Pillow==10.0.0  # For image processing
+Pillow>=10.4.0
+
+# =============================================================================
+# URL and Text Processing
+# =============================================================================
+# For SEO-friendly URL slugs
+python-slugify>=8.0.4
+
+# =============================================================================
+# Testing Dependencies
+# =============================================================================
+pytest>=8.3.0
+pytest-flask>=1.3.0
+pytest-cov>=5.0.0
+pytest-mock>=3.14.0
+
+# Security testing
+bandit>=1.7.9
+safety>=3.2.0

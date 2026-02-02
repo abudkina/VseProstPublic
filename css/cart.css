@@ -43,20 +43,20 @@ body {
 }
 
 .cart-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #333;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
 }
 
 .cart-summary {
-  font-size: 1.1rem;
-  color: #666;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
 }
 
 .cart-summary #cart-count {
-  font-weight: 700;
-  color: #d32f2f;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
 }
 
 /* Контейнер корзины */
@@ -73,13 +73,13 @@ body {
 
 /* Карточка элемента корзины */
 .cart-item {
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-3);
+  box-shadow: var(--shadow-card);
   display: flex;
-  gap: 12px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: var(--spacing-3);
+  transition: var(--transition-slow);
   width: 100%;
   max-width: 100%;
   overflow: hidden;
@@ -128,18 +128,18 @@ body {
 }
 
 .cart-item-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #333;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
   flex-grow: 1;
-  transition: color 0.3s ease;
+  transition: var(--transition-normal);
   display: block;
-  padding: 4px 0;
+  padding: var(--spacing-1) 0;
   min-height: 24px;
 }
 
 .cart-item-title:hover {
-  color: #d32f2f;
+  color: var(--color-primary);
 }
 
 /* Информация о проблеме */
@@ -297,11 +297,14 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.cart-empty img {
-  width: 120px;
-  height: 120px;
+.cart-empty i {
+  font-size: 88px;
   margin: 0 auto 24px;
-  opacity: 0.3;
+  color: #4caf50;
+  opacity: 0.5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cart-empty h2 {
@@ -444,9 +447,8 @@ body {
     padding: 40px 16px;
   }
 
-  .cart-empty img {
-    width: 80px;
-    height: 80px;
+  .cart-empty i {
+    font-size: 64px;
     margin-bottom: 16px;
   }
 
@@ -541,9 +543,8 @@ body {
     border-radius: 10px;
   }
 
-  .cart-empty img {
-    width: 60px;
-    height: 60px;
+  .cart-empty i {
+    font-size: 48px;
     margin-bottom: 12px;
   }
 

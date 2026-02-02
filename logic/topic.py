@@ -8,6 +8,9 @@ from logic.middleware import token_required, extract_user_from_token
 
 from logic.model import db
 from logic.utils.normalizers import normalize_topic_name
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 topic_bp = Blueprint('topic', __name__,url_prefix='/api')
 
@@ -52,7 +55,7 @@ def add_topic():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка создания темы: {e}")
+            logger.error(f"Ошибка создания темы: {e}")
             return jsonify({'error': 'Ошибка создания темы'}), 500
         
         # Возвращаем созданную тему
@@ -66,7 +69,7 @@ def add_topic():
         }), 201
         
     except Exception as e:
-        print(f"Общая ошибка создания темы: {e}")
+        logger.error(f"Общая ошибка создания темы: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @topic_bp.route('/topics', methods=['GET'])
@@ -115,7 +118,7 @@ def get_topics():
         return jsonify(topics_list), 200
         
     except Exception as e:
-        print(f"Ошибка поиска тем: {e}")
+        logger.error(f"Ошибка поиска тем: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Ошибка базы данных', 'details': str(e)}), 500
@@ -139,7 +142,7 @@ def count_topic():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета тем: {e}")
+        logger.error(f"Ошибка подсчета тем: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @topic_bp.route('/topics/<int:topic_id>', methods=['GET'])
@@ -160,7 +163,7 @@ def get_topic_by_id(topic_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка получения темы: {e}")
+        logger.error(f"Ошибка получения темы: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @topic_bp.route('/topics/<int:topic_id>', methods=['PUT'])
@@ -219,7 +222,7 @@ def update_topic(topic_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка обновления темы: {e}")
+        logger.error(f"Ошибка обновления темы: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @topic_bp.route('/topics/<int:topic_id>', methods=['DELETE'])
@@ -252,5 +255,5 @@ def delete_topic(topic_id):
         return jsonify({'message': 'Тема успешно удалена'}), 200
         
     except Exception as e:
-        print(f"Ошибка удаления темы: {e}")
+        logger.error(f"Ошибка удаления темы: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500

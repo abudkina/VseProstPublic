@@ -5,7 +5,7 @@ import * as auth from './authorizationFunctions.js';
 async function fetchCount(endpoint) {
     try {
         // Используем cookies для авторизации (токен хранится там)
-        const response = await fetch(`/api/${endpoint}`, {
+        const response = await fetch(API_CONFIG.buildURL(`/${endpoint}`), {
             method: 'GET',
             credentials: 'include', // Важно для отправки cookies
             headers: {

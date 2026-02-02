@@ -1,20 +1,39 @@
 # Автотесты для VseProst
 
-Этот каталог содержит автоматические тесты для приложения VseProst.
+Этот каталог содержит полный набор автоматических тестов для приложения VseProst. 
+**Всего: 156 тестов** покрывающих все основные модули приложения.
 
 ## Структура тестов
 
 ```
 tests/
-├── conftest.py           # Конфигурация pytest и фикстуры
-├── helpers.py            # Вспомогательные утилиты для тестов
-├── test_auth.py          # Тесты авторизации
-├── test_category.py      # Тесты категорий
-├── test_middleware.py    # Тесты middleware и JWT
-├── test_problem.py       # Тесты проблем
-├── test_registration.py  # Тесты регистрации
-├── test_solution.py      # Тесты решений
-└── test_user.py          # Тесты пользователей
+├── conftest.py                          # Конфигурация pytest и фикстуры
+├── helpers.py                           # Вспомогательные утилиты для тестов
+│
+├── test_auth.py                         # Авторизация (9 тестов)
+├── test_registration.py                 # Регистрация (6 тестов)
+├── test_user.py                         # Пользователи (8 тестов)
+├── test_middleware.py                   # Middleware & JWT (10 тестов)
+│
+├── test_problem.py                      # Проблемы (10 тестов)
+├── test_solution.py                     # Решения (10 тестов)
+├── test_category.py                     # Категории (7 тестов)
+├── test_hashtag.py                      # Хэштеги (8 тестов) ✨ НОВОЕ
+├── test_topic.py                        # Темы (9 тестов) ✨ НОВОЕ
+│
+├── test_cart.py                         # Корзина (8 тестов) ✨ НОВОЕ
+├── test_comment_solution.py             # Комментарии (10 тестов) ✨ НОВОЕ
+├── test_notification.py                 # Уведомления (10 тестов) ✨ НОВОЕ
+│
+├── test_temporary_link_problem.py       # Временные ссылки проблем (5 тестов) ✨ НОВОЕ
+├── test_temporary_link_solution.py      # Временные ссылки решений (5 тестов) ✨ НОВОЕ
+├── test_temporary_problem_solution.py   # Связи проблем-решений (6 тестов) ✨ НОВОЕ
+│
+├── test_password_reset.py               # Сброс пароля (11 тестов) ✨ НОВОЕ
+├── test_image_generation.py             # Генерация изображений (7 тестов) ✨ НОВОЕ
+├── test_image_proxy.py                  # Прокси изображений (5 тестов) ✨ НОВОЕ
+├── test_recommendations.py              # Рекомендации (9 тестов) ✨ НОВОЕ
+└── README.md                            # Этот файл
 ```
 
 ## Установка зависимостей
@@ -23,30 +42,74 @@ tests/
 pip install -r requirements.txt
 ```
 
+## Статистика
+
+| Модуль | Тестов | Статус |
+|--------|--------|--------|
+| Авторизация & Регистрация | 15 | ✅ |
+| Пользователи | 8 | ✅ |
+| Проблемы | 10 | ✅ |
+| Решения | 10 | ✅ |
+| Категории | 7 | ✅ |
+| Middleware & JWT | 10 | ✅ |
+| Хэштеги | 8 | ✨ |
+| Темы | 9 | ✨ |
+| Корзина | 8 | ✨ |
+| Комментарии | 10 | ✨ |
+| Уведомления | 10 | ✨ |
+| Временные ссылки | 10 | ✨ |
+| Связи проблем-решений | 6 | ✨ |
+| Сброс пароля | 11 | ✨ |
+| Генерация изображений | 7 | ✨ |
+| Прокси изображений | 5 | ✨ |
+| Рекомендации | 9 | ✨ |
+| **ВСЕГО** | **156** | **✅** |
+
 ## Запуск тестов
 
 ### Запуск всех тестов
 
 ```bash
-pytest
+pytest tests/ -v
 ```
 
 ### Запуск конкретного файла тестов
 
 ```bash
-pytest tests/test_auth.py
+pytest tests/test_auth.py -v
+pytest tests/test_hashtag.py -v
+pytest tests/test_cart.py -v
+```
+
+### Запуск конкретного класса тестов
+
+```bash
+pytest tests/test_auth.py::TestLogin -v
+pytest tests/test_cart.py::TestGetCart -v
 ```
 
 ### Запуск конкретного теста
 
 ```bash
-pytest tests/test_auth.py::TestLogin::test_login_success
+pytest tests/test_auth.py::TestLogin::test_login_success -v
+pytest tests/test_hashtag.py::TestAddHashtag::test_add_hashtag_success -v
+```
+
+### Запуск только новых тестов
+
+```bash
+pytest tests/test_hashtag.py tests/test_topic.py tests/test_cart.py \
+        tests/test_comment_solution.py tests/test_notification.py \
+        tests/test_temporary_link_problem.py tests/test_temporary_link_solution.py \
+        tests/test_temporary_problem_solution.py tests/test_password_reset.py \
+        tests/test_image_generation.py tests/test_image_proxy.py \
+        tests/test_recommendations.py -v
 ```
 
 ### Запуск с покрытием кода
 
 ```bash
-pytest --cov=logic --cov=app --cov-report=html
+pytest tests/ --cov=logic --cov=app --cov-report=html
 ```
 
 Это создаст отчет о покрытии в формате HTML в папке `htmlcov/`.
@@ -54,13 +117,31 @@ pytest --cov=logic --cov=app --cov-report=html
 ### Запуск с подробным выводом
 
 ```bash
-pytest -v
+pytest tests/ -v
 ```
 
 ### Запуск с выводом print-ов
 
 ```bash
-pytest -s
+pytest tests/ -s
+```
+
+### Запуск с быстрым выводом
+
+```bash
+pytest tests/ -q
+```
+
+### Запуск с остановкой на первой ошибке
+
+```bash
+pytest tests/ -x
+```
+
+### Запуск только не пройденных тестов
+
+```bash
+pytest tests/ --lf
 ```
 
 ## Настройка тестового окружения
@@ -92,7 +173,7 @@ pytest -s
 - `test_problem` - Тестовая проблема
 - `test_solution` - Тестовое решение
 
-## Ключевые улучшения после рефакторинга
+## Ключевые улучшения
 
 ### 1. Вспомогательные утилиты (helpers.py)
 
@@ -206,4 +287,69 @@ pytest --cov=logic --cov=app --cov-report=term-missing
 - Консольный вывод
 - HTML отчет: `htmlcov/index.html`
 - XML отчет: `coverage.xml` (для CI/CD)
+
+## Модули покрытия
+
+### ✅ Полностью протестированы
+
+1. **Аутентификация и авторизация**
+   - Authorization (авторизация)
+   - Registration (регистрация)
+   - Middleware (JWT валидация)
+
+2. **Управление контентом**
+   - Problem (проблемы)
+   - Solution (решения)
+   - Category (категории)
+   - Hashtag (хэштеги)
+   - Topic (темы)
+
+3. **Пользовательский контент**
+   - User (профили пользователей)
+   - CommentSolution (комментарии)
+   - Cart (корзина)
+   - Notification (уведомления)
+
+4. **Дополнительные функции**
+   - TemporaryLinkProblem (временные ссылки на проблемы)
+   - TemporaryLinkSolution (временные ссылки на решения)
+   - TemporaryProblemSolution (связи проблем-решений)
+   - PasswordReset (сброс пароля)
+   - ImageGeneration (генерация изображений)
+   - ImageProxy (прокси изображений)
+   - Recommendations (рекомендации)
+
+## Подсказки и лучшие практики
+
+1. **Используйте параметризованные тесты** для проверки множества вариантов:
+   ```python
+   @pytest.mark.parametrize("status_code", [400, 401, 403])
+   def test_error_responses(self, client, status_code):
+       # ...
+   ```
+
+2. **Используйте fixtures для подготовки данных**:
+   ```python
+   @pytest.fixture
+   def prepared_data(db_session, test_user):
+       # Подготовка данных
+       return data
+   ```
+
+3. **Тестируйте граничные случаи**:
+   - Пустые значения
+   - Очень длинные значения
+   - Специальные символы
+   - Null/None значения
+
+4. **Группируйте связанные тесты**:
+   - По функциональности
+   - По эндпоинтам
+   - По типам ошибок
+
+5. **Используйте понятные имена для тестов**:
+   ```python
+   def test_add_to_cart_should_fail_without_authorization(self):
+       # Понятно, что тестируется и какой результат ожидается
+   ```
 

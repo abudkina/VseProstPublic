@@ -23,7 +23,7 @@ async function loadCart() {
 
   try {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch('/api/cart', {
+    const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CART), {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -37,7 +37,7 @@ async function loadCart() {
       try {
         await auth.refreshToken();
         const newToken = localStorage.getItem('accessToken');
-        const retryResponse = await fetch('/api/cart', {
+        const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CART), {
           method: 'GET',
           credentials: 'include',
           headers: {

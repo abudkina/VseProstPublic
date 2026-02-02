@@ -5,7 +5,21 @@
       "Bash(python -m pytest:*)",
       "Bash(pip install:*)",
       "Bash(dir:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(for file in category.py commentSolution.py feed.py hashtag.py notification.py password_reset.py recommendations.py topic.py user.py)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then if ! grep -q \"from logic.utils.logger import get_logger\" \"$file\")",
+      "Bash(then sed -i '1a from logic.utils.logger import get_logger\\\\n\\\\nlogger = get_logger\\(__name__\\)' \"$file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(for file in *.html)",
+      "Bash(do if ! grep -q \"js/config.js\" \"$file\")",
+      "Bash(then sed -i 's|<script type=\"\"module\"\"|<script src=\"\"/js/config.js\"\"></script>\\\\n<script type=\"\"module\"\"|' \"$file\")",
+      "Bash(if not exist \"c:\\\\Users\\\\budki\\\\Desktop\\\\VseProst\\\\logic\\\\services\" mkdir \"c:\\\\Users\\\\budki\\\\Desktop\\\\VseProst\\\\logic\\\\services\")",
+      "Bash(git add:*)",
+      "Bash(git rebase:*)",
+      "Bash(GIT_EDITOR=true git rebase:*)"
     ]
   }
 }

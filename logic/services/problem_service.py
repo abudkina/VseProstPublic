@@ -19,6 +19,7 @@ from logic.utils.error_handler import (
 )
 from logic.utils.logger import get_logger
 from logic.utils.validators import parse_int_list, parse_bool
+from logic.utils.file_utils import delete_file
 from logic.recommendations import track_user_activity, create_embedding
 from logic.cache_config import cache, CACHE_TIMEOUTS
 
@@ -347,32 +348,43 @@ class ProblemService:
     def delete_problem(problem_id: int, user_id: int) -> None:
         """
         Удаление проблемы.
-        
+
         Args:
             problem_id: ID проблемы
             user_id: ID текущего пользователя (должен быть создателем)
-            
+
         Raises:
             ResourceNotFoundError: Если проблема не найдена
             AuthorizationError: Если пользователь не является создателем
         """
         problem = Problem.query.get(problem_id)
-        
+
         if not problem:
             raise ResourceNotFoundError('Problem', problem_id)
-        
-        if problem.creator_id != user_id:
+
+        if problem.creator != user_id:
             raise AuthorizationError("Только создатель может удалить проблему")
-        
+
         try:
+            # Удаляем связанные файлы
+            if problem.image:
+                try:
+                    delete_file(problem.image)
+                except Exception as e:
+                    logger.warning(f"Не удалось удалить файл изображения: {e}")
+
             db.session.delete(problem)
             db.session.commit()
-            
+
             # Инвалидируем кэш
             cache.delete_memoized(ProblemService.get_all_problems)
             cache.delete_memoized(ProblemService.get_problem_by_id, problem_id)
-            
+
             logger.info(f"Удалена проблема ID={problem_id}")
+        except ResourceNotFoundError:
+            raise
+        except AuthorizationError:
+            raise
         except Exception as e:
             db.session.rollback()
             logger.error(f"Ошибка при удалении проблемы: {e}", exc_info=True)
@@ -382,75 +394,94 @@ class ProblemService:
     def toggle_favourite(problem_id: int, user_id: int) -> Dict[str, Any]:
         """
         Переключение статуса избранного.
-        
+
         Args:
             problem_id: ID проблемы
             user_id: ID пользователя
-            
+
         Returns:
             Словарь с новым статусом избранного
-            
+
         Raises:
-            ResourceNotFoundError: Если проблема не найдена
+            ResourceNotFoundError: Если проблема или пользователь не найдены
         """
         problem = Problem.query.get(problem_id)
-        
         if not problem:
             raise ResourceNotFoundError('Problem', problem_id)
-        
+
+        user = User.query.get(user_id)
+        if not user:
+            raise ResourceNotFoundError('User', user_id)
+
         try:
-            user = User.query.get(user_id)
-            
-            if user and problem in user.favourite_problems:
+            is_favourite = problem in user.favourite_problems
+
+            if is_favourite:
+                # Удаляем из избранного
                 user.favourite_problems.remove(problem)
+                # Обновляем счетчик избранного
+                problem.favourite = max(0, (problem.favourite or 0) - 1)
                 is_favourite = False
             else:
-                if user:
-                    user.favourite_problems.append(problem)
+                # Добавляем в избранное
+                user.favourite_problems.append(problem)
+                # Обновляем счетчик избранного
+                problem.favourite = (problem.favourite or 0) + 1
                 is_favourite = True
-            
+                # Трекируем добавление в избранное
+                try:
+                    track_user_activity(user_id, 'favorite', 'problem', problem_id)
+                except Exception as e:
+                    logger.debug(f"Не удалось отследить добавление в избранное: {e}")
+
             db.session.commit()
             logger.info(f"Статус избранного переключен для проблемы ID={problem_id}")
-            
+
             return {
                 'problem_id': problem_id,
                 'is_favourite': is_favourite
             }
+        except ResourceNotFoundError:
+            raise
         except Exception as e:
             db.session.rollback()
             logger.error(f"Ошибка при переключении избранного: {e}", exc_info=True)
             raise DatabaseError(f"Ошибка при переключении избранного: {str(e)}")
     
     @staticmethod
-    def toggle_show(problem_id: int, user_id: int) -> Dict[str, bool]:
+    def toggle_show(problem_id: int, user_id: int) -> Dict[str, Any]:
         """
         Переключение видимости проблемы.
-        
+
         Args:
             problem_id: ID проблемы
             user_id: ID пользователя (должен быть создателем)
-            
+
         Returns:
             Словарь с новым статусом show
-            
+
         Raises:
             ResourceNotFoundError: Если проблема не найдена
             AuthorizationError: Если пользователь не является создателем
         """
         problem = Problem.query.get(problem_id)
-        
+
         if not problem:
             raise ResourceNotFoundError('Problem', problem_id)
-        
-        if problem.creator_id != user_id:
+
+        # Используем поле creator (не creator_id) как в модели
+        if problem.creator != user_id:
             raise AuthorizationError("Только создатель может менять видимость проблемы")
-        
+
         try:
-            problem.show = None if problem.show else True
+            # Toggle boolean видимости
+            problem.show = not problem.show if problem.show else True
             problem.modified_date = datetime.utcnow()
             db.session.commit()
-            
-            return {'problem_id': problem_id, 'show': problem.show is not None}
+
+            return {'problem_id': problem_id, 'show': bool(problem.show)}
+        except (AuthorizationError, ResourceNotFoundError):
+            raise
         except Exception as e:
             db.session.rollback()
             logger.error(f"Ошибка при переключении видимости: {e}", exc_info=True)
@@ -459,40 +490,144 @@ class ProblemService:
     @staticmethod
     def mark_as_read(problem_id: int, user_id: int) -> Dict[str, Any]:
         """
-        Отметить проблему как прочитанную.
-        
+        Отметить проблему как прочитанную (снять флаг isnew).
+
         Args:
             problem_id: ID проблемы
-            user_id: ID пользователя
-            
+            user_id: ID пользователя (должен быть создателем)
+
         Returns:
             Информация о статусе
-            
+
         Raises:
             ResourceNotFoundError: Если проблема не найдена
+            AuthorizationError: Если пользователь не является создателем
         """
         problem = Problem.query.get(problem_id)
-        
+
         if not problem:
             raise ResourceNotFoundError('Problem', problem_id)
-        
+
+        # Проверка прав - только создатель может отметить как прочитанную
+        if problem.creator != user_id:
+            raise AuthorizationError("Только создатель может отметить проблему как прочитанную")
+
         try:
+            # Снимаем флаг is_new
+            problem.isnew = False
+            problem.modified_date = datetime.utcnow()
+            db.session.commit()
+
             # Трекируем активность
-            track_user_activity(user_id, 'problem', 'view', problem_id)
-            
+            try:
+                track_user_activity(user_id, 'problem', 'view', problem_id)
+            except Exception as e:
+                logger.debug(f"Не удалось отследить активность: {e}")
+
             return {
                 'problem_id': problem_id,
                 'marked_as_read': True
             }
+        except (AuthorizationError, ResourceNotFoundError):
+            raise
         except Exception as e:
+            db.session.rollback()
             logger.error(f"Ошибка при отметке как прочитанной: {e}", exc_info=True)
             raise DatabaseError(f"Ошибка при отметке: {str(e)}")
-    
+
+    @staticmethod
+    def count_new_problems(user_id: int) -> int:
+        """
+        Подсчет новых проблем для пользователя.
+
+        Args:
+            user_id: ID пользователя
+
+        Returns:
+            Количество новых проблем
+        """
+        try:
+            count = Problem.query.filter_by(
+                creator=user_id,
+                isnew=True
+            ).count()
+            return count
+        except Exception as e:
+            logger.error(f"Ошибка при подсчете новых проблем: {e}")
+            raise DatabaseError(f"Ошибка при подсчете: {str(e)}")
+
+    @staticmethod
+    def get_user_problems(
+        user_id: int,
+        limit: int = 50,
+        offset: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Получение проблем конкретного пользователя.
+
+        Args:
+            user_id: ID пользователя
+            limit: Максимальное количество результатов
+            offset: Смещение для пагинации
+
+        Returns:
+            Словарь с информацией о пользователе и его проблемами
+
+        Raises:
+            ResourceNotFoundError: Если пользователь не найден
+            DatabaseError: При ошибках БД
+        """
+        # Валидация параметров
+        limit = min(max(1, limit), ProblemService.MAX_LIMIT)
+        offset = max(0, offset)
+
+        # Проверяем существование пользователя
+        user = User.query.get(user_id)
+        if not user:
+            raise ResourceNotFoundError('User', user_id)
+
+        try:
+            from sqlalchemy.orm import joinedload
+
+            # Получаем проблемы пользователя с eager loading
+            problems = Problem.query.options(
+                joinedload(Problem.hashtags)
+            ).filter_by(
+                creator=user_id,
+                show=True
+            ).order_by(
+                Problem.created_date.desc()
+            ).offset(offset).limit(limit).all()
+
+            # Формируем список проблем
+            problems_list = []
+            for problem in problems:
+                problem_dict = problem.to_dict()
+                problem_dict['hashtags'] = [hashtag.to_dict() for hashtag in problem.hashtags]
+                problems_list.append(problem_dict)
+
+            # Общее количество видимых проблем пользователя
+            total = Problem.query.filter_by(creator=user_id, show=True).count()
+
+            return {
+                'user': {
+                    'id': user.id,
+                    'username': user.username
+                },
+                'problems': problems_list,
+                'total': total
+            }
+        except ResourceNotFoundError:
+            raise
+        except Exception as e:
+            logger.error(f"Ошибка при получении проблем пользователя: {e}")
+            raise DatabaseError(f"Ошибка при получении проблем: {str(e)}")
+
     @staticmethod
     def _format_problem_response(problem: Problem, user_id: Optional[int] = None) -> Dict[str, Any]:
         """
         Форматирование ответа для проблемы.
-        
+
         Args:
             problem: Объект Problem
             user_id: ID текущего пользователя (для определения избранного)

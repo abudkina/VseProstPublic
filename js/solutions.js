@@ -23,6 +23,20 @@ let currentFilters = {
   offset: 0
 };
 
+function setFavoriteIconState(iconElement, isFavorite) {
+  if (!iconElement) return;
+  const isFavoriteFlag = isFavorite === true || isFavorite === 1 || isFavorite === '1';
+  iconElement.classList.add('fa-heart');
+  iconElement.classList.toggle('favorited', isFavoriteFlag);
+  iconElement.classList.toggle('liked', isFavoriteFlag);
+  iconElement.classList.toggle('fas', isFavoriteFlag);
+  iconElement.classList.toggle('far', !isFavoriteFlag);
+  const favoritesWrapper = iconElement.closest('.card-favorites');
+  if (favoritesWrapper) {
+    favoritesWrapper.classList.toggle('favorited', isFavoriteFlag);
+  }
+}
+
 async function loadCards(search = '', category = null, hashtags = [], offset = 0) {
   const container = document.querySelector('.cards-container');
   container.innerHTML = 'Загрузка...';
@@ -37,7 +51,7 @@ async function loadCards(search = '', category = null, hashtags = [], offset = 0
   params.append('offset', currentFilters.offset);
 
   try {
-    const response = await fetch(`/api/solutions?${params.toString()}`);
+    const response = await fetch(API_CONFIG.buildURL(`/solutions?${params.toString()}`));
     if (!response.ok) throw new Error('Ошибка HTTP: ' + response.status);
     const data = await response.json();
 
@@ -239,13 +253,7 @@ function renderCards(data) {
       favoriteIcon.style.cursor = 'pointer';
       
       // Проверяем статус избранного и меняем иконку
-      if (item.IsFavourite === true) {
-        favoriteIcon.src = '/assets/icons/love_6787061.png';
-        favoriteIcon.classList.add('favorited');
-      } else {
-        favoriteIcon.src = '/assets/icons/love_9318199.png';
-        favoriteIcon.classList.remove('favorited');
-      }
+      setFavoriteIconState(favoriteIcon, item.IsFavourite);
       
       favoriteIcon.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -320,12 +328,12 @@ function renderCards(data) {
     // Кнопка добавления в корзину
     const cartBtn = card.querySelector('.card-cart-btn');
     if (cartBtn) {
-      const cartImg = cartBtn.querySelector('img');
+      const cartIcon = cartBtn.querySelector('i');
       
       cartBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        await handleAddToCart(item.ID, cartBtn, cartImg);
+        await handleAddToCart(item.ID, cartBtn, cartIcon);
       });
       
       // Проверяем, есть ли уже в корзине
@@ -333,14 +341,12 @@ function renderCards(data) {
         if (inCart) {
           cartBtn.classList.add('in-cart');
           cartBtn.title = 'Уже в корзине';
-          // Меняем иконку на shopping-bag_4505309 (зеленая заливка)
-          if (cartImg && cartImg.src.includes('shopping-bag_7945129')) {
-            cartImg.src = cartImg.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
+          if (cartIcon) {
+            cartIcon.classList.add('cart-in-cart');
           }
         } else {
-          // Убеждаемся, что иконка shopping-bag_7945129 (зеленый ободок)
-          if (cartImg && cartImg.src.includes('shopping-bag_4505309')) {
-            cartImg.src = cartImg.src.replace('shopping-bag_4505309.png', 'shopping-bag_7945129.png');
+          if (cartIcon) {
+            cartIcon.classList.remove('cart-in-cart');
           }
         }
       });
@@ -362,15 +368,14 @@ function renderCards(data) {
 // Обработчики фильтров теперь инициализируются через initFilterHandlers
 
 // Обработчик добавления в корзину
-async function handleAddToCart(solutionId, button, img) {
+async function handleAddToCart(solutionId, button, icon) {
   const result = await addToCart(solutionId);
   
   if (result.success) {
     button.classList.add('in-cart');
     button.title = 'Уже в корзине';
-    // Меняем иконку на shopping-bag_4505309 (зеленая заливка)
-    if (img && img.src.includes('shopping-bag_7945129')) {
-      img.src = img.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
+    if (icon) {
+      icon.classList.add('cart-in-cart');
     }
     alert(result.message || 'Решение добавлено в корзину');
   } else {
@@ -380,9 +385,19 @@ async function handleAddToCart(solutionId, button, img) {
 
 // Переключение избранного для решений
 async function toggleSolutionFavorite(solutionId, iconElement) {
+  if (!iconElement || iconElement.dataset.pending === '1') {
+    return;
+  }
+  iconElement.dataset.pending = '1';
+  iconElement.style.pointerEvents = 'none';
+  const wrapper = iconElement.closest('.card-favorites');
+  if (wrapper) {
+    wrapper.style.pointerEvents = 'none';
+  }
+
   try {
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-    const response = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+    const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -393,14 +408,14 @@ async function toggleSolutionFavorite(solutionId, iconElement) {
     
     if (response.status === 401) {
       // Пробуем обновить токен
-      const refreshResponse = await fetch('/api/auth/refresh', {
+      const refreshResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
         method: 'POST',
         credentials: 'include'
       });
       
       if (refreshResponse.ok) {
         // Повторяем запрос
-        const retryResponse = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+        const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -415,7 +430,7 @@ async function toggleSolutionFavorite(solutionId, iconElement) {
             const currentCount = parseInt(countElement.textContent) || 0;
             countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
           }
-          iconElement.classList.toggle('liked', data.is_favourite);
+          setFavoriteIconState(iconElement, data.is_favourite);
         }
       }
     } else if (response.ok) {
@@ -425,17 +440,17 @@ async function toggleSolutionFavorite(solutionId, iconElement) {
         const currentCount = parseInt(countElement.textContent) || 0;
         countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
       }
-      // Переключаем иконку и класс favorited
-      if (data.is_favourite) {
-        iconElement.src = '/assets/icons/love_6787061.png';
-        iconElement.classList.add('favorited');
-      } else {
-        iconElement.src = '/assets/icons/love_9318199.png';
-        iconElement.classList.remove('favorited');
-      }
+      // Переключаем иконку и фон избранного
+      setFavoriteIconState(iconElement, data.is_favourite);
     }
   } catch (error) {
     console.error('Ошибка добавления решения в избранное:', error);
+  } finally {
+    iconElement.dataset.pending = '0';
+    iconElement.style.pointerEvents = '';
+    if (wrapper) {
+      wrapper.style.pointerEvents = '';
+    }
   }
 }
 
@@ -454,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentFilters.hashtags = instance.getValue().map(v => parseInt(v, 10));
     currentFilters.offset = 0;
     reloadCards();
-    document.querySelector('.ts-control')?.classList.add('has-items');
+    document.querySelector('.vs-control')?.classList.add('has-items');
   });
   
   // Обработчик удаления хэштегов
@@ -475,7 +490,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           
           reloadCards();
           if (choicesInstance.items.length == 0) {
-            const tsControl = document.querySelector('.ts-control');
+            const tsControl = document.querySelector('.vs-control');
             if (tsControl) {
               tsControl.classList.remove('has-items');
               // Убеждаемся, что плейсхолдер виден

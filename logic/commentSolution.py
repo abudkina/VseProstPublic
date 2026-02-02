@@ -4,6 +4,9 @@ from flask import Blueprint, jsonify, g, request
 from logic.model import CommentSolution, Solution, User
 from logic.middleware import token_required
 from logic.model import db
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 comment_solution_bp = Blueprint('comment_solution', __name__, url_prefix='/api')
 
@@ -32,9 +35,7 @@ def count_comment_solution():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета комментариев решений: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка подсчета комментариев решений: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @comment_solution_bp.route('/comment-solutions', methods=['GET'])
@@ -67,7 +68,7 @@ def get_comment_solutions():
         return jsonify({'comments': comments_list}), 200
         
     except Exception as e:
-        print(f"Ошибка получения комментариев: {e}")
+        logger.error(f"Ошибка получения комментариев: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @comment_solution_bp.route('/comment-solutions/<int:comment_id>/mark-as-read', methods=['PUT'])
@@ -96,7 +97,7 @@ def mark_comment_as_read(comment_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка обновления комментария: {e}")
+        logger.error(f"Ошибка обновления комментария: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @comment_solution_bp.route('/comment-solutions', methods=['POST'])
@@ -138,7 +139,7 @@ def add_comment_solution():
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка создания комментария: {e}")
+        logger.error(f"Ошибка создания комментария: {e}")
         return jsonify({'error': 'Ошибка создания комментария'}), 500
 
 @comment_solution_bp.route('/comment-solutions/<int:comment_id>', methods=['PUT'])
@@ -183,7 +184,7 @@ def update_comment_solution(comment_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка обновления комментария: {e}")
+        logger.error(f"Ошибка обновления комментария: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @comment_solution_bp.route('/comment-solutions/<int:comment_id>', methods=['DELETE'])
@@ -213,7 +214,7 @@ def delete_comment_solution(comment_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка удаления комментария: {e}")
+        logger.error(f"Ошибка удаления комментария: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @comment_solution_bp.route('/comment-solutions/<int:comment_id>/like', methods=['POST'])
@@ -236,7 +237,7 @@ def like_comment(comment_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка лайка комментария: {e}")
+        logger.error(f"Ошибка лайка комментария: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @comment_solution_bp.route('/comment-solutions/<int:comment_id>/not-like', methods=['POST'])
@@ -259,5 +260,5 @@ def not_like_comment(comment_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка дизлайка комментария: {e}")
+        logger.error(f"Ошибка дизлайка комментария: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500

@@ -15,6 +15,9 @@ from werkzeug.security import generate_password_hash
 from logic.model import User, PasswordResetToken, db
 from logic.utils.validators import validate_email, validate_password_strength
 from logic.utils.rate_limiter import get_rate_limit
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 password_reset_bp = Blueprint('password_reset', __name__, url_prefix='/api')
 
@@ -38,7 +41,7 @@ def send_reset_email(user_email, reset_token, username):
         frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8080')
         
         if not mail_username or not mail_password:
-            print("MAIL_USERNAME или MAIL_PASSWORD не настроены")
+            logger.warning("MAIL_USERNAME или MAIL_PASSWORD не настроены")
             return False
         
         # Формируем ссылку для сброса пароля
@@ -135,17 +138,17 @@ def send_reset_email(user_email, reset_token, username):
                 server.login(mail_username, mail_password)
                 server.sendmail(mail_sender, user_email, msg.as_string())
         
-        print(f"Письмо для сброса пароля отправлено на {user_email}")
+        logger.info(f"Письмо для сброса пароля отправлено на {user_email}")
         return True
         
     except smtplib.SMTPAuthenticationError as e:
-        print(f"Ошибка аутентификации SMTP: {e}")
+        logger.error(f"Ошибка аутентификации SMTP: {e}")
         return False
     except smtplib.SMTPException as e:
-        print(f"Ошибка SMTP: {e}")
+        logger.error(f"Ошибка SMTP: {e}")
         return False
     except Exception as e:
-        print(f"Ошибка отправки письма: {e}")
+        logger.error(f"Ошибка отправки письма: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -182,7 +185,7 @@ def forgot_password():
         # Для безопасности всегда возвращаем успех, даже если email не найден
         # Это предотвращает перечисление пользователей
         if not user:
-            print(f"Попытка восстановления пароля для несуществующего email: {email}")
+            logger.warning(f"Попытка восстановления пароля для несуществующего email: {email}")
             return jsonify({
                 'message': 'Если указанный email зарегистрирован, на него будет отправлена ссылка для восстановления пароля.'
             }), 200
@@ -209,7 +212,7 @@ def forgot_password():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка сохранения токена: {e}")
+            logger.error(f"Ошибка сохранения токена: {e}")
             return jsonify({'error': 'Ошибка при создании токена сброса'}), 500
         
         # Отправляем письмо
@@ -218,16 +221,32 @@ def forgot_password():
                 'message': 'Если указанный email зарегистрирован, на него будет отправлена ссылка для восстановления пароля.'
             }), 200
         else:
-            # Если письмо не отправлено, удаляем токен
+            # В development возвращаем успех, чтобы не блокировать тестирование
+            if current_app.config.get('ENV') != 'production':
+                frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8080')
+                reset_link = f"{frontend_url}/html/reset_password.html?token={token}"
+                current_app.logger.warning(
+                    "Password reset email failed in non-production; returning success. reset_link=%s email=%s",
+                    reset_link,
+                    user.email
+                )
+                return jsonify({
+                    'message': 'Если указанный email зарегистрирован, на него будет отправлена ссылка для восстановления пароля.',
+                    'debug_reset_link': reset_link
+                }), 200
+
+            # Если письмо не отправлено в production, удаляем токен
             db.session.delete(reset_token)
             db.session.commit()
             return jsonify({'error': 'Ошибка при отправке письма. Попробуйте позже.'}), 500
             
     except Exception as e:
-        print(f"Ошибка восстановления пароля: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
+        current_app.logger.exception("Ошибка восстановления пароля")
+        response = {'error': 'Внутренняя ошибка сервера'}
+        if current_app.config.get('ENV') != 'production':
+            response['debug_error'] = str(e)
+            response['debug_type'] = type(e).__name__
+        return jsonify(response), 500
 
 
 @password_reset_bp.route('/verify-reset-token', methods=['POST'])
@@ -260,7 +279,7 @@ def verify_reset_token():
         }), 200
         
     except Exception as e:
-        print(f"Ошибка проверки токена: {e}")
+        logger.error(f"Ошибка проверки токена: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 
@@ -317,17 +336,17 @@ def reset_password():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка обновления пароля: {e}")
+            logger.error(f"Ошибка обновления пароля: {e}")
             return jsonify({'error': 'Ошибка при обновлении пароля'}), 500
         
-        print(f"Пароль успешно сброшен для пользователя {user.username}")
+        logger.info(f"Пароль успешно сброшен для пользователя {user.username}")
         
         return jsonify({
             'message': 'Пароль успешно изменен! Теперь вы можете войти с новым паролем.'
         }), 200
         
     except Exception as e:
-        print(f"Ошибка сброса пароля: {e}")
+        logger.error(f"Ошибка сброса пароля: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500

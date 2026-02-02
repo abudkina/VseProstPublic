@@ -176,7 +176,7 @@ function initModal() {
 
 async function loadTopicById(topicId) {
     try {
-        const response = await fetch(`/api/topics/${topicId}`, {
+        const response = await fetch(API_CONFIG.buildURL(`/topics/${topicId}`), {
             headers: getAuthHeaders(),
             credentials: 'include'
         });
@@ -203,7 +203,7 @@ function fillEditForm(topic) {
 }
 
 async function updateTopic(id, data) {
-    const response = await fetch(`/api/topics/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/topics/${id}`), {
         method: 'PUT',
         headers: getAuthHeaders(),
         credentials: 'include',
@@ -217,7 +217,7 @@ async function updateTopic(id, data) {
 }
 
 async function deleteTopic(id) {
-    const response = await fetch(`/api/topics/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/topics/${id}`), {
         method: 'DELETE',
         headers: getAuthHeaders(),
         credentials: 'include'
@@ -249,7 +249,7 @@ async function loadCards() {
         if (token && token !== 'null' && token !== 'undefined') {
             headers['Authorization'] = `Bearer ${token}`;
         }
-        const response = await fetch(`/api/topics?all=true`, {
+        const response = await fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.TOPICS, {all: true}), {
             headers: headers,
             credentials: 'include'  // Важно для работы с cookies
         });

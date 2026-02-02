@@ -14,6 +14,16 @@ let selectedSolutionsList = [];
 
 // Теперь используем градиентный фон вместо внешних изображений
 
+function setFavoriteIconState(icon, isFavorite) {
+    if (!icon) return;
+    const isFavoriteFlag = isFavorite === true || isFavorite === 1 || isFavorite === '1';
+    icon.classList.add('fa-heart');
+    icon.classList.toggle('favorited', isFavoriteFlag);
+    icon.classList.toggle('liked', isFavoriteFlag);
+    icon.classList.toggle('fas', isFavoriteFlag);
+    icon.classList.toggle('far', !isFavoriteFlag);
+}
+
 // Загружаем данные из JSON файлов
 async function loadData() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -21,7 +31,7 @@ async function loadData() {
     if (!problemId) {
         throw new Error("Отсутствует параметр problemId в URL");
     }
-    const response = await fetch(`/api/problems/${problemId}`);
+    const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEM_BY_ID(problemId)));
     if (!response.ok) throw new Error('Ошибка HTTP: ' + response.status);
     const data = await response.json();
     return data.problem ?? data;
@@ -46,7 +56,7 @@ async function displaySolutions() {
     
     updateSEOMetaTags({
         title: `${problem.Name} - Всё Прост`,
-        description: problem.Description || `Проблема: ${problem.Name}. Найдите решения на платформе Всё Прост.`,
+        description: problem.Description || `Проблема: ${problem.Name}. Найдите решения на платформе Всё Прост (VseProst, ВсеПрост, Все Просто, ВсёПрост).`,
         image: problemImage,
         url: problemUrl,
         type: 'article'
@@ -65,6 +75,11 @@ async function displaySolutions() {
     const img = problemInfo.querySelector('.problem-img');
     img.src = problem.Image || '../images/default.png';
     img.alt = problem.Name;
+    
+    // Добавляем обработчик клика для открытия модального окна
+    img.addEventListener('click', () => {
+        openImageViewer(img.src, img.alt);
+    });
 
     const title = problemInfo.querySelector('.problem-title');
     title.textContent = problem.Name;
@@ -79,26 +94,23 @@ async function displaySolutions() {
                 statNumber.textContent = problem.Favourite || 0;
                 
                 // Делаем иконку избранного кликабельной
-                const favoriteIcon = statItem.querySelector('img');
+                const favoriteIcon = statItem.querySelector('.icon');
                 if (favoriteIcon) {
                     // Проверяем статус избранного и устанавливаем правильную иконку
-                    if (problem.IsFavourite === true) {
-                        favoriteIcon.src = '/assets/icons/love_6787061.png';
-                        favoriteIcon.classList.add('favorited');
-                    } else {
-                        favoriteIcon.src = '/assets/icons/love_9318199.png';
-                        favoriteIcon.classList.remove('favorited');
-                    }
+                    setFavoriteIconState(favoriteIcon, problem.IsFavourite);
                     
                     statItem.style.cursor = 'pointer';
                     statItem.addEventListener('click', async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (statItem.dataset.pending === '1') return;
+                        statItem.dataset.pending = '1';
+                        statItem.style.pointerEvents = 'none';
                         
                         // Вызываем toggleFavorite и обновляем счетчик
                         try {
                             const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-                            const response = await fetch(`/api/problems/${problem.ID}/toggle-favourite`, {
+                            const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEM_TOGGLE_FAVORITE(problem.ID)), {
                                 method: 'POST',
                                 credentials: 'include',
                                 headers: {
@@ -109,14 +121,14 @@ async function displaySolutions() {
                             
                             if (response.status === 401) {
                                 // Пробуем обновить токен
-                                const refreshResponse = await fetch('/api/auth/refresh', {
+                                const refreshResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
                                     method: 'POST',
                                     credentials: 'include'
                                 });
                                 
                                 if (refreshResponse.ok) {
                                     // Повторяем запрос
-                                    const retryResponse = await fetch(`/api/problems/${problem.ID}/toggle-favourite`, {
+                                    const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEM_TOGGLE_FAVORITE(problem.ID)), {
                                         method: 'POST',
                                         credentials: 'include',
                                         headers: {
@@ -130,13 +142,7 @@ async function displaySolutions() {
                                         const currentCount = parseInt(statNumber.textContent) || 0;
                                         statNumber.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
                                         // Обновляем иконку
-                                        if (data.is_favourite) {
-                                            favoriteIcon.src = '/assets/icons/love_6787061.png';
-                                            favoriteIcon.classList.add('favorited');
-                                        } else {
-                                            favoriteIcon.src = '/assets/icons/love_9318199.png';
-                                            favoriteIcon.classList.remove('favorited');
-                                        }
+                                        setFavoriteIconState(favoriteIcon, data.is_favourite);
                                     }
                                 }
                             } else if (response.ok) {
@@ -145,16 +151,13 @@ async function displaySolutions() {
                                 const currentCount = parseInt(statNumber.textContent) || 0;
                                 statNumber.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
                                 // Обновляем иконку
-                                if (data.is_favourite) {
-                                    favoriteIcon.src = '/assets/icons/love_6787061.png';
-                                    favoriteIcon.classList.add('favorited');
-                                } else {
-                                    favoriteIcon.src = '/assets/icons/love_9318199.png';
-                                    favoriteIcon.classList.remove('favorited');
-                                }
+                                setFavoriteIconState(favoriteIcon, data.is_favourite);
                             }
                         } catch (error) {
                             console.error('Ошибка добавления в избранное:', error);
+                        } finally {
+                            statItem.dataset.pending = '0';
+                            statItem.style.pointerEvents = '';
                         }
                     });
                 }
@@ -212,7 +215,7 @@ async function displaySolutions() {
     addSolutionBtn.id = 'addSolutionBtn';
     addSolutionBtn.className = 'add-solution-btn';
     addSolutionBtn.innerHTML = `
-        <img src="/assets/icons/idea_17401118.png" alt="Добавить решение" class="btn-icon" />
+        <i class="fas fa-plus-circle btn-icon" aria-hidden="true"></i>
         <span>Добавить решение</span>
     `;
     addSolutionBtnContainer.appendChild(addSolutionBtn);
@@ -473,6 +476,20 @@ async function displaySolutions() {
                         }
                     };
                 }
+                
+                // Добавляем обработчик клика для открытия модального окна
+                if (cardImg) {
+                    cardImg.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const imageSrc = cardImg.src;
+                        const imageAlt = cardImg.alt || solution.Name || 'Решение';
+                        // Пропускаем SVG изображения (data:image/svg+xml) и изображения, которые скрыты
+                        if (imageSrc && !imageSrc.startsWith('data:image/svg+xml') && cardImg.style.display !== 'none') {
+                            openImageViewer(imageSrc, imageAlt);
+                        }
+                    });
+                }
             }
 
             // Заполняем данные карточки
@@ -481,10 +498,7 @@ async function displaySolutions() {
 
             const favoriteIcon = card.querySelector('.favorite-icon');
             if (favoriteIcon) {
-                favoriteIcon.src = solution.IsFavourite ? '/assets/icons/love_6787061.png' : '/assets/icons/love_9318199.png';
-                if (solution.IsFavourite) {
-                    favoriteIcon.classList.add('favorited');
-                }
+                setFavoriteIconState(favoriteIcon, solution.IsFavourite);
                 favoriteIcon.style.cursor = 'pointer';
                 favoriteIcon.addEventListener('click', async (e) => {
                     e.preventDefault();
@@ -594,12 +608,12 @@ async function displaySolutions() {
             // Кнопка добавления в корзину
             const cartBtn = card.querySelector('.card-cart-btn');
             if (cartBtn) {
-                const cartImg = cartBtn.querySelector('img');
+                const cartIcon = cartBtn.querySelector('i');
                 
                 cartBtn.addEventListener('click', async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    await handleAddToCart(solution.ID, cartBtn, cartImg);
+                    await handleAddToCart(solution.ID, cartBtn, cartIcon);
                 });
                 
                 // Проверяем, есть ли уже в корзине
@@ -607,14 +621,12 @@ async function displaySolutions() {
                     if (inCart) {
                         cartBtn.classList.add('in-cart');
                         cartBtn.title = 'Уже в корзине';
-                        // Меняем иконку на shopping-bag_4505309 (зеленая заливка)
-                        if (cartImg && cartImg.src.includes('shopping-bag_7945129')) {
-                            cartImg.src = cartImg.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
+                        if (cartIcon) {
+                            cartIcon.classList.add('cart-in-cart');
                         }
                     } else {
-                        // Убеждаемся, что иконка shopping-bag_7945129 (зеленый ободок)
-                        if (cartImg && cartImg.src.includes('shopping-bag_4505309')) {
-                            cartImg.src = cartImg.src.replace('shopping-bag_4505309.png', 'shopping-bag_7945129.png');
+                        if (cartIcon) {
+                            cartIcon.classList.remove('cart-in-cart');
                         }
                     }
                 });
@@ -626,9 +638,19 @@ async function displaySolutions() {
     
     // Переключение избранного для решений
     async function toggleSolutionFavorite(solutionId, iconElement, countElement) {
+        if (!iconElement || iconElement.dataset.pending === '1') {
+            return;
+        }
+        iconElement.dataset.pending = '1';
+        iconElement.style.pointerEvents = 'none';
+        const wrapper = iconElement.closest('.card-favorites');
+        if (wrapper) {
+            wrapper.style.pointerEvents = 'none';
+        }
+
         try {
             const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-            const response = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+            const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -639,14 +661,14 @@ async function displaySolutions() {
             
             if (response.status === 401) {
                 // Пробуем обновить токен
-                const refreshResponse = await fetch('/api/auth/refresh', {
+                const refreshResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
                     method: 'POST',
                     credentials: 'include'
                 });
                 
                 if (refreshResponse.ok) {
                     // Повторяем запрос
-                    const retryResponse = await fetch(`/api/solutions/${solutionId}/toggle-favourite`, {
+                    const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTION_TOGGLE_FAVORITE(solutionId)), {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -660,13 +682,7 @@ async function displaySolutions() {
                             const currentCount = parseInt(countElement.textContent) || 0;
                             countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
                         }
-                        if (data.is_favourite) {
-                            iconElement.src = '/assets/icons/love_6787061.png';
-                            iconElement.classList.add('favorited');
-                        } else {
-                            iconElement.src = '/assets/icons/love_9318199.png';
-                            iconElement.classList.remove('favorited');
-                        }
+                        setFavoriteIconState(iconElement, data.is_favourite);
                     }
                 }
             } else if (response.ok) {
@@ -675,29 +691,28 @@ async function displaySolutions() {
                     const currentCount = parseInt(countElement.textContent) || 0;
                     countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
                 }
-                if (data.is_favourite) {
-                    iconElement.src = '/assets/icons/love_6787061.png';
-                    iconElement.classList.add('favorited');
-                } else {
-                    iconElement.src = '/assets/icons/love_9318199.png';
-                    iconElement.classList.remove('favorited');
-                }
+                setFavoriteIconState(iconElement, data.is_favourite);
             }
         } catch (error) {
             console.error('Ошибка добавления решения в избранное:', error);
+        } finally {
+            iconElement.dataset.pending = '0';
+            iconElement.style.pointerEvents = '';
+            if (wrapper) {
+                wrapper.style.pointerEvents = '';
+            }
         }
     }
     
     // Обработчик добавления в корзину
-    async function handleAddToCart(solutionId, button, img) {
+    async function handleAddToCart(solutionId, button, icon) {
         const result = await addToCart(solutionId);
         
         if (result.success) {
             button.classList.add('in-cart');
             button.title = 'Уже в корзине';
-            // Меняем иконку на shopping-bag_4505309 (зеленая заливка)
-            if (img && img.src.includes('shopping-bag_7945129')) {
-                img.src = img.src.replace('shopping-bag_7945129.png', 'shopping-bag_4505309.png');
+            if (icon) {
+                icon.classList.add('cart-in-cart');
             }
             alert(result.message || 'Решение добавлено в корзину');
         } else {
@@ -744,6 +759,18 @@ async function displaySolutions() {
             img.alt = linkedProblem.Name || 'Проблема';
             img.className = 'card-image';
             
+            // Добавляем обработчик клика для открытия модального окна
+            img.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const imageSrc = img.src;
+                const imageAlt = img.alt || linkedProblem.Name || 'Проблема';
+                // Пропускаем SVG изображения
+                if (imageSrc && !imageSrc.startsWith('data:image/svg+xml')) {
+                    openImageViewer(imageSrc, imageAlt);
+                }
+            });
+            
             imageLink.appendChild(img);
             imageWrapper.appendChild(imageLink);
             
@@ -762,12 +789,14 @@ async function displaySolutions() {
             // Избранное
             const favoritesDiv = document.createElement('div');
             favoritesDiv.className = 'card-favorites';
-            const favoriteIcon = document.createElement('img');
-            favoriteIcon.src = linkedProblem.IsFavourite ? '/assets/icons/love_6787061.png' : '/assets/icons/love_9318199.png';
-            favoriteIcon.alt = 'Избранное';
-            favoriteIcon.className = 'favorite-icon';
-            if (linkedProblem.IsFavourite) {
-                favoriteIcon.classList.add('favorited');
+            const favoriteIcon = document.createElement('i');
+            favoriteIcon.className = 'favorite-icon fa-heart';
+            favoriteIcon.setAttribute('aria-label', 'Избранное');
+            setFavoriteIconState(favoriteIcon, linkedProblem.IsFavourite);
+            if (linkedProblem.IsFavourite === true) {
+                favoritesDiv.classList.add('favorited');
+            } else {
+                favoritesDiv.classList.remove('favorited');
             }
             const favoriteCount = document.createElement('span');
             favoriteCount.className = 'favorite-count';
@@ -835,10 +864,9 @@ async function displaySolutions() {
             const viewsIcon = document.createElement('div');
             viewsIcon.className = 'stat-icon';
             viewsIcon.title = 'Просмотры';
-            const viewsIconImg = document.createElement('img');
-            viewsIconImg.src = '/assets/icons/eye_8979989.png';
-            viewsIconImg.alt = 'Просмотры';
-            viewsIcon.appendChild(viewsIconImg);
+            const viewsIconEl = document.createElement('i');
+            viewsIconEl.className = 'fas fa-eye';
+            viewsIcon.appendChild(viewsIconEl);
             const viewsValue = document.createElement('div');
             viewsValue.className = 'stat-value';
             viewsValue.textContent = linkedProblem.Views || linkedProblem.Show || 0;
@@ -852,10 +880,9 @@ async function displaySolutions() {
             const commentsIcon = document.createElement('div');
             commentsIcon.className = 'stat-icon';
             commentsIcon.title = 'Подтверждения';
-            const commentsIconImg = document.createElement('img');
-            commentsIconImg.src = '/assets/icons/check-mark_3906842.png';
-            commentsIconImg.alt = 'Подтверждения';
-            commentsIcon.appendChild(commentsIconImg);
+            const commentsIconEl = document.createElement('i');
+            commentsIconEl.className = 'fas fa-check';
+            commentsIcon.appendChild(commentsIconEl);
             const commentsValue = document.createElement('div');
             commentsValue.className = 'stat-value';
             commentsValue.textContent = linkedProblem.Confirmations || (linkedProblem.Solutions?.length || 0);
@@ -869,10 +896,9 @@ async function displaySolutions() {
             const sharesIcon = document.createElement('div');
             sharesIcon.className = 'stat-icon';
             sharesIcon.title = 'Ссылки';
-            const sharesIconImg = document.createElement('img');
-            sharesIconImg.src = '/assets/icons/reply_17222221.png';
-            sharesIconImg.alt = 'Ссылки';
-            sharesIcon.appendChild(sharesIconImg);
+            const sharesIconEl = document.createElement('i');
+            sharesIconEl.className = 'fas fa-share';
+            sharesIcon.appendChild(sharesIconEl);
             const sharesValue = document.createElement('div');
             sharesValue.className = 'stat-value';
             sharesValue.textContent = linkedProblem.Shares || linkedProblem.Reply || 0;
@@ -886,10 +912,9 @@ async function displaySolutions() {
             const linksIcon = document.createElement('div');
             linksIcon.className = 'stat-icon';
             linksIcon.title = 'Ссылки';
-            const linksIconImg = document.createElement('img');
-            linksIconImg.src = '/assets/icons/link_13925097.png';
-            linksIconImg.alt = 'Ссылки';
-            linksIcon.appendChild(linksIconImg);
+            const linksIconEl = document.createElement('i');
+            linksIconEl.className = 'fas fa-link';
+            linksIcon.appendChild(linksIconEl);
             const linksValue = document.createElement('div');
             linksValue.className = 'stat-value';
             linksValue.textContent = linkedProblem.ProblemLinks ? linkedProblem.ProblemLinks.length : 0;
@@ -1099,7 +1124,7 @@ async function saveLinkedProblems() {
         
         for (const linkedProblem of selectedLinkedProblemsList) {
             try {
-                const response = await fetch(`/api/problems/${problemId}/link`, {
+                const response = await fetch(API_CONFIG.buildURL(`/problems/${problemId}/link`), {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -1206,6 +1231,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         solutionModalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
+        
+        // Если нет выбора типа решения, показываем форму сразу и подставляем текущую проблему
+        if (!solutionTypeSelection && form) {
+            form.style.display = 'flex';
+            if (currentProblem && !selectedProblemsList.some(p => p.id === currentProblem.ID)) {
+                selectedProblemsList.push({
+                    id: currentProblem.ID,
+                    title: currentProblem.Name || 'Без названия'
+                });
+                updateSelectedProblems();
+            }
+        }
     }
 
     function closeSolutionModal() {
@@ -1215,10 +1252,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function resetSolutionModal() {
-        // Показываем выбор типа
-        if (solutionTypeSelection) solutionTypeSelection.style.display = 'block';
-        if (existingSolutionForm) existingSolutionForm.style.display = 'none';
-        if (form) form.style.display = 'none';
+        // Если есть выбор типа решения, показываем его, иначе показываем форму сразу
+        if (solutionTypeSelection) {
+            solutionTypeSelection.style.display = 'block';
+            if (existingSolutionForm) existingSolutionForm.style.display = 'none';
+            if (form) form.style.display = 'none';
+        } else {
+            // Если нет выбора типа, показываем форму сразу
+            if (form) form.style.display = 'flex';
+            if (existingSolutionForm) existingSolutionForm.style.display = 'none';
+        }
         
         // Очищаем формы
         if (form) form.reset();
@@ -1316,7 +1359,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (query.length > 2) {
                 try {
                     const token = localStorage.getItem('accessToken');
-                    const response = await fetch(`/api/solutions?search=${encodeURIComponent(query)}&limit=10`, {
+                    const response = await fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.SOLUTIONS, {search: query, limit: 10}), {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -1431,7 +1474,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 for (const solution of selectedSolutionsList) {
                     try {
-                        const response = await fetch(`/api/problems/${problemId}/add-solution`, {
+                        const response = await fetch(API_CONFIG.buildURL(`/problems/${problemId}/add-solution`), {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -1486,7 +1529,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (query.length > 2) {
                 try {
                     const token = localStorage.getItem('accessToken');
-                    const response = await fetch(`/api/problems?search=${encodeURIComponent(query)}&limit=10`, {
+                    const response = await fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.PROBLEMS, {search: query, limit: 10}), {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -1622,7 +1665,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await fetch('/api/solutions', {
+            const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTIONS), {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -1726,3 +1769,50 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Функции для работы с модальным окном просмотра изображений
+function openImageViewer(imageSrc, imageAlt) {
+    const modal = document.getElementById('image-viewer-modal');
+    const viewerImage = document.getElementById('viewer-image');
+    
+    if (modal && viewerImage) {
+        viewerImage.src = imageSrc;
+        viewerImage.alt = imageAlt || 'Изображение';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeImageViewer() {
+    const modal = document.getElementById('image-viewer-modal');
+    
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Инициализация обработчиков модального окна просмотра изображений
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('image-viewer-modal');
+    const closeBtn = document.getElementById('closeImageViewer');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeImageViewer);
+    }
+    
+    if (modal) {
+        // Закрытие при клике на overlay
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.classList.contains('image-viewer-overlay')) {
+                closeImageViewer();
+            }
+        });
+        
+        // Закрытие при нажатии Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeImageViewer();
+            }
+        });
+    }
+});

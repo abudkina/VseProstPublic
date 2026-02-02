@@ -13,6 +13,9 @@ from logic.utils.auth_utils import (
 )
 from logic.utils.validators import validate_email, validate_password_strength, validate_username
 from logic.utils.rate_limiter import get_rate_limit
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 registration_bp = Blueprint('registration', __name__, url_prefix='/api')
 
@@ -59,7 +62,7 @@ def auth_middleware(f):
         
         # Проверяем формат токена перед декодированием
         if not is_valid_jwt_format(access_token):
-            print(f"Ошибка проверки токена: Неверный формат токена (ожидается формат JWT: header.payload.signature)")
+            logger.warning("Ошибка проверки токена: Неверный формат токена (ожидается формат JWT: header.payload.signature)")
             return jsonify({'error': 'Неверный формат токена'}), 401
         
         try:
@@ -71,10 +74,10 @@ def auth_middleware(f):
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Токен истек'}), 401
         except jwt.InvalidTokenError as e:
-            print(f"Ошибка проверки токена: {e}")
+            logger.warning(f"Ошибка проверки токена: {e}")
             return jsonify({'error': 'Неверный токен'}), 401
         except Exception as e:
-            print(f"Ошибка проверки токена: {e}")
+            logger.warning(f"Ошибка проверки токена: {e}")
             return jsonify({'error': 'Некорректные данные токена'}), 401
         
         return f(*args, **kwargs)
@@ -145,7 +148,7 @@ def register_handler():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка создания пользователя: {e}")
+            logger.error(f"Ошибка создания пользователя: {e}")
             return jsonify({'error': 'Ошибка при создании пользователя'}), 500
         
         # Генерация токенов
@@ -167,7 +170,7 @@ def register_handler():
             # Удаляем пользователя, если не удалось сохранить refresh token
             db.session.delete(user)
             db.session.commit()
-            print(f"Ошибка сохранения refresh token: {e}")
+            logger.error(f"Ошибка сохранения refresh token: {e}")
             return jsonify({'error': 'Ошибка при сохранении refresh token'}), 500
         
         # Создаем ответ
@@ -182,29 +185,37 @@ def register_handler():
         return response
         
     except Exception as e:
-        print(f"Общая ошибка регистрации: {e}")
+        logger.error(f"Общая ошибка регистрации: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @registration_bp.route('/validate-token', methods=['GET'])
-@auth_middleware
 def validate_token():
-    """Проверка валидности токена"""
+    """Проверка валидности токена. Возвращает 200 с valid: false при отсутствии/невалидном токене (без 401)."""
+    from logic.middleware import get_token_from_request, is_valid_jwt_format
+    access_token = get_token_from_request()
+    if not access_token or not is_valid_jwt_format(access_token):
+        return jsonify({'valid': False, 'userID': None, 'username': None, 'userType': None, 'isAdmin': False}), 200
+    try:
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=['HS256'])
+        g.user_id = int(payload['userID'])
+        g.username = payload.get('username', '')
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError, ValueError):
+        return jsonify({'valid': False, 'userID': None, 'username': None, 'userType': None, 'isAdmin': False}), 200
     try:
         user = User.query.get(g.user_id)
         user_type = user.type if user else None
-        is_admin = user_type == 2  # TypeUser с id=2 это Admin
-        
+        is_admin = user_type == 2
         return jsonify({
-            'message': 'Токен валиден',
+            'valid': True,
             'userID': g.user_id,
             'username': g.username,
             'userType': user_type,
             'isAdmin': is_admin
         }), 200
     except Exception as e:
-        print(f"Ошибка получения типа пользователя: {e}")
+        logger.error(f"Ошибка получения типа пользователя: {e}")
         return jsonify({
-            'message': 'Токен валиден',
+            'valid': True,
             'userID': g.user_id,
             'username': g.username,
             'userType': None,
@@ -233,7 +244,7 @@ def token_required(f):
         
         # Проверяем формат токена перед декодированием
         if not is_valid_jwt_format(access_token):
-            print(f"Ошибка проверки токена: Неверный формат токена (ожидается формат JWT: header.payload.signature)")
+            logger.warning("Ошибка проверки токена: Неверный формат токена (ожидается формат JWT: header.payload.signature)")
             return jsonify({'error': 'Неверный формат токена'}), 401
         
         try:
@@ -243,10 +254,10 @@ def token_required(f):
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Токен истек'}), 401
         except jwt.InvalidTokenError as e:
-            print(f"Ошибка проверки токена: {e}")
+            logger.warning(f"Ошибка проверки токена: {e}")
             return jsonify({'error': 'Неверный токен'}), 401
         except Exception as e:
-            print(f"Ошибка проверки токена: {e}")
+            logger.warning(f"Ошибка проверки токена: {e}")
             return jsonify({'error': 'Некорректные данные токена'}), 401
         
         return f(*args, **kwargs)
@@ -288,7 +299,7 @@ def get_user(user_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка получения пользователя: {e}")
+        logger.error(f"Ошибка получения пользователя: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @registration_bp.route('/users/me', methods=['GET'])
@@ -311,7 +322,7 @@ def get_current_user():
         }), 200
         
     except Exception as e:
-        print(f"Ошибка получения текущего пользователя: {e}")
+        logger.error(f"Ошибка получения текущего пользователя: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @registration_bp.route('/users/me', methods=['PUT'])
@@ -369,11 +380,11 @@ def update_current_user():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка обновления пользователя: {e}")
+            logger.error(f"Ошибка обновления пользователя: {e}")
             return jsonify({'error': 'Ошибка обновления пользователя'}), 500
         
         return jsonify({'message': 'Пользователь успешно обновлен'}), 200
         
     except Exception as e:
-        print(f"Ошибка обновления пользователя: {e}")
+        logger.error(f"Ошибка обновления пользователя: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500

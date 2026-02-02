@@ -3,8 +3,9 @@ from flask import Blueprint, jsonify, request, g, current_app
 from datetime import datetime, timedelta
 import os
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import joinedload
 from logic.model import Category, Hashtag, Problem, Solution, User, Topic, favourite_problem
-from logic.middleware import token_required
+from logic.middleware import token_required, extract_user_from_token
 import re
 
 from logic.model import db
@@ -12,7 +13,12 @@ from logic.utils.file_utils import allowed_file, save_file, delete_file
 from logic.utils.validators import parse_int_list, parse_bool
 from logic.utils.image_search import generate_image_with_openai
 from logic.recommendations import track_user_activity, get_user_recommendations, create_embedding
+from logic.rag_search import search_with_rag, hybrid_search, semantic_search
 from logic.utils.logger import get_logger
+from logic.services.problem_service import ProblemService
+from logic.utils.error_handler import (
+    ValidationError, AuthorizationError, ResourceNotFoundError, DatabaseError
+)
 
 logger = get_logger(__name__)
 
@@ -33,10 +39,10 @@ def get_hashtags():
         search_pattern = f"{query.lower()}%"
         
         hashtags = Hashtag.query.filter(
-            Hashtag.creator_id == user_id,
+            Hashtag.creator == user_id,
             Hashtag.name.ilike(search_pattern)
         ).order_by(
-            Hashtag.show.desc(), 
+            Hashtag.show.desc(),
             Hashtag.modified_date.desc()
         ).limit(20).all()
         
@@ -45,10 +51,10 @@ def get_hashtags():
             hashtags_list.append({
                 'id': hashtag.id,
                 'name': hashtag.name,
-                'creator_id': hashtag.creator_id,
+                'creator_id': hashtag.creator,
                 'created_date': hashtag.created_date.isoformat() if hashtag.created_date else None,
                 'modified_date': hashtag.modified_date.isoformat() if hashtag.modified_date else None,
-                'is_new': hashtag.is_new,
+                'is_new': hashtag.isnew,
                 'show': hashtag.show
             })
         
@@ -62,23 +68,42 @@ def get_hashtags():
 def get_problems():
     """Получение списка проблем с фильтрацией и пагинацией"""
     try:
+        # Извлекаем информацию о пользователе из токена (если есть)
+        # Это нужно для определения IsFavourite, даже если авторизация не обязательна
+        extract_user_from_token()
+        
         # Получаем параметры фильтрации
         search = request.args.get('search', '').strip()
         category_param = request.args.get('category', '')
         hashtags_param = request.args.get('hashtags', '')
         topic_param = request.args.get('topic', '')
         exclude_param = request.args.get('exclude', '')
-        limit = request.args.get('limit', default=50, type=int)
-        offset = request.args.get('offset', default=0, type=int)
-        
-        # Ограничиваем лимит
+        try:
+            limit = int(request.args.get('limit', 50))
+        except (TypeError, ValueError):
+            limit = 50
+        try:
+            offset = int(request.args.get('offset', 0))
+        except (TypeError, ValueError):
+            offset = 0
         if limit > 100:
             limit = 100
+        if limit < 1:
+            limit = 50
+        if offset < 0:
+            offset = 0
         
         logger.debug(f"Параметры запроса: search={search}, category={category_param}, hashtags={hashtags_param}, limit={limit}, offset={offset}")
         
-        # Получаем user_id для рекомендаций
+        # Получаем user_id для рекомендаций и проверки избранного
         user_id = getattr(g, 'user_id', None)
+        
+        # Отслеживаем поисковый запрос (если пользователь авторизован и есть поиск)
+        if user_id and search:
+            try:
+                track_user_activity(user_id, 'search', 'problem', search_query=search)
+            except Exception as e:
+                logger.debug(f"Не удалось отследить поисковый запрос: {e}")
         
         # Получаем рекомендации для пользователя (если авторизован)
         recommended_ids = []
@@ -115,19 +140,54 @@ def get_problems():
             current_app.logger.warning(f"Ошибка отладки: {debug_error}")
         
         # Начинаем базовый запрос
-        query = Problem.query
-        
+        # Используем joinedload для eager loading связанных объектов (исправление N+1)
+        query = Problem.query.options(
+            joinedload(Problem.hashtags),
+            joinedload(Problem.solutions),
+            joinedload(Problem.linked_problems),
+            joinedload(Problem.favourite_users)
+        )
+
         # Фильтр по поиску (название или описание)
+        # Используем гибридный поиск (RAG + текстовый) для лучших результатов
+        rag_search_results = []
         if search:
-            search_lower = f"%{search.lower()}%"
-            
-            from sqlalchemy import func
-            query = query.filter(
-                db.or_(
-                    func.lower(Problem.name).like(search_lower),
-                    func.lower(Problem.describe).like(search_lower)
+            try:
+                # Пробуем использовать RAG поиск для семантического поиска
+                search_mode = request.args.get('search_mode', 'hybrid')  # 'text', 'semantic', 'hybrid', 'multimodal'
+                rag_search_results = search_with_rag(
+                    query=search,
+                    entity_type='problem',
+                    search_mode=search_mode,
+                    limit=limit * 2,  # Берем больше для фильтрации
+                    exclude_ids=[int(exclude_param)] if exclude_param else None
                 )
-            )
+                
+                # Если есть результаты RAG поиска, используем их
+                if rag_search_results:
+                    rag_ids = [entity_id for entity_id, score in rag_search_results]
+                    query = query.filter(Problem.id.in_(rag_ids))
+                else:
+                    # Fallback на обычный текстовый поиск
+                    search_lower = f"%{search.lower()}%"
+                    from sqlalchemy import func
+                    query = query.filter(
+                        db.or_(
+                            func.lower(Problem.name).like(search_lower),
+                            func.lower(Problem.describe).like(search_lower)
+                        )
+                    )
+            except Exception as e:
+                logger.warning(f"Ошибка RAG поиска, используем текстовый поиск: {e}")
+                # Fallback на обычный текстовый поиск
+                search_lower = f"%{search.lower()}%"
+                from sqlalchemy import func
+                query = query.filter(
+                    db.or_(
+                        func.lower(Problem.name).like(search_lower),
+                        func.lower(Problem.describe).like(search_lower)
+                    )
+                )
         
         # Фильтр по категории
         if category_param:
@@ -177,7 +237,28 @@ def get_problems():
                 logger.warning(f"Ошибка преобразования exclude: {exclude_param}")
         
         # Применяем сортировку и пагинацию
-        problems = query.order_by(Problem.created_date.desc()).offset(offset).limit(limit).all()
+        # Если использовался RAG поиск, сортируем по релевантности
+        if rag_search_results and search:
+            # Создаем словарь с оценками релевантности
+            relevance_scores = {entity_id: score for entity_id, score in rag_search_results}
+            
+            # Получаем все проблемы
+            all_problems = query.all()
+            
+            # Сортируем по релевантности (если есть), затем по дате
+            problems = sorted(
+                all_problems,
+                key=lambda p: (
+                    -relevance_scores.get(p.id, 0.0),  # Сначала по релевантности (убывание)
+                    -(p.created_date or datetime.min).timestamp()  # Затем по дате (убывание)
+                )
+            )
+            
+            # Применяем пагинацию
+            problems = problems[offset:offset + limit]
+        else:
+            # Обычная сортировка по дате
+            problems = query.order_by(Problem.created_date.desc()).offset(offset).limit(limit).all()
         
         logger.debug(f"Найдено проблем через SQLAlchemy: {len(problems)}")
         
@@ -238,6 +319,23 @@ def get_problems():
         
         # Формируем ответ в формате, ожидаемом фронтендом
         problems_list = []
+
+        # Предзагрузка данных для избежания N+1 queries
+        # Загружаем user один раз (вместо загрузки в каждой итерации цикла)
+        current_user = None
+        user_favourite_problem_ids = set()
+        if user_id:
+            current_user = User.query.options(joinedload(User.favourite_problems)).get(user_id)
+            if current_user:
+                user_favourite_problem_ids = {p.id for p in current_user.favourite_problems}
+
+        # Предзагружаем все темы одним запросом (вместо N запросов)
+        topic_ids = {p.topic for p in problems if p.topic}
+        topics_dict = {}
+        if topic_ids:
+            topics = Topic.query.filter(Topic.id.in_(topic_ids)).all()
+            topics_dict = {t.id: {'ID': t.id, 'Name': t.name} for t in topics}
+
         for problem in problems:
             # Получаем количество избранных для этой проблемы
             favourite_count = 0
@@ -248,26 +346,15 @@ def get_problems():
                 # Если таблица favourite_problem не существует, используем значение из поля favourite
                 logger.warning(f"Ошибка при получении избранных пользователей: {fav_error}")
                 favourite_count = problem.favourite or 0
-            
-            # Проверяем, добавлено ли в избранное текущим пользователем
-            is_favourite = False
-            if user_id:
-                user = User.query.get(user_id)
-                if user and problem in user.favourite_problems:
-                    is_favourite = True
-            
+
+            # Проверяем, добавлено ли в избранное текущим пользователем (O(1) вместо N+1)
+            is_favourite = problem.id in user_favourite_problem_ids
+
             # Отмечаем, является ли проблема рекомендованной
             is_recommended = problem.id in recommended_ids if recommended_ids else False
-            
-            # Получаем информацию о теме
-            topic_info = None
-            if problem.topic:
-                topic = Topic.query.get(problem.topic)
-                if topic:
-                    topic_info = {
-                        'ID': topic.id,
-                        'Name': topic.name
-                    }
+
+            # Получаем информацию о теме из предзагруженного словаря (O(1) вместо N+1)
+            topic_info = topics_dict.get(problem.topic)
             
             problem_data = {
                 'ID': problem.id,
@@ -300,13 +387,13 @@ def get_problems():
                 } for hashtag in problem.hashtags]
             
             # Добавляем решения
-            if hasattr(problem, 'linked_solutions') and problem.linked_solutions:
+            if hasattr(problem, 'solutions') and problem.solutions:
                 problem_data['Solutions'] = [{
                     'ID': solution.id,
                     'Name': solution.name,
                     'Describe': solution.describe[:100] + '...' if len(solution.describe) > 100 else solution.describe if solution.describe else '',
                     'Image': solution.image or '../images/default.png'
-                } for solution in problem.linked_solutions]
+                } for solution in problem.solutions]
             
             # Добавляем связанные проблемы
             if hasattr(problem, 'linked_problems') and problem.linked_problems:
@@ -340,8 +427,15 @@ def get_problems():
 def get_problem_by_id(problem_id):
     """Получение проблемы по ID с связанными хэштегами и решениями"""
     try:
-        # Получаем основную информацию о проблеме
-        problem = Problem.query.get(problem_id)
+        # Получаем основную информацию о проблеме с eager loading связей
+        # Используем joinedload для избежания N+1 queries
+        problem = Problem.query.options(
+            joinedload(Problem.hashtags),
+            joinedload(Problem.solutions).joinedload(Solution.comments),
+            joinedload(Problem.solutions).joinedload(Solution.problems).joinedload(Problem.hashtags),
+            joinedload(Problem.linked_problems),
+            joinedload(Problem.favourite_users)
+        ).get(problem_id)
         
         if not problem:
             return jsonify({'error': 'Проблема не найдена'}), 404
@@ -373,14 +467,9 @@ def get_problem_by_id(problem_id):
         # Получаем решения с комментариями
         solutions = []
         
-        # Используем SQLAlchemy для получения решений с комментариями
-        from sqlalchemy.orm import joinedload
-        
-        # Альтернативный способ: получаем решения через relationship
-        if hasattr(problem, 'linked_solutions'):
-            for solution in problem.linked_solutions:
-                # Загружаем комментарии для каждого решения
-                db.session.refresh(solution)
+        # Получаем решения через relationship (уже загружены с joinedload)
+        if hasattr(problem, 'solutions'):
+            for solution in problem.solutions:
                 
                 # Формируем данные о решении
                 solution_data = {
@@ -546,7 +635,6 @@ def get_problem_by_id(problem_id):
                 # Добавляем количество связанных решений
                 linked_solutions_count = 0
                 try:
-                    from logic.model import Solution
                     solution_obj = Solution.query.get(row[0])
                     if solution_obj and hasattr(solution_obj, 'linked_solutions') and solution_obj.linked_solutions:
                         linked_solutions_count = len(solution_obj.linked_solutions)
@@ -557,7 +645,6 @@ def get_problem_by_id(problem_id):
                 # Добавляем связанные проблемы с хэштегами для отображения тегов
                 problems_data = []
                 try:
-                    from logic.model import Solution
                     solution_obj = Solution.query.get(row[0])
                     if solution_obj and hasattr(solution_obj, 'problems') and solution_obj.problems:
                         for prob in solution_obj.problems:
@@ -800,12 +887,12 @@ def create_problem():
                 return create_problem_from_json(user_id, data)
             return jsonify({'error': 'Неверный формат данных'}), 400
         
-        # Получаем данные из формы
+        # Получаем данные из формы (поддержка разных имён полей от фронта)
         name = request.form.get('name', '').strip()
         describe = request.form.get('describe', '').strip()
-        category_str = request.form.get('category', '')
-        topic_str = request.form.get('topicID', '')
-        hashtags_str = request.form.get('hashtagsIDs', '')
+        category_str = request.form.get('category') or request.form.get('category_id', '')
+        topic_str = request.form.get('topicID') or request.form.get('topic_id', '')
+        hashtags_str = request.form.get('hashtagsIDs') or request.form.get('hashtags', '')
         
         # Валидация
         if not name:
@@ -934,9 +1021,9 @@ def create_problem_from_json(user_id, data):
         try:
             image_path = generate_image_with_openai(name, describe)
             if image_path:
-                print(f"Автоматически сгенерировано изображение для проблемы '{name}': {image_path}")
+                logger.info(f"Автоматически сгенерировано изображение для проблемы '{name}': {image_path}")
         except Exception as e:
-            print(f"Ошибка автоматической генерации изображения: {e}")
+            logger.warning(f"Ошибка автоматической генерации изображения: {e}")
             # Продолжаем без изображения
         
         # Создаём проблему
@@ -974,9 +1061,9 @@ def create_problem_from_json(user_id, data):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка создания проблемы из JSON: {e}")
+        logger.error(f"Ошибка создания проблемы из JSON: {e}")
         return jsonify({'error': 'Ошибка создания проблемы'}), 500
-    
+
 @problem_bp.route('/problems/count-new', methods=['GET'])
 @token_required
 def count_problem():
@@ -985,18 +1072,16 @@ def count_problem():
         user_id = getattr(g, 'user_id', None)
         if not user_id:
             return jsonify({'error': 'userID не найден'}), 401
-        
-        # Подсчитываем новые проблемы пользователя
-        count = Problem.query.filter_by(
-            creator=user_id,
-            isnew=True
-        ).count()
-        
+
+        count = ProblemService.count_new_problems(user_id)
         return jsonify({'count': count}), 200
-        
-    except Exception as e:
-        print(f"Ошибка подсчета проблем: {e}")
+
+    except DatabaseError as e:
+        logger.error(f"Ошибка подсчета проблем: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
+    except Exception as e:
+        logger.error(f"Ошибка подсчета проблем: {e}")
+        return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @problem_bp.route('/problems/<int:problem_id>', methods=['PUT'])
 @token_required
@@ -1082,16 +1167,16 @@ def update_problem(problem_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка обновления проблемы: {e}")
+            logger.error(f"Ошибка обновления проблемы: {e}")
             return jsonify({'error': 'Ошибка обновления проблемы'}), 500
-        
+
         return jsonify({
             'message': 'Проблема обновлена',
             'problem': problem.to_dict()
         }), 200
-        
+
     except Exception as e:
-        print(f"Ошибка обновления проблемы: {e}")
+        logger.error(f"Ошибка обновления проблемы: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @problem_bp.route('/problems/<int:problem_id>', methods=['DELETE'])
@@ -1102,32 +1187,19 @@ def delete_problem(problem_id):
         user_id = getattr(g, 'user_id', None)
         if not user_id:
             return jsonify({'error': 'userID не найден'}), 401
-        
-        # Проверяем, существует ли проблема и принадлежит ли пользователю
-        problem = Problem.query.get(problem_id)
-        if not problem:
-            return jsonify({'error': 'Проблема не найдена'}), 404
-        
-        if problem.creator != user_id:
-            return jsonify({'error': 'Нет прав на удаление'}), 403
-        
-        # Удаляем связанные файлы
-        if problem.image:
-            delete_file(problem.image)
-        
-        # Удаляем проблему (каскадное удаление настроено в моделях)
-        try:
-            db.session.delete(problem)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Ошибка удаления проблемы: {e}")
-            return jsonify({'error': 'Ошибка удаления проблемы'}), 500
-        
+
+        ProblemService.delete_problem(problem_id, user_id)
         return jsonify({'message': 'Проблема удалена'}), 200
-        
+
+    except ResourceNotFoundError:
+        return jsonify({'error': 'Проблема не найдена'}), 404
+    except AuthorizationError:
+        return jsonify({'error': 'Нет прав на удаление'}), 403
+    except DatabaseError as e:
+        logger.error(f"Ошибка удаления проблемы: {e}")
+        return jsonify({'error': 'Ошибка удаления проблемы'}), 500
     except Exception as e:
-        print(f"Ошибка удаления проблемы: {e}")
+        logger.error(f"Ошибка удаления проблемы: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 # Дополнительные обработчики
@@ -1140,53 +1212,17 @@ def toggle_favourite(problem_id):
         user_id = getattr(g, 'user_id', None)
         if not user_id:
             return jsonify({'error': 'userID не найден'}), 401
-        
-        # Проверяем, существует ли проблема
-        problem = Problem.query.get(problem_id)
-        if not problem:
-            return jsonify({'error': 'Проблема не найдена'}), 404
-        
-        # Получаем пользователя
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'error': 'Пользователь не найден'}), 404
-        
-        # Проверяем, есть ли уже в избранном через many-to-many
-        is_favourite = problem in user.favourite_problems
-        
-        if is_favourite:
-            # Удаляем из избранного
-            user.favourite_problems.remove(problem)
-            # Обновляем счетчик избранного
-            problem.favourite = max(0, (problem.favourite or 0) - 1)
-            is_favourite = False
-        else:
-            # Добавляем в избранное
-            user.favourite_problems.append(problem)
-            # Обновляем счетчик избранного
-            problem.favourite = (problem.favourite or 0) + 1
-            is_favourite = True
-            # Отслеживаем добавление в избранное
-            try:
-                track_user_activity(user_id, 'favorite', 'problem', problem_id)
-            except Exception as e:
-                current_app.logger.debug(f"Не удалось отследить добавление в избранное: {e}")
-        
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': 'Ошибка обновления избранного'}), 500
-        
-        return jsonify({
-            'message': 'Избранное обновлено',
-            'is_favourite': is_favourite
-        }), 200
-        
+
+        result = ProblemService.toggle_favourite(problem_id, user_id)
+        return jsonify({'message': 'Избранное обновлено', **result}), 200
+
+    except ResourceNotFoundError as e:
+        return jsonify({'error': str(e)}), 404
+    except DatabaseError as e:
+        logger.error(f"Ошибка БД: {e}")
+        return jsonify({'error': 'Ошибка обновления избранного'}), 500
     except Exception as e:
-        print(f"Ошибка обновления избранного: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка обновления избранного: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @problem_bp.route('/problems/<int:problem_id>/toggle-show', methods=['POST'])
@@ -1197,28 +1233,19 @@ def toggle_show(problem_id):
         user_id = getattr(g, 'user_id', None)
         if not user_id:
             return jsonify({'error': 'userID не найден'}), 401
-        
-        problem = Problem.query.get(problem_id)
-        if not problem or problem.creator_id != user_id:
-            return jsonify({'error': 'Проблема не найдена или нет прав'}), 404
-        
-        # Переключаем видимость
-        problem.show = not problem.show
-        problem.modified_date = datetime.utcnow()
-        
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': 'Ошибка обновления видимости'}), 500
-        
-        return jsonify({
-            'message': 'Видимость обновлена',
-            'show': problem.show
-        }), 200
-        
+
+        result = ProblemService.toggle_show(problem_id, user_id)
+        return jsonify({'message': 'Видимость обновлена', **result}), 200
+
+    except ResourceNotFoundError:
+        return jsonify({'error': 'Проблема не найдена'}), 404
+    except AuthorizationError:
+        return jsonify({'error': 'Нет прав для этой операции'}), 403
+    except DatabaseError as e:
+        logger.error(f"Ошибка БД: {e}")
+        return jsonify({'error': 'Ошибка обновления видимости'}), 500
     except Exception as e:
-        print(f"Ошибка обновления видимости: {e}")
+        logger.exception(f"Ошибка обновления видимости: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @problem_bp.route('/problems/<int:problem_id>/mark-as-read', methods=['POST'])
@@ -1229,25 +1256,19 @@ def mark_problem_as_read(problem_id):
         user_id = getattr(g, 'user_id', None)
         if not user_id:
             return jsonify({'error': 'userID не найден'}), 401
-        
-        problem = Problem.query.get(problem_id)
-        if not problem or problem.creator_id != user_id:
-            return jsonify({'error': 'Проблема не найдена или нет прав'}), 404
-        
-        # Снимаем флаг is_new
-        problem.isnew = False
-        problem.modified_date = datetime.utcnow()
-        
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': 'Ошибка обновления проблемы'}), 500
-        
-        return jsonify({'message': 'Проблема отмечена как прочитанная'}), 200
-        
+
+        result = ProblemService.mark_as_read(problem_id, user_id)
+        return jsonify({'message': 'Проблема отмечена как прочитанная', **result}), 200
+
+    except ResourceNotFoundError:
+        return jsonify({'error': 'Проблема не найдена'}), 404
+    except AuthorizationError:
+        return jsonify({'error': 'Нет прав для этой операции'}), 403
+    except DatabaseError as e:
+        logger.error(f"Ошибка БД: {e}")
+        return jsonify({'error': 'Ошибка обновления проблемы'}), 500
     except Exception as e:
-        print(f"Ошибка обновления проблемы: {e}")
+        logger.exception(f"Ошибка обновления проблемы: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @problem_bp.route('/problems/user/<int:user_id>', methods=['GET'])
@@ -1256,41 +1277,18 @@ def get_user_problems(user_id):
     try:
         limit = request.args.get('limit', default=50, type=int)
         offset = request.args.get('offset', default=0, type=int)
-        
-        if limit > 100:
-            limit = 100
-        
-        # Проверяем, существует ли пользователь
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'error': 'Пользователь не найден'}), 404
-        
-        # Получаем проблемы пользователя
-        problems = Problem.query.filter_by(
-            creator=user_id,
-            show=True  # Только видимые проблемы
-        ).order_by(
-            Problem.created_date.desc()
-        ).offset(offset).limit(limit).all()
-        
-        problems_list = []
-        for problem in problems:
-            problem_dict = problem.to_dict()
-            problem_dict['hashtags'] = [hashtag.to_dict() for hashtag in problem.hashtags]
-            problems_list.append(problem_dict)
-        
-        return jsonify({
-            'user': {
-                'id': user.id,
-                'username': user.username
-            },
-            'problems': problems_list,
-            'total': Problem.query.filter_by(creator_id=user_id, show=True).count()
-        }), 200
-        
-    except Exception as e:
-        print(f"Ошибка получения проблем пользователя: {e}")
+
+        result = ProblemService.get_user_problems(user_id, limit, offset)
+        return jsonify(result), 200
+
+    except ResourceNotFoundError:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+    except DatabaseError as e:
+        logger.error(f"Ошибка получения проблем пользователя: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
+    except Exception as e:
+        logger.error(f"Ошибка получения проблем пользователя: {e}")
+        return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @problem_bp.route('/problems/<int:problem_id>/link', methods=['POST'])
 @token_required
@@ -1353,9 +1351,7 @@ def link_problem(problem_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка добавления связи между проблемами: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка добавления связи между проблемами: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @problem_bp.route('/problems/<int:problem_id>/add-solution', methods=['POST'])
@@ -1416,7 +1412,5 @@ def add_solution_to_problem(problem_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Ошибка добавления решения к проблеме: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка добавления решения к проблеме: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500

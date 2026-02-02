@@ -179,7 +179,7 @@ function initModal() {
 async function loadUserById(userId) {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/users/${userId}`, {
+        const response = await fetch(API_CONFIG.buildURL(`/users/${userId}`), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -212,7 +212,7 @@ function fillEditForm(user) {
 
 async function updateUser(id, data) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/users/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/users/${id}`), {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -229,7 +229,7 @@ async function updateUser(id, data) {
 
 async function deleteUser(id) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/users/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/users/${id}`), {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -255,7 +255,7 @@ async function loadCards() {
 
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/users`, {
+        const response = await fetch(API_CONFIG.buildURL('/users'), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

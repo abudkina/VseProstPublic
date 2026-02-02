@@ -173,7 +173,7 @@ function initModal() {
 async function loadCategoryById(categoryId) {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/categories`, {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CATEGORIES), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -204,7 +204,7 @@ function fillEditForm(category) {
 
 async function updateCategory(id, data) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/categories/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/categories/${id}`), {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -221,7 +221,7 @@ async function updateCategory(id, data) {
 
 async function deleteCategory(id) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/categories/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/categories/${id}`), {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -247,7 +247,7 @@ async function loadCards() {
 
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/categories`, {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CATEGORIES), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

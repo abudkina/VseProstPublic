@@ -2,6 +2,9 @@
 from flask import Blueprint, jsonify, g
 from logic.model import TemporaryProblemSolution
 from logic.middleware import token_required
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 temporary_problem_solution_bp = Blueprint('temporary_problem_solution', __name__, url_prefix='/api')
 
@@ -22,5 +25,5 @@ def count_temporary_problem_solution():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета временных связей проблем и решений: {e}")
+        logger.error(f"Ошибка подсчета временных связей проблем и решений: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500

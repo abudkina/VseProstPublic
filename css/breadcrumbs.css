@@ -1,0 +1,78 @@
+/* breadcrumbs.css */
+/* Стили для навигационных хлебных крошек */
+
+.breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: #666;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.breadcrumbs a {
+    color: #0066cc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumbs a:hover {
+    color: #004499;
+    text-decoration: underline;
+}
+
+.breadcrumbs span {
+    color: #999;
+    margin: 0 4px;
+}
+
+.breadcrumbs .current {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+    .breadcrumbs {
+        padding: 10px 15px;
+        font-size: 12px;
+        gap: 6px;
+    }
+    
+    .breadcrumbs .separator {
+        display: none;
+    }
+    
+    .breadcrumbs li:not(:last-child) {
+        display: none;
+    }
+    
+    .breadcrumbs li:last-child {
+        display: block;
+    }
+}
+
+/* Для мобильных устройств - показываем хотя бы первый элемент */
+@media (max-width: 480px) {
+    .breadcrumbs {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+    
+    .breadcrumbs li:nth-child(n+3) {
+        display: none;
+    }
+}
+
+/* Schema.org микроразметка */
+.breadcrumbs[itemscope][itemtype="https://schema.org/BreadcrumbList"] li[itemprop="itemListElement"] {
+    list-style: none;
+}
+
+.breadcrumbs[itemscope][itemtype="https://schema.org/BreadcrumbList"] li[itemprop="itemListElement"] a[itemprop="item"] {
+    display: inline;
+}

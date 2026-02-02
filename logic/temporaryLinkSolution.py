@@ -2,6 +2,9 @@
 from flask import Blueprint, jsonify, g
 from logic.model import TemporaryLinkSolution
 from logic.middleware import token_required
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 temporary_link_solution_bp = Blueprint('temporary_link_solution', __name__, url_prefix='/api')
 
@@ -22,5 +25,5 @@ def count_temporary_link_solution():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета временных ссылок на решения: {e}")
+        logger.error(f"Ошибка подсчета временных ссылок на решения: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500

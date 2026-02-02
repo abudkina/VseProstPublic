@@ -9,6 +9,9 @@ from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timedelta
 from flask import current_app
 from logic.model import db, UserActivity, Embedding, Problem, Solution, User
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Попытка импортировать sentence-transformers
 try:
@@ -16,7 +19,7 @@ try:
     SENTENCE_TRANSFORMERS_AVAILABLE = True
 except ImportError:
     SENTENCE_TRANSFORMERS_AVAILABLE = False
-    print("⚠️ sentence-transformers не установлен. Рекомендации будут работать в упрощенном режиме.")
+    logger.warning("sentence-transformers не установлен. Рекомендации будут работать в упрощенном режиме.")
 
 # Глобальная переменная для модели (загружается один раз)
 _model = None
@@ -29,12 +32,12 @@ def get_model():
     global _model
     if _model is None and SENTENCE_TRANSFORMERS_AVAILABLE:
         try:
-            print(f"🔄 Загрузка модели {_model_name}...")
+            logger.info(f"Загрузка модели {_model_name}...")
             _model = SentenceTransformer(_model_name)
-            print(f"✅ Модель {_model_name} загружена успешно")
+            logger.info(f"Модель {_model_name} загружена успешно")
         except Exception as e:
-            print(f"⚠️ Ошибка загрузки модели: {e}")
-            print("💡 Рекомендации будут работать в упрощенном режиме (на основе текстового поиска)")
+            logger.warning(f"Ошибка загрузки модели: {e}")
+            logger.info("Рекомендации будут работать в упрощенном режиме (на основе текстового поиска)")
     return _model
 
 def track_user_activity(user_id: int, activity_type: str, entity_type: str, 
@@ -60,9 +63,17 @@ def track_user_activity(user_id: int, activity_type: str, entity_type: str,
         )
         db.session.add(activity)
         db.session.commit()
+        
+        # Запускаем обновление персональных знаний (асинхронно, не блокируя основной процесс)
+        try:
+            from logic.user_knowledge import trigger_knowledge_update
+            trigger_knowledge_update(user_id)
+        except Exception as e:
+            # Не критично, если не удалось обновить знания
+            logger.warning(f"Не удалось обновить персональные знания: {e}")
     except Exception as e:
         db.session.rollback()
-        print(f"⚠️ Ошибка отслеживания активности: {e}")
+        logger.warning(f"Ошибка отслеживания активности: {e}")
 
 def get_text_for_embedding(entity_type: str, entity_id: int) -> Optional[str]:
     """Получить текст для векторизации из проблемы или решения"""
@@ -92,7 +103,7 @@ def get_text_for_embedding(entity_type: str, entity_id: int) -> Optional[str]:
                     text_parts.append(solution.describe)
                 return ' '.join(text_parts)
     except Exception as e:
-        print(f"⚠️ Ошибка получения текста для векторизации: {e}")
+        logger.warning(f"Ошибка получения текста для векторизации: {e}")
     return None
 
 def create_embedding(entity_type: str, entity_id: int, force_update: bool = False) -> Optional[List[float]]:
@@ -130,7 +141,7 @@ def create_embedding(entity_type: str, entity_id: int, force_update: bool = Fals
         else:
             # Упрощенный режим: используем простой TF-IDF или просто возвращаем None
             # В реальном приложении можно использовать sklearn TfidfVectorizer
-            print("⚠️ Модель не загружена, пропускаем векторизацию")
+            logger.debug("Модель не загружена, пропускаем векторизацию")
             return None
         
         # Сохраняем вектор в БД
@@ -167,7 +178,7 @@ def create_embedding(entity_type: str, entity_id: int, force_update: bool = Fals
     
     except Exception as e:
         db.session.rollback()
-        print(f"⚠️ Ошибка создания вектора: {e}")
+        logger.warning(f"Ошибка создания вектора: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -187,7 +198,7 @@ def cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
         
         return float(dot_product / (norm1 * norm2))
     except Exception as e:
-        print(f"⚠️ Ошибка вычисления косинусного сходства: {e}")
+        logger.warning(f"Ошибка вычисления косинусного сходства: {e}")
         return 0.0
 
 def find_similar_entities(entity_type: str, entity_id: int, limit: int = 10, 
@@ -248,7 +259,7 @@ def find_similar_entities(entity_type: str, entity_id: int, limit: int = 10,
         return similarities[:limit]
     
     except Exception as e:
-        print(f"⚠️ Ошибка поиска похожих сущностей: {e}")
+        logger.warning(f"Ошибка поиска похожих сущностей: {e}")
         import traceback
         traceback.print_exc()
         return []
@@ -324,7 +335,7 @@ def get_user_recommendations(user_id: int, entity_type: str, limit: int = 20) ->
         return recommended_list
     
     except Exception as e:
-        print(f"⚠️ Ошибка получения рекомендаций: {e}")
+        logger.warning(f"Ошибка получения рекомендаций: {e}")
         import traceback
         traceback.print_exc()
         return []
@@ -356,7 +367,7 @@ def batch_create_embeddings(entity_type: str, entity_ids: Optional[List[int]] = 
         total = len(entities)
         processed = 0
         
-        print(f"🔄 Создание векторов для {total} {entity_type}...")
+        logger.info(f"Создание векторов для {total} {entity_type}...")
         
         for i in range(0, total, batch_size):
             batch = entities[i:i+batch_size]
@@ -365,14 +376,14 @@ def batch_create_embeddings(entity_type: str, entity_ids: Optional[List[int]] = 
                     create_embedding(entity_type, entity.id, force_update=False)
                     processed += 1
                     if processed % 10 == 0:
-                        print(f"  Обработано: {processed}/{total}")
+                        logger.info(f"Обработано: {processed}/{total}")
                 except Exception as e:
-                    print(f"⚠️ Ошибка обработки {entity_type} {entity.id}: {e}")
+                    logger.warning(f"Ошибка обработки {entity_type} {entity.id}: {e}")
                     continue
         
-        print(f"✅ Создано векторов: {processed}/{total}")
+        logger.info(f"Создано векторов: {processed}/{total}")
     
     except Exception as e:
-        print(f"⚠️ Ошибка batch создания векторов: {e}")
+        logger.error(f"Ошибка batch создания векторов: {e}")
         import traceback
         traceback.print_exc()

@@ -127,7 +127,7 @@ function initModal() {
 
 async function loadHashtagById(hashtagId) {
     try {
-        const response = await fetch(`/api/hashtags`, {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.HASHTAGS), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -166,7 +166,7 @@ function fillEditForm(hashtag) {
 }
 
 async function updateHashtag(id, data) {
-    const response = await fetch(`/api/hashtags/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/hashtags/${id}`), {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -182,7 +182,7 @@ async function updateHashtag(id, data) {
 }
 
 async function deleteHashtag(id) {
-    const response = await fetch(`/api/hashtags/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/hashtags/${id}`), {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
@@ -208,7 +208,7 @@ async function loadCards() {
     container.innerHTML = 'Загрузка...';
 
     try {
-        const response = await fetch(`/api/hashtags`, {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.HASHTAGS), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -220,7 +220,7 @@ async function loadCards() {
             // Попробуем обновить токен и повторить запрос
             try {
                 await auth.refreshToken();
-                const retryResponse = await fetch(`/api/hashtags`, {
+                const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.HASHTAGS), {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

@@ -30,6 +30,8 @@ from logic.image_proxy import image_proxy_bp
 from logic.password_reset import password_reset_bp
 from logic.image_generation import image_generation_bp
 from logic.sitemap import sitemap_bp
+from logic.feed import feed_bp
+from logic.search_engines_optimization import search_engines_bp
 
 
 def create_app(config=None):
@@ -141,7 +143,9 @@ def _register_blueprints(app):
         image_proxy_bp,
         password_reset_bp,
         image_generation_bp,
-        sitemap_bp
+        sitemap_bp,
+        feed_bp,
+        search_engines_bp
     ]
 
     for blueprint in blueprints:
@@ -153,8 +157,11 @@ def _register_blueprints(app):
 def _register_static_routes(app):
     """Регистрация маршрутов для статических файлов"""
     def _resolve_favicon_path():
-        """Возвращает путь к favicon (PNG) если найден"""
+        """Возвращает путь к favicon (ICO или PNG) если найден"""
         project_root = os.path.dirname(os.path.abspath(__file__))
+        favicon_ico = os.path.join(project_root, 'favicon.ico')
+        if os.path.exists(favicon_ico):
+            return favicon_ico
         candidates = [
             os.path.join(project_root, 'assets', 'images', 'Screenshot_4-ww78noDj9-transformed.png'),
             os.path.join(project_root, 'assets', 'images', 'logo1-Photoroom11.png'),
@@ -166,6 +173,11 @@ def _register_static_routes(app):
                 return candidate
         return None
 
+    def _resolve_icon_png(name):
+        """Путь к PNG-иконке в корне (favicon-48x48.png, apple-touch-icon.png)"""
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+        return path if os.path.exists(path) else None
+
     @app.route('/api/<path:path>', methods=['OPTIONS'])
     def handle_options(path):
         """Обработка OPTIONS запросов для CORS"""
@@ -174,22 +186,29 @@ def _register_static_routes(app):
     @app.route('/')
     def index():
         """Отображение главной страницы"""
-        if os.path.exists('html/index.html'):
-            return send_from_directory('html', 'index.html')
-        elif os.path.exists('static/index.html'):
-            return send_from_directory('static', 'index.html')
-        else:
+        try:
+            if os.path.exists('html/index.html'):
+                return send_from_directory('html', 'index.html')
+            if os.path.exists('static/index.html'):
+                return send_from_directory('static', 'index.html')
             return "Файл index.html не найден. Создайте папку html/ или static/ с файлом index.html", 404
+        except Exception as e:
+            app.logger.exception(f"Ошибка при отдаче index: {e}")
+            return f"Ошибка загрузки страницы: {e}", 500
+
+    project_root = os.path.dirname(os.path.abspath(__file__))
 
     @app.route('/css/<path:filename>')
     def serve_css(filename):
         """Обслуживание CSS файлов"""
-        return send_from_directory('css', filename)
+        css_dir = os.path.join(project_root, 'css')
+        return send_from_directory(css_dir, filename, mimetype='text/css')
 
     @app.route('/js/<path:filename>')
     def serve_js(filename):
         """Обслуживание JS файлов"""
-        return send_from_directory('js', filename)
+        js_dir = os.path.join(project_root, 'js')
+        return send_from_directory(js_dir, filename)
 
     @app.route('/assets/<path:filename>')
     def serve_assets(filename):
@@ -225,6 +244,27 @@ def _register_static_routes(app):
         icon_path = _resolve_favicon_path()
         if not icon_path:
             return "Favicon не найден", 404
+        # Определяем MIME тип в зависимости от расширения файла
+        if icon_path.endswith('.ico'):
+            mimetype = 'image/x-icon'
+        elif icon_path.endswith('.png'):
+            mimetype = 'image/png'
+        elif icon_path.endswith('.jpg') or icon_path.endswith('.jpeg'):
+            mimetype = 'image/jpeg'
+        else:
+            mimetype = 'image/png'
+        return send_from_directory(
+            os.path.dirname(icon_path),
+            os.path.basename(icon_path),
+            mimetype=mimetype
+        )
+
+    @app.route('/favicon-48x48.png')
+    def favicon_png_48():
+        """PNG 48x48 для поисковиков (Google/Yandex)"""
+        icon_path = _resolve_icon_png('favicon-48x48.png')
+        if not icon_path:
+            return "Favicon 48x48 не найден. Запустите create_favicon.py", 404
         return send_from_directory(
             os.path.dirname(icon_path),
             os.path.basename(icon_path),
@@ -234,14 +274,17 @@ def _register_static_routes(app):
     @app.route('/apple-touch-icon.png')
     @app.route('/apple-touch-icon')
     def apple_touch_icon():
-        """Иконка для iOS"""
-        icon_path = _resolve_favicon_path()
+        """Иконка для iOS и соцсетей"""
+        icon_path = _resolve_icon_png('apple-touch-icon.png')
         if not icon_path:
-            return "Favicon не найден", 404
+            icon_path = _resolve_favicon_path()
+            if not icon_path:
+                return "Favicon не найден", 404
+        mimetype = 'image/png' if icon_path.endswith('.png') else 'image/x-icon'
         return send_from_directory(
             os.path.dirname(icon_path),
             os.path.basename(icon_path),
-            mimetype='image/png'
+            mimetype=mimetype
         )
 
     @app.route('/fonts/<path:filename>')
@@ -389,8 +432,14 @@ def _register_error_handlers(app):
             '/favicon.ico',
             '/robots.txt',
             '/apple-touch-icon',
-            '/sitemap.xml'
+            '/sitemap.xml',
+            '/api/'
         ]
+        
+        # Для HTML запросов возвращаем SEO-оптимизированную страницу 404
+        if request.path.startswith('/html/') or request.path == '/' or not request.path.startswith('/api/'):
+            if os.path.exists('html/404.html'):
+                return send_from_directory('html', '404.html'), 404
         
         # Логируем только реальные ошибки, не служебные запросы
         if not any(request.path.startswith(path) for path in ignored_paths):
@@ -405,7 +454,8 @@ def _register_error_handlers(app):
     @app.errorhandler(500)
     def internal_error(error):
         """Обработка ошибки 500"""
-        app.logger.error(f"500 ошибка: {error}", exc_info=True)
+        from flask import request
+        app.logger.error(f"500 ошибка: {request.method} {request.path} — {error}", exc_info=True)
         db.session.rollback()
         response, status_code = ErrorResponse.create_response(
             error,
@@ -447,7 +497,8 @@ def _register_error_handlers(app):
             return response, status_code
         
         # Для неожиданных ошибок
-        app.logger.error(f"Необработанное исключение: {error}", exc_info=True)
+        from flask import request
+        app.logger.error(f"Необработанное исключение: {request.method} {request.path} — {error}", exc_info=True)
         db.session.rollback()
         response, status_code = ErrorResponse.create_response(
             error,
@@ -476,5 +527,6 @@ if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
         port=port,
-        debug=app.config['DEBUG']
+        debug=app.config['DEBUG'],
+        use_reloader=(os.name != 'nt'),  # avoid WinError 10038 on Ctrl+C on Windows
     )

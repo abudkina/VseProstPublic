@@ -6,8 +6,13 @@ from datetime import datetime, timedelta
 from sqlalchemy import and_
 from logic.model import db, RefreshToken, PasswordResetToken
 import logging
+import os
+import re
 
 logger = logging.getLogger(__name__)
+
+LOG_DIR = 'logs'
+LOG_BACKUP_COUNT = 5  # должно совпадать с logger.py
 
 
 def cleanup_expired_refresh_tokens():
@@ -119,6 +124,42 @@ def cleanup_old_user_activity(days=90):
         return 0
 
 
+def cleanup_old_log_files():
+    """
+    Удаляет лишние ротированные файлы логов (оставляет только backupCount новейших).
+    Удаляет ротированные логи старше 30 дней.
+
+    Returns:
+        int: Количество удалённых файлов
+    """
+    deleted = 0
+    if not os.path.isdir(LOG_DIR):
+        return deleted
+    cutoff_time = (datetime.now() - timedelta(days=30)).timestamp()
+    # app.log.1, app.log.2, ... и errors.log.1, ...
+    pattern = re.compile(r'^(app|errors)\.log\.(\d+)$')
+    for name in os.listdir(LOG_DIR):
+        m = pattern.match(name)
+        if not m:
+            continue
+        path = os.path.join(LOG_DIR, name)
+        try:
+            num = int(m.group(2))
+            if num > LOG_BACKUP_COUNT:
+                os.remove(path)
+                deleted += 1
+                logger.debug(f"Удалён лишний лог: {path}")
+            elif os.path.getmtime(path) < cutoff_time:
+                os.remove(path)
+                deleted += 1
+                logger.debug(f"Удалён устаревший лог: {path}")
+        except OSError as e:
+            logger.warning(f"Не удалось удалить {path}: {e}")
+    if deleted:
+        logger.info(f"Очистка логов: удалено {deleted} файлов")
+    return deleted
+
+
 def run_all_cleanup_tasks():
     """
     Запускает все задачи по очистке
@@ -131,11 +172,12 @@ def run_all_cleanup_tasks():
     stats = {
         'refresh_tokens_deleted': cleanup_expired_refresh_tokens(),
         'password_reset_tokens_deleted': cleanup_expired_password_reset_tokens(),
-        'user_activities_deleted': cleanup_old_user_activity(days=90)
+        'user_activities_deleted': cleanup_old_user_activity(days=90),
+        'log_files_deleted': cleanup_old_log_files()
     }
 
-    total_deleted = sum(stats.values())
-    logger.info(f"Задачи очистки завершены. Всего удалено: {total_deleted} записей")
+    total_deleted = sum(v for k, v in stats.items() if k != 'log_files_deleted') + stats['log_files_deleted']
+    logger.info(f"Задачи очистки завершены. Удалено записей: {total_deleted - stats['log_files_deleted']}, файлов логов: {stats['log_files_deleted']}")
 
     return stats
 
@@ -154,4 +196,4 @@ if __name__ == '__main__':
 
     with app.app_context():
         stats = run_all_cleanup_tasks()
-        print(f"Cleanup completed: {stats}")
+        logger.info(f"Cleanup completed: {stats}")

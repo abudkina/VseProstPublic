@@ -4,12 +4,17 @@ import os
 from logic.model import Hashtag, Problem, Solution, User, SolutionRating, Topic, solution_problems, hashtag_problem, favourite_solution, solution_link_solution
 from logic.middleware import token_required
 from sqlalchemy import or_, func, and_
+from sqlalchemy.orm import joinedload
 
 from logic.model import db
 from logic.utils.file_utils import allowed_file, save_file, delete_file
 from logic.utils.validators import parse_int_list, parse_bool
 from logic.utils.image_search import generate_image_with_openai
 from logic.recommendations import track_user_activity, get_user_recommendations, create_embedding
+from logic.rag_search import search_with_rag, hybrid_search, semantic_search
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 solution_bp = Blueprint('solution', __name__, url_prefix='/api')
 
@@ -17,35 +22,38 @@ solution_bp = Blueprint('solution', __name__, url_prefix='/api')
 def get_solution_by_id(solution_id):
     """Получение решения по ID через путь"""
     try:
-        solution = Solution.query.get(solution_id)
+        # Используем joinedload для eager loading связей (исправление N+1)
+        solution = Solution.query.options(
+            joinedload(Solution.problems).joinedload(Problem.hashtags),
+            joinedload(Solution.comments),
+            joinedload(Solution.linked_solutions),
+            joinedload(Solution.favourite_users)
+        ).get(solution_id)
         if not solution:
             return jsonify({'error': 'Решение не найдено'}), 404
-        
+
         # Увеличиваем счетчик просмотров
         solution.show = (solution.show or 0) + 1
         db.session.commit()
-        
+
         # Отслеживаем просмотр решения
+        user_id = None
         try:
             from logic.middleware import get_user_id_from_token
             user_id = get_user_id_from_token()
             if user_id:
                 track_user_activity(user_id, 'view', 'solution', solution_id)
-        except:
-            pass  # Не критично, если не удалось отследить
-        
+        except Exception as e:
+            logger.debug(f"Не удалось отследить просмотр решения: {e}")
+
         # Проверяем, добавлено ли в избранное текущим пользователем
+        # Используем уже загруженные favourite_users (O(1) вместо N+1)
         is_favourite = False
         try:
-            from logic.middleware import get_user_id_from_token
-            user_id = get_user_id_from_token()
-            if user_id:
-                from logic.model import User
-                user = User.query.get(user_id)
-                if user and solution in user.favourite_solutions:
-                    is_favourite = True
-        except:
-            pass  # Если токена нет или ошибка, is_favourite останется False
+            if user_id and solution.favourite_users:
+                is_favourite = any(u.id == user_id for u in solution.favourite_users)
+        except Exception as e:
+            logger.debug(f"Не удалось проверить избранное: {e}")
         
         # Формат, ожидаемый фронтендом из solution.js
         solution_data = {
@@ -101,8 +109,8 @@ def get_solution_by_id(solution_id):
                             try:
                                 from logic.middleware import get_user_id_from_token
                                 user_id = get_user_id_from_token()
-                            except:
-                                pass  # Если токена нет, user_id останется None
+                            except Exception as e:
+                                logger.debug(f"Не удалось получить user_id из токена: {e}")
                             
                             for linked_solution in linked_solutions_list:
                                 # Получаем комментарии
@@ -179,26 +187,24 @@ def get_solution_by_id(solution_id):
                         # Если таблица не существует, просто пропускаем связанные решения
                         error_msg = str(load_error)
                         if 'doesn\'t exist' in error_msg or 'Table' in error_msg:
-                            print(f"Таблица solution_link_solution не существует, пропускаем связанные решения")
+                            logger.debug("Таблица solution_link_solution не существует, пропускаем связанные решения")
                         else:
-                            print(f"Ошибка загрузки связанных решений: {load_error}")
+                            logger.warning(f"Ошибка загрузки связанных решений: {load_error}")
                         linked_solutions = []
         except Exception as e:
             # Если таблица solution_link_solution не существует, просто пропускаем связанные решения
             error_msg = str(e)
             if 'doesn\'t exist' in error_msg or 'Table' in error_msg:
-                print(f"Таблица solution_link_solution не существует, пропускаем связанные решения")
+                logger.debug("Таблица solution_link_solution не существует, пропускаем связанные решения")
             else:
-                print(f"Ошибка загрузки связанных решений: {e}")
+                logger.warning(f"Ошибка загрузки связанных решений: {e}")
             linked_solutions = []
         solution_data['LinkedSolutions'] = linked_solutions
-        
+
         return jsonify(solution_data), 200
-        
+
     except Exception as e:
-        print(f"Ошибка получения решения: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка получения решения: {e}")
         return jsonify({'error': 'Ошибка базы данных', 'details': str(e)}), 500
     
 @solution_bp.route('/solutions', methods=['GET'])
@@ -213,24 +219,68 @@ def get_solutions():
         limit = request.args.get('limit', default=50, type=int)
         offset = request.args.get('offset', default=0, type=int)
         
-        print(f"Параметры запроса solutions: search={search}, category={category_param}, hashtags={hashtags_param}, exclude={exclude_param}, limit={limit}, offset={offset}")
+        logger.debug(f"Параметры запроса solutions: search={search}, category={category_param}, hashtags={hashtags_param}, exclude={exclude_param}, limit={limit}, offset={offset}")
+        
+        # Получаем user_id для отслеживания поиска
+        from logic.middleware import get_user_id_from_token
+        user_id = get_user_id_from_token()
+        
+        # Отслеживаем поисковый запрос (если пользователь авторизован и есть поиск)
+        if user_id and search:
+            try:
+                track_user_activity(user_id, 'search', 'solution', search_query=search)
+            except Exception as e:
+                logger.debug(f"Не удалось отследить поисковый запрос: {e}")
         
         # Ограничиваем лимит
         if limit > 100:
             limit = 100
         
-        # Начинаем формировать запрос
-        query = Solution.query
-        
+        # Начинаем формировать запрос с eager loading (исправление N+1)
+        query = Solution.query.options(
+            joinedload(Solution.problems).joinedload(Problem.hashtags),
+            joinedload(Solution.comments),
+            joinedload(Solution.favourite_users)
+        )
+
         # Фильтр по поиску
+        # Используем гибридный поиск (RAG + текстовый) для лучших результатов
+        rag_search_results = []
         if search:
-            search_lower = f"%{search.lower()}%"
-            query = query.filter(
-                or_(
-                    func.lower(Solution.name).like(search_lower),
-                    func.lower(Solution.describe).like(search_lower)
+            try:
+                # Пробуем использовать RAG поиск для семантического поиска
+                search_mode = request.args.get('search_mode', 'hybrid')  # 'text', 'semantic', 'hybrid', 'multimodal'
+                rag_search_results = search_with_rag(
+                    query=search,
+                    entity_type='solution',
+                    search_mode=search_mode,
+                    limit=limit * 2,  # Берем больше для фильтрации
+                    exclude_ids=[int(exclude_param)] if exclude_param else None
                 )
-            )
+                
+                # Если есть результаты RAG поиска, используем их
+                if rag_search_results:
+                    rag_ids = [entity_id for entity_id, score in rag_search_results]
+                    query = query.filter(Solution.id.in_(rag_ids))
+                else:
+                    # Fallback на обычный текстовый поиск
+                    search_lower = f"%{search.lower()}%"
+                    query = query.filter(
+                        or_(
+                            func.lower(Solution.name).like(search_lower),
+                            func.lower(Solution.describe).like(search_lower)
+                        )
+                    )
+            except Exception as e:
+                logger.warning(f"Ошибка RAG поиска, используем текстовый поиск: {e}")
+                # Fallback на обычный текстовый поиск
+                search_lower = f"%{search.lower()}%"
+                query = query.filter(
+                    or_(
+                        func.lower(Solution.name).like(search_lower),
+                        func.lower(Solution.describe).like(search_lower)
+                    )
+                )
         
         # Фильтр по категории
         if category_param:
@@ -252,15 +302,13 @@ def get_solutions():
                     # Если нет решений для этой категории, возвращаем пустой результат
                     query = query.filter(Solution.id == -1)  # Невозможное условие
             except (ValueError, Exception) as e:
-                print(f"Ошибка преобразования категории: {e}")
-                import traceback
-                traceback.print_exc()
-        
+                logger.exception(f"Ошибка преобразования категории: {e}")
+
         # Фильтр по хэштегам
         if hashtags_param:
             hashtag_ids = parse_int_list(hashtags_param)
-            
-            print(f"Хэштеги для фильтрации решений: {hashtag_ids}")
+
+            logger.debug(f"Хэштеги для фильтрации решений: {hashtag_ids}")
             
             if hashtag_ids:
                 try:
@@ -294,10 +342,8 @@ def get_solutions():
                         # Если нет проблем с этими хэштегами, возвращаем пустой результат
                         query = query.filter(Solution.id == -1)  # Невозможное условие
                 except Exception as e:
-                    print(f"Ошибка фильтрации по хэштегам: {e}")
-                    import traceback
-                    traceback.print_exc()
-        
+                    logger.exception(f"Ошибка фильтрации по хэштегам: {e}")
+
         # Фильтр исключения решения (для поиска похожих решений)
         if exclude_param:
             try:
@@ -307,24 +353,45 @@ def get_solutions():
                 pass
         
         # Сортировка и пагинация
-        solutions = query.order_by(Solution.created_date.desc()).offset(offset).limit(limit).all()
+        # Если использовался RAG поиск, сортируем по релевантности
+        if rag_search_results and search:
+            # Создаем словарь с оценками релевантности
+            relevance_scores = {entity_id: score for entity_id, score in rag_search_results}
+            
+            # Получаем все решения
+            all_solutions = query.all()
+            
+            # Сортируем по релевантности (если есть), затем по дате
+            solutions = sorted(
+                all_solutions,
+                key=lambda s: (
+                    -relevance_scores.get(s.id, 0.0),  # Сначала по релевантности (убывание)
+                    -(s.created_date or datetime.min).timestamp()  # Затем по дате (убывание)
+                )
+            )
+            
+            # Применяем пагинацию
+            solutions = solutions[offset:offset + limit]
+        else:
+            # Обычная сортировка по дате
+            solutions = query.order_by(Solution.created_date.desc()).offset(offset).limit(limit).all()
         
-        print(f"Найдено решений: {len(solutions)}")
+        logger.debug(f"Найдено решений: {len(solutions)}")
         
         # Получаем user_id из токена, если он есть (опционально)
         user_id = None
         try:
             from logic.middleware import get_user_id_from_token
             user_id = get_user_id_from_token()
-        except:
-            pass  # Если токена нет, user_id останется None
-        
+        except Exception as e:
+            logger.debug(f"Не удалось получить user_id из токена: {e}")
+
         # Отслеживаем поиск, если есть поисковый запрос
         if user_id and search:
             try:
                 track_user_activity(user_id, 'search', 'solution', None, search)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Не удалось отследить поиск: {e}")
         
         # Получаем рекомендации для пользователя (если авторизован)
         recommended_ids = set()
@@ -333,8 +400,8 @@ def get_solutions():
                 recommended_list = get_user_recommendations(user_id, 'solution', limit=20)
                 recommended_ids = set(recommended_list)
             except Exception as e:
-                print(f"⚠️ Ошибка получения рекомендаций: {e}")
-        
+                logger.warning(f"Ошибка получения рекомендаций: {e}")
+
         # Формируем ответ в формате, ожидаемом фронтендом
         solutions_list = []
         for solution in solutions:
@@ -399,8 +466,8 @@ def get_solutions():
             try:
                 if hasattr(solution, 'linked_solutions') and solution.linked_solutions:
                     linked_solutions_count = len(solution.linked_solutions)
-            except:
-                pass  # Если таблица не существует, просто пропускаем
+            except (AttributeError, TypeError) as e:
+                logger.debug(f"Не удалось получить связанные решения: {e}")
             
             solution_data = {
                 'ID': solution.id,
@@ -435,11 +502,9 @@ def get_solutions():
         return jsonify(solutions_list), 200
         
     except Exception as e:
-        print(f"Ошибка получения решений: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка получения решений: {e}")
         return jsonify({'error': 'Ошибка базы данных', 'details': str(e)}), 500
-    
+
 @solution_bp.route('/solutions/count-new', methods=['GET'])
 @token_required
 def count_solution():
@@ -458,7 +523,7 @@ def count_solution():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета решений: {e}")
+        logger.error(f"Ошибка подсчета решений: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @solution_bp.route('/solutions', methods=['POST'])
@@ -503,9 +568,9 @@ def create_solution():
             try:
                 image_path = generate_image_with_openai(name, describe)
                 if image_path:
-                    print(f"Автоматически сгенерировано изображение для решения '{name}': {image_path}")
+                    logger.info(f"Автоматически сгенерировано изображение для решения '{name}': {image_path}")
             except Exception as e:
-                print(f"Ошибка автоматической генерации изображения: {e}")
+                logger.warning(f"Ошибка автоматической генерации изображения: {e}")
                 # Продолжаем без изображения
         
         # Если всё ещё нет изображения, используем дефолтное
@@ -546,13 +611,13 @@ def create_solution():
             
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка сохранения решения: {e}")
+            logger.error(f"Ошибка сохранения решения: {e}")
             # Удаляем скачанное изображение, если оно было автоматически найдено
             if image_path and image_path != '../images/default.png' and os.path.exists(image_path):
                 try:
                     delete_file(image_path)
-                except:
-                    pass
+                except (OSError, IOError) as e:
+                    logger.warning(f"Не удалось удалить временный файл: {e}")
             return jsonify({'error': 'Ошибка сохранения решения'}), 500
         
         # Возвращаем в формате, ожидаемом фронтендом
@@ -568,9 +633,7 @@ def create_solution():
         }), 201
         
     except Exception as e:
-        print(f"Ошибка создания решения: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка создания решения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 # Дополнительные обработчики
@@ -590,8 +653,10 @@ def get_user_solutions(user_id):
         if not user:
             return jsonify({'error': 'Пользователь не найден'}), 404
         
-        # Получаем решения пользователя
-        solutions = Solution.query.filter_by(
+        # Получаем решения пользователя с eager loading (исправление N+1)
+        solutions = Solution.query.options(
+            joinedload(Solution.problems)
+        ).filter_by(
             creator=user_id,
             show=True
         ).order_by(
@@ -619,7 +684,7 @@ def get_user_solutions(user_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка получения решений пользователя: {e}")
+        logger.error(f"Ошибка получения решений пользователя: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @solution_bp.route('/solutions/<int:solution_id>', methods=['PUT'])
@@ -685,16 +750,16 @@ def update_solution(solution_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка обновления решения: {e}")
+            logger.error(f"Ошибка обновления решения: {e}")
             return jsonify({'error': 'Ошибка обновления решения'}), 500
-        
+
         return jsonify({
             'message': 'Решение обновлено',
             'solution': solution.to_dict()
         }), 200
-        
+
     except Exception as e:
-        print(f"Ошибка обновления решения: {e}")
+        logger.error(f"Ошибка обновления решения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @solution_bp.route('/solutions/<int:solution_id>', methods=['DELETE'])
@@ -724,13 +789,13 @@ def delete_solution(solution_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка удаления решения: {e}")
+            logger.error(f"Ошибка удаления решения: {e}")
             return jsonify({'error': 'Ошибка удаления решения'}), 500
-        
+
         return jsonify({'message': 'Решение удалено'}), 200
-        
+
     except Exception as e:
-        print(f"Ошибка удаления решения: {e}")
+        logger.error(f"Ошибка удаления решения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @solution_bp.route('/solutions/<int:solution_id>/toggle-favourite', methods=['POST'])
@@ -769,8 +834,8 @@ def toggle_solution_favourite(solution_id):
             # Отслеживаем добавление в избранное
             try:
                 track_user_activity(user_id, 'favorite', 'solution', solution_id)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Не удалось отследить добавление в избранное: {e}")
         
         try:
             db.session.commit()
@@ -784,9 +849,7 @@ def toggle_solution_favourite(solution_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка обновления избранного: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка обновления избранного: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @solution_bp.route('/solutions/favorites', methods=['GET'])
@@ -809,14 +872,27 @@ def get_favourite_solutions():
         if limit > 100:
             limit = 100
         
-        # Получаем избранные решения пользователя через relationship
-        user = User.query.get(user_id)
+        # Получаем избранные решения пользователя через relationship (с eager loading)
+        user = User.query.options(joinedload(User.favourite_solutions)).get(user_id)
         if not user:
             return jsonify({'error': 'Пользователь не найден'}), 404
-        
-        # Начинаем с решений из избранного пользователя
-        query = Solution.query.filter(
-            Solution.id.in_([s.id for s in user.favourite_solutions])
+
+        # Получаем ID избранных решений один раз
+        favourite_solution_ids = [s.id for s in user.favourite_solutions]
+        if not favourite_solution_ids:
+            return jsonify({
+                'solutions': [],
+                'total': 0,
+                'limit': limit,
+                'offset': offset
+            }), 200
+
+        # Начинаем с решений из избранного пользователя (с eager loading для N+1)
+        query = Solution.query.options(
+            joinedload(Solution.problems).joinedload(Problem.hashtags),
+            joinedload(Solution.comments)
+        ).filter(
+            Solution.id.in_(favourite_solution_ids)
         )
         
         # Фильтр по поиску
@@ -844,8 +920,8 @@ def get_favourite_solutions():
                 
                 query = query.filter(Solution.id.in_(db.session.query(problem_subquery.c.solution_id)))
             except ValueError as e:
-                print(f"Ошибка преобразования категории: {e}")
-        
+                logger.error(f"Ошибка преобразования категории: {e}")
+
         # Фильтр по хэштегам
         if hashtags_param:
             hashtag_ids = parse_int_list(hashtags_param)
@@ -953,9 +1029,7 @@ def get_favourite_solutions():
         return jsonify(solutions_list), 200
         
     except Exception as e:
-        print(f"Ошибка получения избранных решений: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка получения избранных решений: {e}")
         return jsonify({'error': 'Ошибка базы данных', 'details': str(e)}), 500
 
 @solution_bp.route('/solutions/<int:solution_id>/toggle-show', methods=['POST'])
@@ -987,7 +1061,7 @@ def toggle_solution_show(solution_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка обновления видимости: {e}")
+        logger.error(f"Ошибка обновления видимости: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @solution_bp.route('/solutions/<int:solution_id>/mark-as-read', methods=['POST'])
@@ -1014,9 +1088,9 @@ def mark_solution_as_read(solution_id):
             return jsonify({'error': 'Ошибка обновления решения'}), 500
         
         return jsonify({'message': 'Решение отмечено как прочитанное'}), 200
-        
+
     except Exception as e:
-        print(f"Ошибка обновления решения: {e}")
+        logger.error(f"Ошибка обновления решения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @solution_bp.route('/solutions/<int:solution_id>/link', methods=['POST'])
@@ -1090,14 +1164,12 @@ def add_solution_link(solution_id):
             
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка добавления связи: {e}")
+            logger.error(f"Ошибка добавления связи: {e}")
             # Проверяем, не была ли связь добавлена частично
             return jsonify({'error': 'Ошибка добавления связи'}), 500
-        
+
     except Exception as e:
-        print(f"Ошибка добавления связи между решениями: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка добавления связи между решениями: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 def recalculate_solution_rating(solution_id):
@@ -1131,9 +1203,7 @@ def recalculate_solution_rating(solution_id):
         else:
             return 0
     except Exception as e:
-        print(f"Ошибка пересчета рейтинга: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка пересчета рейтинга: {e}")
         return 0
 
 @solution_bp.route('/solutions/<int:solution_id>/rating', methods=['POST'])
@@ -1214,22 +1284,18 @@ def save_solution_rating(solution_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка сохранения оценки: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception(f"Ошибка сохранения оценки: {e}")
             return jsonify({'error': 'Ошибка сохранения оценки'}), 500
-        
+
         return jsonify({
             'message': 'Оценка сохранена',
             'rating': overall_rating,
             'rating_type': rating_type,
             'rating_value': rating_value
         }), 200
-        
+
     except Exception as e:
-        print(f"Ошибка сохранения оценки решения: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка сохранения оценки решения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @solution_bp.route('/solutions/<int:solution_id>/rating', methods=['GET'])
@@ -1259,7 +1325,5 @@ def get_user_solution_ratings(solution_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка получения оценок: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка получения оценок: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500

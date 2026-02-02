@@ -272,7 +272,7 @@ function initModal() {
 async function loadProblemById(problemId) {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/problems/${problemId}`, {
+        const response = await fetch(API_CONFIG.buildURL(`/problems/${problemId}`), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -356,7 +356,7 @@ function fillEditForm(problem) {
 // Обновление проблемы (multipart для файла)
 async function updateProblem(id, formData) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/problems/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/problems/${id}`), {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -373,7 +373,7 @@ async function updateProblem(id, formData) {
 // Удаление проблемы
 async function deleteProblem(id) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/problems/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/problems/${id}`), {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -391,7 +391,7 @@ async function deleteProblem(id) {
 async function loadCategoriesForModal() {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch('/api/categories', {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CATEGORIES), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -415,7 +415,7 @@ async function loadCategoriesForModal() {
 async function loadTopicsForModal() {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch('/api/topics', {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.TOPICS), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -431,11 +431,13 @@ async function loadTopicsForModal() {
         editTopicTomSelect = new TomSelect('#editTopic', {
             // Меняем дефолтный wrapperClass="ts-wrapper" на свой
             wrapperClass: 'vs-wrapper',
+            controlClass: 'ts-control vs-control',
             multiple: false,
             placeholder: 'Выберите общую тему (введите для поиска)',
             searchField: ['text'],
             valueField: 'value',
             labelField: 'text',
+            maxItems: 1,
             maxOptions: null,
             loadThrottle: 300, // Задержка перед загрузкой (мс)
             shouldLoad: function(query) {
@@ -451,7 +453,7 @@ async function loadTopicsForModal() {
                 
                 const token = localStorage.getItem('accessToken');
                 console.log('Поиск темы:', query); // Отладка
-                fetch(`/api/topics?search=${encodeURIComponent(query)}`, {
+                fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.TOPICS, {search: query}), {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -543,17 +545,19 @@ function initEditTomSelect() {
     editChoicesInstance = new TomSelect('#editHashtags', {
         // Меняем дефолтный wrapperClass="ts-wrapper" на свой
         wrapperClass: 'vs-wrapper',
+        controlClass: 'ts-control vs-control',
         plugins: ['remove_button'],
         multiple: true,
         placeholder: 'Выберите хэштеги',
         searchField: ['text'],
         valueField: 'value',
         labelField: 'text',
+        maxItems: 5,
         load: function (query, callback) {
             if (query.length < 2) return callback();
             
             // Используем endpoint для поиска хэштегов
-            fetch(`/api/hashtags/search?q=${encodeURIComponent(query)}`, {
+            fetch(API_CONFIG.buildURLWithParams('/hashtags/search', {q: query}), {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

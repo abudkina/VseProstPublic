@@ -7,6 +7,11 @@ Allow: /html/
 Allow: /css/
 Allow: /js/
 Allow: /assets/
+Allow: /api/sitemap.xml
+Allow: /sitemap.xml
+Allow: /sitemap-index.xml
+Allow: /problem/
+Allow: /solution/
 
 # Запрещаем индексацию служебных страниц и личных разделов
 Disallow: /api/
@@ -17,6 +22,18 @@ Disallow: /html/cart.html
 Disallow: /html/notifications.html
 Disallow: /html/profile.html
 Disallow: /uploads/
+Disallow: /temp/
+Disallow: /cache/
+Disallow: /logs/
+Disallow: /*.json$
+Disallow: /*.csv$
+
+# Запрещаем доступ параметрам фильтрации для избежания дублирования
+Disallow: /*?*sort=
+Disallow: /*?*order=
+
+# Время между запросами для всех роботов (в секундах)
+Crawl-delay: 1
 
 # Специальные правила для Яндекс
 User-agent: Yandex
@@ -44,5 +61,30 @@ Disallow: /html/profile.html
 Disallow: /uploads/
 Crawl-delay: 1
 
+# Специальные правила для Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 1
+
+# Запрещаем доступ для других агентов (спамеры, скреперы)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
 # Указываем расположение sitemap
-Sitemap: /sitemap.xml
+Sitemap: https://vseprost.com/sitemap.xml
+Sitemap: https://vseprost.com/sitemap-index.xml
+Sitemap: https://vseprost.com/api/sitemap.xml
+
+# Указываем расположение RSS/Atom feeds
+Sitemap: https://vseprost.com/api/feed.xml
+Sitemap: https://vseprost.com/api/rss.xml
+Sitemap: https://vseprost.com/api/atom.xml
+

@@ -4,6 +4,9 @@ import uuid
 from typing import Optional, Tuple
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Настройка загрузки файлов
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -229,6 +232,6 @@ def delete_file(filepath: str) -> bool:
             return True
         except OSError as e:
             # Логируем ошибку, но не раскрываем детали пользователю
-            print(f"Ошибка удаления файла: {e}")
+            logger.warning(f"Ошибка удаления файла: {e}")
             return False
     return False

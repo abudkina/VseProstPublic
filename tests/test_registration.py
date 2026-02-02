@@ -16,7 +16,7 @@ class TestRegistration:
         user_data = TestDataFactory.create_user_data(
             username='newuser',
             email='newuser@example.com',
-            password='password123'
+            password='MyStr0ngP@ssword!'  # Минимум 12 символов без очевидных последовательностей
         )
 
         response = client.post('/api/register', json=user_data, content_type='application/json')

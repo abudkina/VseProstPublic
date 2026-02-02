@@ -223,7 +223,7 @@ function initModal() {
 async function loadSolutionById(solutionId) {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/solutions/${solutionId}`, {
+        const response = await fetch(API_CONFIG.buildURL(`/solutions/${solutionId}`), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -290,7 +290,7 @@ function fillEditForm(solution) {
 
 async function updateSolution(id, formData) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/solutions/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/solutions/${id}`), {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -306,7 +306,7 @@ async function updateSolution(id, formData) {
 
 async function deleteSolution(id) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/solutions/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/solutions/${id}`), {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -326,6 +326,7 @@ async function loadProblemsForModal() {
         editProblemsTomSelect = new TomSelect('#editProblems', {
             // Меняем дефолтный wrapperClass="ts-wrapper" на свой
             wrapperClass: 'vs-wrapper',
+            controlClass: 'ts-control vs-control',
             plugins: ['remove_button'],
             multiple: true,
             placeholder: 'Выберите связанные проблемы',
@@ -335,7 +336,7 @@ async function loadProblemsForModal() {
             load: function (query, callback) {
                 if (query.length < 2) return callback();
                 
-                fetch(`/api/problems?search=${encodeURIComponent(query)}&limit=20`, {
+                fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.PROBLEMS, {search: query, limit: 20}), {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -390,7 +391,7 @@ async function loadCards() {
     params.append('offset', currentFilters.offset);
 
     try {
-        const response = await fetch(`/api/solutions?${params.toString()}`);
+        const response = await fetch(API_CONFIG.buildURL(`/solutions?${params.toString()}`));
         if (!response.ok) throw new Error('Ошибка HTTP: ' + response.status);
         const data = await response.json();
         sortAndRender(data);
@@ -401,7 +402,7 @@ async function loadCards() {
 
 async function loadCategories() {
     try {
-        const response = await fetch('/api/categories');
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CATEGORIES));
         const categories = await response.json();
         const categorySelect = document.getElementById('category');
         categorySelect.innerHTML = '<option value="">Выберите категорию</option>';

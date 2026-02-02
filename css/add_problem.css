@@ -12,7 +12,7 @@ body {
 
 h1 {
     text-align: center;
-    color: red;
+    color: #8B0000;
     font-family: 'Brush Script MT', cursive, sans-serif;
     margin-bottom: 20px;
 }
@@ -313,6 +313,77 @@ textarea {
             margin: 0 25px 15px;
         }
     }
+
+/* ts-control vs-control — хэштеги (множественный выбор), как в фильтрах */
+.container .vs-wrapper {
+    width: 100%;
+}
+
+.vs-control input[type="text"] {
+    color: #1a202c !important;
+    font-weight: 500;
+}
+
+.vs-control input[type="text"]::placeholder {
+    color: #a0aec0;
+    transition: color 0.2s ease;
+}
+
+.vs-control.has-items input[type="text"]::placeholder {
+    color: transparent !important;
+}
+
+.vs-control:not(.has-items) input[type="text"]::placeholder {
+    color: #a0aec0 !important;
+    opacity: 1 !important;
+}
+
+.vs-control .item {
+    background-color: rgba(220, 38, 38, 0.1) !important;
+    color: #dc2626 !important;
+    border: 1px solid #dc2626;
+    border-radius: 12px;
+    padding: 4px 10px;
+    margin-right: 4px;
+    font-weight: 600;
+    white-space: normal !important;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.vs-control .item:hover {
+    background-color: rgba(220, 38, 38, 0.2) !important;
+    border-color: #b91c1c;
+}
+
+.vs-control.has-items:hover input::placeholder {
+    color: transparent;
+    transition: color 0.3s;
+}
+
+.vs-control:not(.has-items):hover input::placeholder {
+    color: #a0aec0 !important;
+    opacity: 1 !important;
+}
+
+.vs-control {
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    background-color: white !important;
+    box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+    position: relative;
+    z-index: 1;
+    min-width: 140px !important;
+    padding: 8px 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vs-control.focus {
+    border-color: #dc2626 !important;
+    box-shadow:
+        0 0 0 4px rgba(220, 38, 38, 0.1),
+        0 4px 12px rgba(220, 38, 38, 0.15) !important;
+}
 
 /* Исправление для закрытия выпадающего списка Tom Select */
 .vs-wrapper.single .ts-dropdown[style*="display: none"] {

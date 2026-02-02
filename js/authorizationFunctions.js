@@ -1,4 +1,5 @@
 // authorizationFunctions.js
+const API_CONFIG = window.API_CONFIG;
 let tokenExpiry = null;
 let refreshTimer = null;
 
@@ -36,7 +37,7 @@ export function register() {
     }
 
     // Используем /api/register из registration_bp
-    fetch('/api/register', {
+    fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REGISTER), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -75,7 +76,7 @@ export function authorize() {
     const login = document.getElementById('login').value;
     const password = document.getElementById('password').value;
 
-    fetch('/api/login', { 
+    fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.LOGIN), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -193,7 +194,7 @@ function startTokenRefreshTimer() {
 }
 
 export function refreshToken() {
-    return fetch('/api/refreshToken', {
+    return fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
         method: 'POST',
         credentials: 'include' // Включаем cookies в запрос
     })
@@ -247,7 +248,7 @@ export function logout() {
     sessionStorage.clear();
     
     // Отправляем запрос на сервер (не ждем ответа)
-    fetch('/api/logout', {
+    fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.LOGOUT), {
         method: 'POST',
         credentials: 'include'
     }).catch(error => {
@@ -350,45 +351,25 @@ export function checkAuth(redirectIfUnauthorized = true) {
         throw new Error('Не авторизован');
     }
     
-    // Используем cookies для валидации (токен там)
-    return fetch('/api/validate-token', {  
+    return fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.VALIDATE_TOKEN), {
         method: 'GET',
-        credentials: 'include'  // ВАЖНО: для работы с cookies
+        credentials: 'include'
     })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    // Пытаемся обновить токен
-                    return refreshToken().then(() => {
-                        // Повторяем запрос после обновления
-                        return fetch('/api/validate-token', {
-                            method: 'GET',
-                            credentials: 'include'
-                        });
-                    }).then(response => {
-                        if (!response.ok) throw new Error('Не авторизован');
-                        return response.json();
-                    });
-                }
-                throw new Error('Ошибка сервера');
-            }
-            return response.json();
-        })
+        .then(response => response.ok ? response.json() : response.json().then(() => { throw new Error('Ошибка сервера'); }))
         .then(data => {
-            console.log('Авторизован, userID:', data.userID);
-            // Сохраняем информацию о пользователе
-            if (data.userID) {
-                localStorage.setItem('userId', data.userID.toString());
+            if (data.valid === false || !data.userID) {
+                localStorage.removeItem('isLoggedIn');
+                if (redirectIfUnauthorized) {
+                    sessionStorage.setItem('redirectAfterLogin', window.location.href);
+                    window.location.href = '/html/authorization.html';
+                }
+                throw new Error('Не авторизован');
             }
-            if (data.username) {
-                localStorage.setItem('username', data.username);
-            }
-            if (data.isAdmin !== undefined) {
-                localStorage.setItem('isAdmin', data.isAdmin.toString());
-            }
-            // Обновляем время истечения токена
+            if (data.userID) localStorage.setItem('userId', data.userID.toString());
+            if (data.username) localStorage.setItem('username', data.username);
+            if (data.isAdmin !== undefined) localStorage.setItem('isAdmin', data.isAdmin.toString());
             if (data.accessExpiry) {
-                tokenExpiry = new Date(data.accessExpiry).getTime();
+                const tokenExpiry = new Date(data.accessExpiry).getTime();
                 localStorage.setItem('tokenExpiry', tokenExpiry.toString());
                 startTokenRefreshTimer();
             }
@@ -433,7 +414,7 @@ export async function checkIsAdmin() {
         }
         
         // Используем cookies для валидации
-        const response = await fetch('/api/validate-token', {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.VALIDATE_TOKEN), {
             method: 'GET',
             credentials: 'include'
         });
@@ -443,7 +424,7 @@ export async function checkIsAdmin() {
                 // Пытаемся обновить токен
                 try {
                     await refreshToken();
-                    const retryResponse = await fetch('/api/validate-token', {
+                    const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.VALIDATE_TOKEN), {
                         method: 'GET',
                         credentials: 'include'
                     });

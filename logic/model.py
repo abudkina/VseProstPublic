@@ -39,6 +39,12 @@ hashtag_problem = db.Table('hashtag_problem',
     info={'bind_key': None}
 )
 
+hashtag_solution = db.Table('hashtag_solution',
+    db.Column('solution_id', db.Integer, db.ForeignKey('solution.id'), primary_key=True),
+    db.Column('hashtag_id', db.Integer, db.ForeignKey('hashtag.id'), primary_key=True),
+    info={'bind_key': None}
+)
+
 favourite_problem = db.Table('favourite_problem',
     db.Column('problem_id', db.Integer, db.ForeignKey('problem.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -322,7 +328,7 @@ class Problem(db.Model):
             'Hashtags': [hashtag.to_dict() for hashtag in self.hashtags] if self.hashtags else [],
             # Используем all_solutions чтобы получить все решения
             'Solutions': [solution.to_dict() for solution in self.all_solutions] if self.all_solutions else [],
-            'LinkedProblems': [problem.to_dict() for problem in self.linked_problems] if self.linked_problems else []
+            'LinkedProblems': [problem.to_dict() for problem in self.problems] if self.problems else []
         }
         
 class Solution(db.Model):
@@ -364,6 +370,11 @@ class Solution(db.Model):
                                       backref='linking_solutions',
                                       lazy=True)
     
+    hashtags = db.relationship('Hashtag',
+                               secondary=hashtag_solution,
+                               backref='solutions',
+                               lazy=True)
+    
     def to_dict(self):
         return {
             'ID': self.id,
@@ -389,7 +400,7 @@ class Solution(db.Model):
             'attach': self.attach,
             # Комментарии будут загружаться лениво
             'Comments': [comment.to_dict() for comment in self.comments] if self.comments else [],
-            'LinkedProblems': [problem.to_dict() for problem in self.linked_problems] if self.linked_problems else []
+            'LinkedProblems': [problem.to_dict() for problem in self.problems] if self.problems else []
         }
         
 class CommentSolution(db.Model):
@@ -739,4 +750,50 @@ class Embedding(db.Model):
             'text_content': self.text_content[:100] + '...' if len(self.text_content) > 100 else self.text_content,
             'created_date': self.created_date.isoformat() if self.created_date else None,
             'modified_date': self.modified_date.isoformat() if self.modified_date else None
+        }
+
+
+class UserKnowledge(db.Model):
+    """Персональные знания пользователя на основе поиска и просмотров"""
+    __tablename__ = 'user_knowledge'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Агрегированные данные о интересах
+    top_categories = db.Column(db.JSON, nullable=True)  # [{category_id: int, count: int, name: str}]
+    top_hashtags = db.Column(db.JSON, nullable=True)  # [{hashtag_id: int, count: int, name: str}]
+    top_topics = db.Column(db.JSON, nullable=True)  # [{topic_id: int, count: int, name: str}]
+    search_keywords = db.Column(db.JSON, nullable=True)  # [{keyword: str, count: int}]
+    viewed_problems = db.Column(db.Integer, default=0, nullable=False)  # Количество просмотренных проблем
+    viewed_solutions = db.Column(db.Integer, default=0, nullable=False)  # Количество просмотренных решений
+    favorite_problems = db.Column(db.Integer, default=0, nullable=False)  # Количество избранных проблем
+    favorite_solutions = db.Column(db.Integer, default=0, nullable=False)  # Количество избранных решений
+    
+    # Метаданные
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    user = db.relationship('User', backref='knowledge', foreign_keys=[user_id])
+    
+    # Уникальный индекс: один профиль знаний на пользователя
+    __table_args__ = (
+        db.UniqueConstraint('user_id', name='unique_user_knowledge'),
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'top_categories': self.top_categories or [],
+            'top_hashtags': self.top_hashtags or [],
+            'top_topics': self.top_topics or [],
+            'search_keywords': self.search_keywords or [],
+            'viewed_problems': self.viewed_problems,
+            'viewed_solutions': self.viewed_solutions,
+            'favorite_problems': self.favorite_problems,
+            'favorite_solutions': self.favorite_solutions,
+            'last_updated': self.last_updated.isoformat() if self.last_updated else None,
+            'created_date': self.created_date.isoformat() if self.created_date else None
         }

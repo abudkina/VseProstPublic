@@ -176,7 +176,7 @@ function initModal() {
 async function loadCommentById(commentId) {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/comment-solutions`, {
+        const response = await fetch(API_CONFIG.buildURL('/comment-solutions'), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -215,7 +215,7 @@ function fillEditForm(comment) {
 
 async function updateComment(id, data) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/comment-solutions/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/comment-solutions/${id}`), {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -232,7 +232,7 @@ async function updateComment(id, data) {
 
 async function deleteComment(id) {
     const token = localStorage.getItem('accessToken');
-    const response = await fetch(`/api/comment-solutions/${id}`, {
+    const response = await fetch(API_CONFIG.buildURL(`/comment-solutions/${id}`), {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -258,7 +258,7 @@ async function loadCards() {
 
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/comment-solutions`, {
+        const response = await fetch(API_CONFIG.buildURL('/comment-solutions'), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

@@ -1,8 +1,9 @@
 // modalProblem.js
 import * as auth from './authorizationFunctions.js';
 
-let hashtagsTomSelect;
 let generalTopicTomSelect;
+const MAX_HASHTAGS = 5;
+let selectedHashtagsList = [];
 const TOPIC_MIN_QUERY_LEN = 2;
 
 // Функции нормализации (аналогичные бэкенду)
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     async function loadCategories() {
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await fetch('/api/categories', {
+            const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CATEGORIES), {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -107,9 +108,23 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.body.style.overflow = '';
         form.reset();
         if (generalTopicTomSelect) generalTopicTomSelect.clear();
-        if (hashtagsTomSelect) hashtagsTomSelect.clear();
+        selectedHashtagsList = [];
+        updateSelectedHashtags();
         topicIDHidden.value = '';
         hashtagsIDsHidden.value = '';
+    }
+
+    function updateSelectedHashtags() {
+        const selectedHashtags = document.getElementById('selectedHashtags');
+        if (!selectedHashtags) return;
+        hashtagsIDsHidden.value = selectedHashtagsList.map(h => h.id).join(',');
+        selectedHashtags.innerHTML = '';
+        selectedHashtagsList.forEach(h => {
+            const div = document.createElement('div');
+            div.className = 'selected-problem';
+            div.innerHTML = `${h.name} <span class="remove" data-id="${h.id}">×</span>`;
+            selectedHashtags.appendChild(div);
+        });
     }
 
     // Обработчики событий
@@ -139,47 +154,25 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     // Инициализация Tom Select для тем
-    const generalTopicSelect = document.getElementById('generalTopicSelect');
+    const generalTopicSelect = document.querySelector('#problem-modal #generalTopicSelect');
     if (generalTopicSelect) {
         generalTopicTomSelect = new TomSelect('#generalTopicSelect', {
             // Меняем дефолтный wrapperClass="ts-wrapper" на свой
             wrapperClass: 'vs-wrapper',
+            controlClass: 'ts-control vs-control',
             multiple: false,
-            placeholder: 'Выберите общую тему или введите новую',
+            placeholder: 'Выберите общую тему',
             searchField: ['text'],
             valueField: 'value',
             labelField: 'text',
+            maxItems: 1,
             maxOptions: null,
-            loadThrottle: 300, // Задержка перед загрузкой (мс)
+            dropdownParent: 'body',
+            loadThrottle: 300,
+            create: false,
             shouldLoad: function(query) {
-                // Загружаем только если введено 2+ символа
                 return query && query.length >= TOPIC_MIN_QUERY_LEN;
             },
-            create: function(input, callback) {
-                // Позволяем создавать новые темы прямо из поля ввода
-                const value = input.trim();
-                if (!value) {
-                    callback(null);
-                    return;
-                }
-                
-                // Проверяем, нет ли уже такой темы в загруженных опциях
-                const normalized = normalizeTopicName(value);
-                const allOptions = generalTopicTomSelect.options;
-                const existingOptions = Object.values(allOptions).map(opt => ({ Name: opt.text }));
-                
-                if (checkExists(existingOptions, normalized, normalizeTopicName)) {
-                    callback(null); // Не показываем опцию создания, если уже существует
-                    return;
-                }
-                
-                // Создаем временную опцию для отображения
-                callback({
-                    value: '__new__' + value,
-                    text: value + ' (создать новую)'
-                });
-            },
-            createOnBlur: true,
             load: function (query, callback) {
                 if (!query || query.length < TOPIC_MIN_QUERY_LEN) {
                     callback();
@@ -187,8 +180,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
                 
                 const token = localStorage.getItem('accessToken');
-                console.log('Поиск темы:', query); // Отладка
-                fetch(`/api/topics?search=${encodeURIComponent(query)}`, {
+                fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.TOPICS, {search: query}), {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -199,35 +191,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                         return res.json();
                     })
                     .then(data => {
-                        console.log('Найдено тем:', data.length); // Отладка
                         const options = data.map(item => ({
                             value: item.ID.toString(),
                             text: item.Name
                         }));
-                        
-                        // Проверяем, нет ли уже такой темы (с учетом нормализации)
-                        const normalizedQuery = normalizeTopicName(query);
-                        const exists = checkExists(data, normalizedQuery, (name) => normalizeTopicName(name));
-                        
-                        // Если ничего не найдено и такой темы не существует, показываем опцию создания
-                        if (options.length === 0 && query.length >= TOPIC_MIN_QUERY_LEN && !exists) {
-                            options.push({
-                                value: '__new__' + query,
-                                text: query + ' (создать новую)'
-                            });
-                        } else if (options.length > 0 && !exists) {
-                            // Если найдены похожие, но не точное совпадение, проверяем еще раз
-                            const exactMatch = data.some(item => {
-                                const normalized = normalizeTopicName(item.Name);
-                                return normalized === normalizedQuery;
-                            });
-                            if (!exactMatch && query.length >= TOPIC_MIN_QUERY_LEN) {
-                                options.push({
-                                    value: '__new__' + query,
-                                    text: query + ' (создать новую)'
-                                });
-                            }
-                        }
                         callback(options);
                     })
                     .catch(err => {
@@ -235,92 +202,28 @@ document.addEventListener('DOMContentLoaded', async function () {
                         callback();
                     });
             },
-            onChange: async function (value) {
+            onChange: function (value) {
                 if (!value) {
                     topicIDHidden.value = '';
                     return;
                 }
-                
-                // Если это новая тема (начинается с __new__)
-                if (value.startsWith('__new__')) {
-                    const topicName = value.replace('__new__', '');
-                    
-                    // Проверяем еще раз перед созданием
-                    const normalized = normalizeTopicName(topicName);
-                    const allOptions = generalTopicTomSelect.options;
-                    const existingOptions = Object.values(allOptions)
-                        .filter(opt => !opt.value.startsWith('__new__'))
-                        .map(opt => ({ Name: opt.text }));
-                    
-                    if (checkExists(existingOptions, normalized, normalizeTopicName)) {
-                        alert('Тема с таким именем уже существует');
-                        generalTopicTomSelect.clear();
-                        return;
+                topicIDHidden.value = value;
+                setTimeout(() => {
+                    if (generalTopicTomSelect.isOpen) {
+                        generalTopicTomSelect.close();
+                        generalTopicTomSelect.blur();
                     }
-                    
-                    try {
-                        const token = localStorage.getItem('accessToken');
-                        const response = await fetch('/api/topics', {
-                            method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ name: topicName })
-                        });
-                        
-                        if (response.ok) {
-                            const newTopic = await response.json();
-                            // Удаляем временную опцию и добавляем реальную
-                            generalTopicTomSelect.removeOption(value);
-                            generalTopicTomSelect.addOption({ 
-                                value: newTopic.ID.toString(), 
-                                text: newTopic.Name 
-                            });
-                            generalTopicTomSelect.setValue(newTopic.ID.toString());
-                            topicIDHidden.value = newTopic.ID.toString();
-                            // Закрываем выпадающий список после установки значения
-                            setTimeout(() => {
-                                if (generalTopicTomSelect.isOpen) {
-                                    generalTopicTomSelect.close();
-                                    generalTopicTomSelect.blur();
-                                }
-                                // Принудительно скрываем выпадающий список
-                                const tsWrapper = generalTopicSelect.closest('.vs-wrapper');
-                                if (tsWrapper) {
-                                    const tsDropdown = tsWrapper.querySelector('.ts-dropdown');
-                                    if (tsDropdown) {
-                                        tsDropdown.style.display = 'none';
-                                        tsDropdown.style.visibility = 'hidden';
-                                        tsDropdown.style.opacity = '0';
-                                        tsWrapper.classList.remove('focus', 'input-active');
-                                    }
-                                }
-                            }, 0);
-                        } else {
-                            const error = await response.json();
-                            const errorMsg = error.error || 'Неизвестная ошибка';
-                            if (errorMsg.includes('уже существует')) {
-                                alert('Тема с таким именем уже существует');
-                            } else {
-                                alert('Ошибка создания темы: ' + errorMsg);
-                            }
-                            generalTopicTomSelect.clear();
+                    const tsWrapper = generalTopicSelect.closest('.vs-wrapper');
+                    if (tsWrapper) {
+                        const tsDropdown = tsWrapper.querySelector('.ts-dropdown');
+                        if (tsDropdown) {
+                            tsDropdown.style.display = 'none';
+                            tsDropdown.style.visibility = 'hidden';
+                            tsDropdown.style.opacity = '0';
+                            tsWrapper.classList.remove('focus', 'input-active');
                         }
-                    } catch (error) {
-                        alert('Сетевая ошибка при создании темы: ' + error.message);
-                        generalTopicTomSelect.clear();
                     }
-                } else {
-                    topicIDHidden.value = value;
-                    // Закрываем выпадающий список после выбора существующей темы
-                    setTimeout(() => {
-                        if (generalTopicTomSelect.isOpen) {
-                            generalTopicTomSelect.close();
-                            generalTopicTomSelect.blur();
-                        }
-                    }, 0);
-                }
+                }, 0);
             },
             onItemAdd: function(value, item) {
                 // Закрываем выпадающий список после выбора
@@ -361,15 +264,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             },
             render: {
                 option: function (item, escape) {
-                    const isNew = item.value && item.value.startsWith('__new__');
-                    const icon = isNew ? '<span style="color: #4CAF50;">+ </span>' : '';
-                    return `<div>${icon}${escape(item.text)}</div>`;
+                    return `<div>${escape(item.text)}</div>`;
                 },
                 item: function (item, escape) {
                     return `<div>${escape(item.text)}</div>`;
                 },
                 no_results: function(data, escape) {
-                    return `<div class="no-results">Ничего не найдено. Введите минимум ${TOPIC_MIN_QUERY_LEN} символа(ов) для поиска или нажмите Enter для создания новой темы.</div>`;
+                    return `<div class="no-results">Ничего не найдено. Введите минимум ${TOPIC_MIN_QUERY_LEN} символа(ов) для поиска.</div>`;
                 }
             }
         });
@@ -449,7 +350,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Добавляем обработчик клика вне выпадающего списка для его закрытия
         document.addEventListener('click', function(event) {
             const tsWrapper = generalTopicSelect.closest('.vs-wrapper');
-            if (tsWrapper && !tsWrapper.contains(event.target)) {
+            const tsDropdown = generalTopicTomSelect ? generalTopicTomSelect.dropdown : null;
+            const clickedInsideDropdown = tsDropdown && tsDropdown.contains(event.target);
+            if (tsWrapper && !tsWrapper.contains(event.target) && !clickedInsideDropdown) {
                 if (generalTopicTomSelect && generalTopicTomSelect.isOpen) {
                     generalTopicTomSelect.close();
                 }
@@ -457,213 +360,61 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Инициализация Tom Select для хэштегов
-    const hashtagsElement = document.getElementById('hashtags');
-    if (hashtagsElement) {
-        hashtagsTomSelect = new TomSelect('#hashtags', {
-            // Меняем дефолтный wrapperClass="ts-wrapper" на свой
-            wrapperClass: 'vs-wrapper',
-            plugins: ['remove_button'],
-            multiple: true,
-            placeholder: 'Выберите хэштеги или введите новый',
-            searchField: ['text'],
-            valueField: 'value',
-            labelField: 'text',
-            create: function(input, callback) {
-                // Позволяем создавать новые хэштеги прямо из поля ввода
-                let value = input.trim();
-                if (!value) {
-                    callback(null);
-                    return;
-                }
-                
-                // Добавляем # если его нет
-                if (!value.startsWith('#')) {
-                    value = '#' + value;
-                }
-                
-                // Проверяем, нет ли уже такого хэштега в загруженных опциях
-                const normalized = normalizeHashtagName(value);
-                const allOptions = hashtagsTomSelect.options;
-                const existingOptions = Object.values(allOptions).map(opt => ({ Name: opt.text }));
-                
-                if (checkExists(existingOptions, normalized, normalizeHashtagName)) {
-                    callback(null); // Не показываем опцию создания, если уже существует
-                    return;
-                }
-                
-                // Создаем временную опцию для отображения
-                callback({
-                    value: '__new__' + value,
-                    text: value + ' (создать новый)'
-                });
-            },
-            createOnBlur: true,
-            load: function (query, callback) {
-                if (query.length < 2) return callback();
-                
-                const token = localStorage.getItem('accessToken');
-                fetch(`/api/hashtags?q=${encodeURIComponent(query)}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(res => {
-                        if (!res.ok) throw new Error('Ошибка загрузки хэштегов');
-                        return res.json();
-                    })
-                    .then(data => {
-                        const options = data.map(item => ({
-                            value: item.ID.toString(),
-                            text: item.Name
-                        }));
-                        
-                        // Подготавливаем имя хэштега для проверки
-                        let hashtagName = query.trim();
-                        if (!hashtagName.startsWith('#')) {
-                            hashtagName = '#' + hashtagName;
-                        }
-                        
-                        // Проверяем, нет ли уже такого хэштега (с учетом нормализации)
-                        const normalizedQuery = normalizeHashtagName(hashtagName);
-                        const exists = checkExists(data, normalizedQuery, (name) => normalizeHashtagName(name));
-                        
-                        // Если ничего не найдено и такого хэштега не существует, показываем опцию создания
-                        if (options.length === 0 && query.length >= 2 && !exists) {
-                            options.push({
-                                value: '__new__' + hashtagName,
-                                text: hashtagName + ' (создать новый)'
-                            });
-                        } else if (options.length > 0 && !exists) {
-                            // Если найдены похожие, но не точное совпадение, проверяем еще раз
-                            const exactMatch = data.some(item => {
-                                const normalized = normalizeHashtagName(item.Name);
-                                return normalized === normalizedQuery;
-                            });
-                            if (!exactMatch && query.length >= 2) {
-                                options.push({
-                                    value: '__new__' + hashtagName,
-                                    text: hashtagName + ' (создать новый)'
-                                });
-                            }
-                        }
-                        callback(options);
-                    })
-                    .catch(err => {
-                        console.error('Ошибка загрузки хэштегов:', err);
-                        callback();
+    // Хэштеги: поиск + выпадающий список + выбранные (как problem-search-container)
+    const hashtagSearch = document.getElementById('hashtagSearch');
+    const hashtagDropdown = document.getElementById('hashtagDropdown');
+    const selectedHashtags = document.getElementById('selectedHashtags');
+    if (hashtagSearch && hashtagDropdown && selectedHashtags) {
+        updateSelectedHashtags();
+        hashtagSearch.addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            if (query.length >= 2) {
+                try {
+                    const token = localStorage.getItem('accessToken');
+                    const res = await fetch(API_CONFIG.buildURLWithParams('/hashtags/search', { q: query }), {
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        credentials: 'include'
                     });
-            },
-            onChange: async function (values) {
-                if (!values || values.length === 0) {
-                    hashtagsIDsHidden.value = '';
-                    return;
-                }
-                
-                const processedValues = [];
-                const newHashtags = [];
-                
-                // Обрабатываем каждое значение
-                for (const value of values) {
-                    if (value.startsWith('__new__')) {
-                        newHashtags.push(value);
-                    } else {
-                        processedValues.push(value);
-                    }
-                }
-                
-                // Создаем новые хэштеги
-                if (newHashtags.length > 0) {
-                    try {
-                        const token = localStorage.getItem('accessToken');
-                        
-                        // Проверяем каждый новый хэштег перед созданием
-                        const allOptions = hashtagsTomSelect.options;
-                        const existingOptions = Object.values(allOptions)
-                            .filter(opt => !opt.value.startsWith('__new__'))
-                            .map(opt => ({ Name: opt.text }));
-                        
-                        for (const tempValue of newHashtags) {
-                            const hashtagName = tempValue.replace('__new__', '');
-                            const normalized = normalizeHashtagName(hashtagName);
-                            
-                            if (checkExists(existingOptions, normalized, normalizeHashtagName)) {
-                                alert(`Хэштег "${hashtagName}" уже существует`);
-                                hashtagsTomSelect.removeItem(tempValue);
-                                continue;
-                            }
-                        }
-                        
-                        // Фильтруем уже проверенные хэштеги
-                        const validNewHashtags = newHashtags.filter(tempValue => {
-                            const hashtagName = tempValue.replace('__new__', '');
-                            const normalized = normalizeHashtagName(hashtagName);
-                            return !checkExists(existingOptions, normalized, normalizeHashtagName);
+                    if (!res.ok) throw new Error('Ошибка загрузки хэштегов');
+                    const data = await res.json();
+                    const list = Array.isArray(data) ? data : (data.hashtags || []);
+                    hashtagDropdown.innerHTML = '';
+                    list.forEach(item => {
+                        const id = item.ID != null ? item.ID : item.id;
+                        const name = item.Name != null ? item.Name : item.name;
+                        if (selectedHashtagsList.some(h => h.id === id)) return;
+                        if (selectedHashtagsList.length >= MAX_HASHTAGS) return;
+                        const div = document.createElement('div');
+                        div.className = 'dropdown-item';
+                        div.textContent = name;
+                        div.setAttribute('data-id', id);
+                        div.addEventListener('click', () => {
+                            selectedHashtagsList.push({ id, name });
+                            updateSelectedHashtags();
+                            hashtagSearch.value = '';
+                            hashtagDropdown.style.display = 'none';
                         });
-                        
-                        if (validNewHashtags.length === 0) {
-                            return;
-                        }
-                        
-                        const createPromises = validNewHashtags.map(async (tempValue) => {
-                            const hashtagName = tempValue.replace('__new__', '');
-                            const response = await fetch('/api/hashtags', {
-                                method: 'POST',
-                                headers: { 
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                },
-                                body: JSON.stringify({ name: hashtagName })
-                            });
-                            
-                            if (response.ok) {
-                                const newHashtag = await response.json();
-                                // Удаляем временную опцию и добавляем реальную
-                                hashtagsTomSelect.removeOption(tempValue);
-                                hashtagsTomSelect.addOption({ 
-                                    value: newHashtag.ID.toString(), 
-                                    text: newHashtag.Name 
-                                });
-                                return newHashtag.ID.toString();
-                            } else {
-                                const error = await response.json();
-                                const errorMsg = error.error || 'Неизвестная ошибка';
-                                if (errorMsg.includes('уже существует')) {
-                                    throw new Error('Хэштег с таким именем уже существует');
-                                }
-                                throw new Error(errorMsg);
-                            }
-                        });
-                        
-                        const newIds = await Promise.all(createPromises);
-                        processedValues.push(...newIds);
-                        
-                        // Обновляем выбранные значения
-                        hashtagsTomSelect.setValue(processedValues);
-                    } catch (error) {
-                        alert('Ошибка создания хэштега: ' + error.message);
-                        // Удаляем проблемные значения
-                        newHashtags.forEach(tempValue => {
-                            hashtagsTomSelect.removeItem(tempValue);
-                        });
-                    }
+                        hashtagDropdown.appendChild(div);
+                    });
+                    hashtagDropdown.style.display = list.length ? 'block' : 'none';
+                } catch (err) {
+                    console.error('Ошибка загрузки хэштегов:', err);
+                    hashtagDropdown.style.display = 'none';
                 }
-                
-                hashtagsIDsHidden.value = processedValues.join(',');
-            },
-            render: {
-                option: function (item, escape) {
-                    const isNew = item.value && item.value.startsWith('__new__');
-                    const icon = isNew ? '<span style="color: #4CAF50;">+ </span>' : '';
-                    return `<div>${icon}${escape(item.text)}</div>`;
-                },
-                item: function (item, escape) {
-                    return `<div>${escape(item.text)}</div>`;
-                },
-                no_results: function(data, escape) {
-                    return '<div class="no-results">Ничего не найдено. Нажмите Enter для создания нового хэштега.</div>';
-                }
+            } else {
+                hashtagDropdown.style.display = 'none';
+            }
+        });
+        selectedHashtags.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove')) {
+                const id = parseInt(e.target.dataset.id, 10);
+                selectedHashtagsList = selectedHashtagsList.filter(h => h.id !== id);
+                updateSelectedHashtags();
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (!hashtagSearch.contains(e.target) && !hashtagDropdown.contains(e.target)) {
+                hashtagDropdown.style.display = 'none';
             }
         });
     }
@@ -748,7 +499,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/topics', {
+                const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.TOPICS), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -810,7 +561,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/categories', {
+                const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CATEGORIES), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -862,23 +613,20 @@ document.addEventListener('DOMContentLoaded', async function () {
                 name = '#' + name;
             }
             
-            // Проверяем, нет ли уже такого хэштега
+            // Проверяем, нет ли уже такого хэштега в выбранных
             const normalized = normalizeHashtagName(name);
-            if (hashtagsTomSelect) {
-                const allOptions = hashtagsTomSelect.options;
-                const existingOptions = Object.values(allOptions)
-                    .filter(opt => !opt.value.startsWith('__new__'))
-                    .map(opt => ({ Name: opt.text }));
-                
-                if (checkExists(existingOptions, normalized, normalizeHashtagName)) {
-                    hashtagError.textContent = 'Хэштег с таким именем уже существует';
-                    return;
-                }
+            if (selectedHashtagsList.some(h => normalizeHashtagName(h.name) === normalized)) {
+                hashtagError.textContent = 'Хэштег с таким именем уже добавлен';
+                return;
+            }
+            if (selectedHashtagsList.length >= MAX_HASHTAGS) {
+                hashtagError.textContent = `Максимум ${MAX_HASHTAGS} хэштегов`;
+                return;
             }
             
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/hashtags', {
+                const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.HASHTAGS), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -889,13 +637,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                 
                 if (response.ok) {
                     const newHashtag = await response.json();
-                    if (hashtagsTomSelect) {
-                        hashtagsTomSelect.addOption({ 
-                            value: newHashtag.ID.toString(), 
-                            text: newHashtag.Name 
-                        });
-                        hashtagsTomSelect.addItem(newHashtag.ID.toString());
-                    }
+                    selectedHashtagsList.push({ id: newHashtag.ID, name: newHashtag.Name });
+                    updateSelectedHashtags();
                     hideModal();
                 } else {
                     const error = await response.json();
@@ -963,7 +706,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/problems', {
+                const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEMS), {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -1006,7 +749,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('hashtagsIDs').value = '';
             
             if (generalTopicTomSelect) generalTopicTomSelect.clear();
-            if (hashtagsTomSelect) hashtagsTomSelect.clear();
+            selectedHashtagsList = [];
+            updateSelectedHashtags();
         });
     }
 });

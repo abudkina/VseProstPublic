@@ -6,7 +6,19 @@ import { initTagsScroll } from './tagsScroll.js';
 // Re-export initTagsScroll for use in other modules
 export { initTagsScroll };
 
-const API_BASE_URL = window.location.origin + '/api';
+function setFavoriteIconState(iconElement, isFavorite) {
+    if (!iconElement) return;
+    const isFavoriteFlag = isFavorite === true || isFavorite === 1 || isFavorite === '1';
+    iconElement.classList.add('fa-heart');
+    iconElement.classList.toggle('favorited', isFavoriteFlag);
+    iconElement.classList.toggle('liked', isFavoriteFlag);
+    iconElement.classList.toggle('fas', isFavoriteFlag);
+    iconElement.classList.toggle('far', !isFavoriteFlag);
+    const favoritesWrapper = iconElement.closest('.card-favorites');
+    if (favoritesWrapper) {
+        favoritesWrapper.classList.toggle('favorited', isFavoriteFlag);
+    }
+}
 
 /**
  * Загрузка категорий и заполнение select
@@ -19,7 +31,7 @@ export async function loadCategories(selectId = 'category', requireAuth = false)
             if (token) headers['Authorization'] = `Bearer ${token}`;
         }
         
-        const response = await fetch(`${API_BASE_URL}/categories`, { headers });
+        const response = await fetch(`${API_CONFIG.API_URL}/categories`, { headers });
         const categories = await response.json();
         
         const categorySelect = document.getElementById(selectId);
@@ -94,10 +106,11 @@ export function initHashtagsTomSelect(selectId = 'hashtags', onItemAdd = null) {
         const instance = new TomSelect(element, {
             // Уходим от дефолтного wrapperClass="ts-wrapper" (часто конфликтует с чужими стилями)
             wrapperClass: 'vs-wrapper',
+            controlClass: 'ts-control vs-control',
             valueField: 'ID',
             labelField: 'Name',
             searchField: 'Name',
-            maxItems: null,
+            maxItems: 5,
             create: false,
             loadThrottle: 300,
             placeholder: 'Выберите хэштеги',
@@ -119,7 +132,7 @@ export function initHashtagsTomSelect(selectId = 'hashtags', onItemAdd = null) {
                     return;
                 }
                 
-                fetch(`${API_BASE_URL}/hashtags?q=${encodeURIComponent(query)}`, {
+                fetch(`${API_CONFIG.API_URL}/hashtags?q=${encodeURIComponent(query)}`, {
                     credentials: 'include' // Важно для отправки cookies с токеном
                 })
                     .then(res => {
@@ -195,10 +208,10 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
     if (filters.hashtags && filters.hashtags.length) {
         params.append('hashtags', filters.hashtags.join(','));
     }
-    if (filters.category != null) {
+    if (filters.category != null && Number.isInteger(filters.category)) {
         params.append('category', filters.category);
     }
-    if (filters.topic != null) {
+    if (filters.topic != null && Number.isInteger(filters.topic)) {
         params.append('topic', filters.topic);
     }
     if (filters.isNew) {
@@ -208,7 +221,7 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
     if (filters.offset) params.append('offset', filters.offset);
     
     try {
-        const response = await fetch(`${API_BASE_URL}/problems?${params.toString()}`, {
+        const response = await fetch(`${API_CONFIG.API_URL}/problems?${params.toString()}`, {
             credentials: 'include' // Важно для отправки cookies с токеном
         });
         
@@ -312,14 +325,8 @@ export function renderProblemCards(data, options = {}) {
         
         // Проверяем статус избранного и меняем иконку
         const favoriteIcon = clone.querySelector('.favorite-icon');
-        if (favoriteIcon && !options.isAdmin) {
-            if (problem.IsFavourite === true) {
-                favoriteIcon.src = '/assets/icons/love_6787061.png';
-                favoriteIcon.classList.add('favorited');
-            } else {
-                favoriteIcon.src = '/assets/icons/love_9318199.png';
-                favoriteIcon.classList.remove('favorited');
-            }
+        if (favoriteIcon) {
+            setFavoriteIconState(favoriteIcon, problem.IsFavourite);
         }
         
         // Тема проблемы
@@ -408,9 +415,19 @@ export function renderProblemCards(data, options = {}) {
  * Переключение избранного
  */
 export async function toggleFavorite(problemId, iconElement) {
+    if (!iconElement || iconElement.dataset.pending === '1') {
+        return;
+    }
+    iconElement.dataset.pending = '1';
+    iconElement.style.pointerEvents = 'none';
+    const wrapper = iconElement.closest('.card-favorites');
+    if (wrapper) {
+        wrapper.style.pointerEvents = 'none';
+    }
+
     try {
         const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-        const response = await fetch(`/api/problems/${problemId}/toggle-favourite`, {
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEM_TOGGLE_FAVORITE(problemId)), {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -421,14 +438,14 @@ export async function toggleFavorite(problemId, iconElement) {
         
         if (response.status === 401) {
             // Пробуем обновить токен
-            const refreshResponse = await fetch('/api/auth/refresh', {
+            const refreshResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
                 method: 'POST',
                 credentials: 'include'
             });
             
             if (refreshResponse.ok) {
                 // Повторяем запрос
-                const retryResponse = await fetch(`/api/problems/${problemId}/toggle-favourite`, {
+                const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEM_TOGGLE_FAVORITE(problemId)), {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -444,7 +461,7 @@ export async function toggleFavorite(problemId, iconElement) {
                         const currentCount = parseInt(countElement.textContent) || 0;
                         countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
                     }
-                    iconElement.classList.toggle('liked', data.is_favourite);
+                    setFavoriteIconState(iconElement, data.is_favourite);
                 }
             }
         } else if (response.ok) {
@@ -454,17 +471,17 @@ export async function toggleFavorite(problemId, iconElement) {
                 const currentCount = parseInt(countElement.textContent) || 0;
                 countElement.textContent = data.is_favourite ? currentCount + 1 : Math.max(0, currentCount - 1);
             }
-            // Переключаем иконку и класс favorited
-            if (data.is_favourite) {
-                iconElement.src = '/assets/icons/love_6787061.png';
-                iconElement.classList.add('favorited');
-            } else {
-                iconElement.src = '/assets/icons/love_9318199.png';
-                iconElement.classList.remove('favorited');
-            }
+            // Переключаем иконку и фон избранного
+            setFavoriteIconState(iconElement, data.is_favourite);
         }
     } catch (error) {
         console.error('Ошибка добавления в избранное:', error);
+    } finally {
+        iconElement.dataset.pending = '0';
+        iconElement.style.pointerEvents = '';
+        if (wrapper) {
+            wrapper.style.pointerEvents = '';
+        }
     }
 }
 
@@ -551,7 +568,7 @@ export function initTagClickHandler(tomSelectInstance, filters, onFilterChange) 
                     filters.offset = 0;
                     
                     // Обновляем класс has-items для правильного отображения
-                    const tsControl = document.querySelector('.ts-control');
+                    const tsControl = document.querySelector('.vs-control');
                     if (tsControl && !tsControl.classList.contains('has-items')) {
                         tsControl.classList.add('has-items');
                     }

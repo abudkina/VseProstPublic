@@ -26,6 +26,20 @@ let currentFilters = {
   offset: 0
 };
 
+function setFavoriteIconState(iconElement, isFavorite) {
+  if (!iconElement) return;
+  const isFavoriteFlag = isFavorite === true || isFavorite === 1 || isFavorite === '1';
+  iconElement.classList.add('fa-heart');
+  iconElement.classList.toggle('favorited', isFavoriteFlag);
+  iconElement.classList.toggle('liked', isFavoriteFlag);
+  iconElement.classList.toggle('fas', isFavoriteFlag);
+  iconElement.classList.toggle('far', !isFavoriteFlag);
+  const favoritesWrapper = iconElement.closest('.card-favorites');
+  if (favoritesWrapper) {
+    favoritesWrapper.classList.toggle('favorited', isFavoriteFlag);
+  }
+}
+
 async function loadCards() {
   const container = currentTab === 'problems' 
     ? document.getElementById('problems-container')
@@ -198,13 +212,7 @@ function renderProblemCards(data) {
     // Меняем иконку в зависимости от статуса избранного
     const favoriteIcon = card.querySelector('.favorite-icon');
     if (favoriteIcon) {
-      if (item.IsFavourite === true || item.Favourite === 1) {
-        favoriteIcon.src = '/assets/icons/love_6787061.png';
-        favoriteIcon.classList.add('favorited');
-      } else {
-        favoriteIcon.src = '/assets/icons/love_9318199.png';
-        favoriteIcon.classList.remove('favorited');
-      }
+      setFavoriteIconState(favoriteIcon, item.IsFavourite ?? true);
     }
 
     // Тема проблемы
@@ -445,13 +453,7 @@ function renderSolutionCards(data) {
     // Меняем иконку в зависимости от статуса избранного
     const favoriteIcon = card.querySelector('.favorite-icon');
     if (favoriteIcon) {
-      if (item.IsFavourite === true || item.Favourite === 1) {
-        favoriteIcon.src = '/assets/icons/love_6787061.png';
-        favoriteIcon.classList.add('favorited');
-      } else {
-        favoriteIcon.src = '/assets/icons/love_9318199.png';
-        favoriteIcon.classList.remove('favorited');
-      }
+      setFavoriteIconState(favoriteIcon, item.IsFavourite ?? true);
     }
 
     // Отображаем темы из связанных проблем
@@ -527,20 +529,16 @@ function renderSolutionCards(data) {
     // Кнопка корзины
     const cartBtn = card.querySelector('.card-cart-btn');
     if (cartBtn) {
-      const cartImg = cartBtn.querySelector('img');
+      const cartIcon = cartBtn.querySelector('i');
       
       // Функция для обновления иконки корзины
       const updateCartIcon = (inCart) => {
-        if (!cartImg) return;
+        if (!cartIcon) return;
         
         if (inCart) {
-          // Меняем иконку на shopping-bag_4505309 (зеленая заливка)
-          cartImg.src = '/assets/icons/shopping-bag_4505309.png';
-          cartImg.setAttribute('src', '/assets/icons/shopping-bag_4505309.png');
+          cartIcon.classList.add('cart-in-cart');
         } else {
-          // Убеждаемся, что иконка shopping-bag_7945129 (зеленый ободок)
-          cartImg.src = '/assets/icons/shopping-bag_7945129.png';
-          cartImg.setAttribute('src', '/assets/icons/shopping-bag_7945129.png');
+          cartIcon.classList.remove('cart-in-cart');
         }
       };
       
@@ -632,7 +630,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentFilters.hashtags = instance.getValue().map(v => parseInt(v, 10));
     currentFilters.offset = 0;
     reloadCards();
-    document.querySelector('.ts-control')?.classList.add('has-items');
+    document.querySelector('.vs-control')?.classList.add('has-items');
   });
   
   // Обработчик удаления хэштегов
@@ -653,7 +651,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           
           reloadCards();
           if (choicesInstance.items.length == 0) {
-            const tsControl = document.querySelector('.ts-control');
+            const tsControl = document.querySelector('.vs-control');
             if (tsControl) {
               tsControl.classList.remove('has-items');
               // Убеждаемся, что плейсхолдер виден

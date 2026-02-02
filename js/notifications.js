@@ -32,16 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadNotifications() {
     try {
         const token = localStorage.getItem('accessToken');
-        if (!token) {
-            throw new Error('Токен не найден');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token && token !== 'null' && token !== 'undefined') {
+            headers['Authorization'] = `Bearer ${token}`;
         }
-        
-        const response = await fetch(`/api/notifications`, {
+
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.NOTIFICATIONS), {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers,
+            credentials: 'include'
         });
         
         if (response.status === 401) {
@@ -70,16 +69,15 @@ async function loadNotifications() {
 async function toggleRead(id) {
     try {
         const token = localStorage.getItem('accessToken');
-        if (!token) {
-            throw new Error('Токен не найден');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token && token !== 'null' && token !== 'undefined') {
+            headers['Authorization'] = `Bearer ${token}`;
         }
-        
-        const response = await fetch(`/api/notifications/toggle-read?id=${id}`, {
+
+        const response = await fetch(API_CONFIG.buildURLWithParams('/notifications/toggle-read', {id: id}), {
             method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers,
+            credentials: 'include'
         });
         
         if (response.status === 401) {

@@ -68,6 +68,19 @@ class Config:
     # Password Reset Settings
     PASSWORD_RESET_TOKEN_EXPIRES = get_env_int('PASSWORD_RESET_TOKEN_EXPIRES', 3600)  # 1 час
     FRONTEND_URL = get_env_variable('FRONTEND_URL', 'http://127.0.0.1:8080')
+    
+    # SEO Settings
+    BASE_URL = get_env_variable('BASE_URL', 'https://vseprost.com')  # Основной URL сайта для SEO
+    
+    # Google Settings
+    GOOGLE_ANALYTICS_ID = get_env_variable('GOOGLE_ANALYTICS_ID', '')  # Google Analytics 4 ID (G-XXXXXXXXXX)
+    GOOGLE_TAG_MANAGER_ID = get_env_variable('GOOGLE_TAG_MANAGER_ID', '')  # Google Tag Manager ID (GTM-XXXXXXX)
+    GOOGLE_VERIFICATION_CODE = get_env_variable('GOOGLE_VERIFICATION_CODE', '')  # Код верификации Search Console
+    
+    # Yandex Settings
+    YANDEX_METRIKA_ID = get_env_variable('YANDEX_METRIKA_ID', '106548955')  # Яндекс.Метрика ID
+    YANDEX_VERIFICATION = get_env_variable('YANDEX_VERIFICATION', '')  # Код верификации Яндекс.Вебмастер
+    YANDEX_VERIFICATION_CODE = get_env_variable('YANDEX_VERIFICATION_CODE', '')  # Код для файла верификации
 
 class DevelopmentConfig(Config):
     """Конфигурация для разработки"""

@@ -1,4 +1,4 @@
-# notofication.py
+# notification.py
 from flask import Blueprint, jsonify, request, g
 from datetime import datetime
 
@@ -6,6 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from logic.model import Notification
 from logic.middleware import token_required
 from logic.model import db
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 notification_bp = Blueprint('notification', __name__,url_prefix='/api')
 
@@ -34,7 +37,7 @@ def count_unread_notifications():
                 # Таблица не существует - это нормально, возвращаем 0 без вывода ошибки
                 count = 0
             else:
-                print(f"Ошибка запроса к базе данных: {db_error}")
+                logger.error(f"Ошибка запроса к базе данных: {db_error}")
                 import traceback
                 traceback.print_exc()
                 # Пробуем через ORM как fallback
@@ -49,13 +52,13 @@ def count_unread_notifications():
                         # Таблица не существует - это нормально, возвращаем 0 без вывода ошибки
                         count = 0
                     else:
-                        print(f"ORM запрос также не сработал: {orm_error}")
+                        logger.error(f"ORM запрос также не сработал: {orm_error}")
                         return jsonify({'error': 'Ошибка базы данных', 'details': str(orm_error)}), 500
         
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета уведомлений: {e}")
+        logger.error(f"Ошибка подсчета уведомлений: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Ошибка базы данных', 'details': str(e)}), 500
@@ -86,7 +89,7 @@ def get_notification(notification_id):
         return jsonify(notification.to_dict()), 200
         
     except Exception as e:
-        print(f"Ошибка получения уведомления: {e}")
+        logger.error(f"Ошибка получения уведомления: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @notification_bp.route('/notifications/<int:notification_id>', methods=['DELETE'])
@@ -116,7 +119,7 @@ def delete_notification(notification_id):
         return jsonify({'message': 'Уведомление успешно удалено'}), 200
         
     except Exception as e:
-        print(f"Ошибка удаления уведомления: {e}")
+        logger.error(f"Ошибка удаления уведомления: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @notification_bp.route('/notifications/mark-all-read', methods=['PATCH'])
@@ -148,7 +151,7 @@ def mark_all_as_read():
                     'message': 'Все уведомления отмечены как прочитанные',
                     'updated_count': 0
                 }), 200
-            print(f"Ошибка обновления уведомлений: {e}")
+            logger.error(f"Ошибка обновления уведомлений: {e}")
             return jsonify({'error': 'Ошибка обновления уведомлений'}), 500
         
         return jsonify({
@@ -157,7 +160,7 @@ def mark_all_as_read():
         }), 200
         
     except Exception as e:
-        print(f"Общая ошибка: {e}")
+        logger.error(f"Общая ошибка: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @notification_bp.route('/notifications', methods=['POST'])
@@ -193,13 +196,13 @@ def create_notification():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка создания уведомления: {e}")
+            logger.error(f"Ошибка создания уведомления: {e}")
             return jsonify({'error': 'Ошибка создания уведомления'}), 500
         
         return jsonify(notification.to_dict()), 201
         
     except Exception as e:
-        print(f"Общая ошибка: {e}")
+        logger.error(f"Общая ошибка: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @notification_bp.route('/notifications', methods=['GET'])
@@ -228,7 +231,7 @@ def get_all_notifications():
         return jsonify(response), 200
         
     except Exception as e:
-        print(f"Ошибка получения уведомлений: {e}")
+        logger.error(f"Ошибка получения уведомлений: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
 
 @notification_bp.route('/notifications/toggle-read', methods=['PATCH'])
@@ -259,7 +262,7 @@ def toggle_read_notification():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка обновления уведомления: {e}")
+            logger.error(f"Ошибка обновления уведомления: {e}")
             return jsonify({'error': 'Ошибка обновления уведомления'}), 500
         
         return jsonify({
@@ -268,7 +271,7 @@ def toggle_read_notification():
         }), 200
         
     except Exception as e:
-        print(f"Общая ошибка: {e}")
+        logger.error(f"Общая ошибка: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @notification_bp.route('/notifications/recent', methods=['GET'])
@@ -318,5 +321,5 @@ def get_recent_notifications():
         }), 200
         
     except Exception as e:
-        print(f"Ошибка получения уведомлений: {e}")
+        logger.error(f"Ошибка получения уведомлений: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500 

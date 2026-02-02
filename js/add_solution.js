@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (query.length > 2) {
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch(`/api/problems?search=${encodeURIComponent(query)}&limit=10`, {
+                const response = await fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.PROBLEMS, {search: query, limit: 10}), {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const token = localStorage.getItem('accessToken');
             // Исправленный endpoint для создания решения
-            const response = await fetch('/api/solutions', {
+            const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTIONS), {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

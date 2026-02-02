@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (query.length > 2) {
                 try {
                     const token = localStorage.getItem('accessToken');
-                    const response = await fetch(`/api/problems?search=${encodeURIComponent(query)}&limit=10`, {
+                    const response = await fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.PROBLEMS, {search: query, limit: 10}), {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/topics', {
+                const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.TOPICS), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/categories', {
+                const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CATEGORIES), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/hashtags', {
+                const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.HASHTAGS), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await fetch('/api/solutions', {
+            const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTIONS), {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

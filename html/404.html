@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Страница не найдена (404) - Всё Прост</title>
+    <meta name="description" content="Запрашиваемая страница не найдена. Вернитесь на главную страницу платформы Всё Прост для поиска решений и обсуждения проблем." />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href="/404.html" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/404.html" />
+    <meta property="og:title" content="Страница не найдена (404) - Всё Прост" />
+    <meta property="og:description" content="Запрашиваемая страница не найдена. Вернитесь на главную страницу." />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content="Всё Прост" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Страница не найдена (404) - Всё Прост" />
+    <meta name="twitter:description" content="Запрашиваемая страница не найдена. Вернитесь на главную страницу." />
+    
+    <!-- Favicon для поисковиков и браузеров -->
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Preconnect для быстрой загрузки -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Страница не найдена (404)",
+      "description": "Запрашиваемая страница не найдена",
+      "url": "/404.html",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Главная",
+            "item": "/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Вопросы",
+            "item": "/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Решения",
+            "item": "/html/solutions.html"
+          }
+        ]
+      }
+    }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .error-code {
+            font-size: 120px;
+            font-weight: bold;
+            color: #667eea;
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+        
+        .error-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .error-description {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .suggestions {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .suggestions-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .suggestions-list {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .suggestions-list li {
+            padding: 10px 0;
+            color: #666;
+        }
+        
+        .suggestions-list a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .suggestions-list a:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .error-code {
+                font-size: 80px;
+            }
+            
+            .error-title {
+                font-size: 24px;
+            }
+            
+            .error-description {
+                font-size: 16px;
+            }
+            
+            .error-container {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-title">Страница не найдена</h1>
+        <p class="error-description">
+            К сожалению, запрашиваемая страница не существует или была перемещена.
+            Вернитесь на главную страницу или воспользуйтесь навигацией.
+        </p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn">На главную</a>
+            <a href="/html/solutions.html" class="btn btn-secondary">Решения</a>
+            <button onclick="history.back()" class="btn btn-secondary">Назад</button>
+        </div>
+        
+        <div class="suggestions">
+            <h2 class="suggestions-title">Популярные разделы:</h2>
+            <ul class="suggestions-list">
+                <li><a href="/">Главная страница</a> - Найдите ответы на свои вопросы</li>
+                <li><a href="/html/solutions.html">Решения</a> - Просмотрите готовые решения</li>
+                <li><a href="/html/add_problem.html">Добавить проблему</a> - Задайте свой вопрос</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Отслеживание 404 ошибок для аналитики
+        if (window.ym) {
+            ym(106548955, 'reachGoal', '404_error', {
+                url: window.location.href,
+                referrer: document.referrer
+            });
+        }
+        
+        if (window.gtag) {
+            gtag('event', 'page_view', {
+                'page_title': '404 - Страница не найдена',
+                'page_path': window.location.pathname
+            });
+        }
+    </script>
+</body>
+</html>

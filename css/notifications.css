@@ -24,17 +24,17 @@
 /* Карточка уведомления */
 .notification-card {
     width: 100%;
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    background: var(--color-white);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-5);
+    margin-bottom: var(--spacing-4);
     box-sizing: border-box;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     position: relative;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: var(--transition-slow);
+    box-shadow: var(--shadow-sm);
 }
 
 .notification-card:hover {
@@ -50,18 +50,18 @@
 }
 
 .notification-title {
-    font-weight: 700;
-    font-size: 1.3em;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
     color: #002060;
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-2);
     padding-right: 80px;
-    line-height: 1.4;
+    line-height: var(--line-height-normal);
 }
 
 .notification-text {
-    font-size: 1em;
-    color: #555;
-    margin-bottom: 12px;
+    font-size: var(--font-size-base);
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-3);
     max-height: 3em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -69,7 +69,7 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     white-space: normal;
-    line-height: 1.5;
+    line-height: var(--line-height-relaxed);
     padding-right: 80px;
 }
 
@@ -113,8 +113,8 @@
 }
 
 .notification-date {
-    font-size: 0.85em;
-    color: #666;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
     user-select: none;
     white-space: nowrap;
 }

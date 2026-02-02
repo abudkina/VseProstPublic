@@ -9,7 +9,7 @@
 - Оптимизацию заголовков
 - Resource hints для быстрой загрузки
 """
-from flask import current_app
+from flask import current_app, request
 from flask_compress import Compress
 from functools import wraps
 import gzip
@@ -30,7 +30,7 @@ def add_performance_headers(app):
     @app.after_request
     def add_headers(response):
         # Кэширование статических файлов
-        if response.path.endswith(('.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2')):
+        if request.path.endswith(('.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2')):
             response.headers['Cache-Control'] = 'public, max-age=2592000'  # 30 дней
         else:
             response.headers['Cache-Control'] = 'public, max-age=3600'  # 1 час

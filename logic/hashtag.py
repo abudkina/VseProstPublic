@@ -8,6 +8,9 @@ from logic.model import Hashtag, User
 from logic.middleware import token_required
 from logic.model import db
 from logic.utils.normalizers import normalize_hashtag_name
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 hashtag_bp = Blueprint('hashtag', __name__,url_prefix='/api')
 
@@ -53,7 +56,7 @@ def add_hashtag():
                     return jsonify({'error': 'Хэштег с таким именем уже существует'}), 400
         
         except Exception as e:
-            print(f"Ошибка проверки уникальности: {e}")
+            logger.error(f"Ошибка проверки уникальности: {e}")
             return jsonify({'error': 'Ошибка проверки уникальности'}), 500
         
         # Создаем новый хэштег
@@ -75,7 +78,7 @@ def add_hashtag():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка создания хэштега: {e}")
+            logger.error(f"Ошибка создания хэштега: {e}")
             return jsonify({'error': 'Ошибка создания хэштега'}), 500
         
         # Возвращаем созданный хэштег
@@ -90,7 +93,7 @@ def add_hashtag():
         }), 201
         
     except Exception as e:
-        print(f"Общая ошибка: {e}")
+        logger.error(f"Общая ошибка: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @hashtag_bp.route('/hashtags/count', methods=['GET'])
@@ -112,7 +115,7 @@ def count_hashtag():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета хэштегов: {e}")
+        logger.error(f"Ошибка подсчета хэштегов: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
     
 @hashtag_bp.route('/hashtags', methods=['GET'])
@@ -131,7 +134,7 @@ def get_hashtags():
         return jsonify({'hashtags': hashtags_list}), 200
         
     except Exception as e:
-        print(f"Ошибка получения хэштегов: {e}")
+        logger.error(f"Ошибка получения хэштегов: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Ошибка базы данных'}), 500
@@ -194,7 +197,7 @@ def update_hashtag(hashtag_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка обновления хэштега: {e}")
+        logger.error(f"Ошибка обновления хэштега: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @hashtag_bp.route('/hashtags/<int:hashtag_id>', methods=['DELETE'])
@@ -221,7 +224,7 @@ def delete_hashtag(hashtag_id):
         return jsonify({'message': 'Хэштег успешно удален'}), 200
         
     except Exception as e:
-        print(f"Ошибка удаления хэштега: {e}")
+        logger.error(f"Ошибка удаления хэштега: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @hashtag_bp.route('/hashtags/<int:hashtag_id>/mark-as-read', methods=['PUT'])
@@ -251,7 +254,7 @@ def mark_hashtag_as_read(hashtag_id):
         return jsonify({'message': 'Хэштег отмечен как прочитанный'}), 200
         
     except Exception as e:
-        print(f"Ошибка обновления хэштега: {e}")
+        logger.error(f"Ошибка обновления хэштега: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 @hashtag_bp.route('/hashtags/search', methods=['GET'])
@@ -279,5 +282,5 @@ def search_hashtags():
         return jsonify({'hashtags': hashtags_list}), 200
         
     except Exception as e:
-        print(f"Ошибка поиска хэштегов: {e}")
+        logger.error(f"Ошибка поиска хэштегов: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500

@@ -2,6 +2,9 @@ from flask import Blueprint, jsonify, request, g
 from datetime import datetime
 from logic.model import UserCartSolution, Solution, User, Problem, db
 from logic.middleware import token_required
+from logic.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 cart_bp = Blueprint('cart', __name__, url_prefix='/api')
 
@@ -57,7 +60,7 @@ def get_cart():
         return jsonify(solutions_list), 200
         
     except Exception as e:
-        print(f"Ошибка получения корзины: {e}")
+        logger.exception(f"Ошибка получения корзины: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Ошибка базы данных', 'details': str(e)}), 500
@@ -104,7 +107,7 @@ def add_to_cart(solution_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка добавления в корзину: {e}")
+            logger.exception(f"Ошибка добавления в корзину: {e}")
             return jsonify({'error': 'Ошибка добавления в корзину'}), 500
         
         return jsonify({
@@ -114,7 +117,7 @@ def add_to_cart(solution_id):
         }), 201
         
     except Exception as e:
-        print(f"Ошибка добавления в корзину: {e}")
+        logger.exception(f"Ошибка добавления в корзину: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
@@ -143,7 +146,7 @@ def remove_from_cart(solution_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка удаления из корзины: {e}")
+            logger.exception(f"Ошибка удаления из корзины: {e}")
             return jsonify({'error': 'Ошибка удаления из корзины'}), 500
         
         return jsonify({
@@ -152,7 +155,7 @@ def remove_from_cart(solution_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка удаления из корзины: {e}")
+        logger.exception(f"Ошибка удаления из корзины: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
@@ -181,7 +184,7 @@ def remove_cart_item(cart_item_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print(f"Ошибка удаления из корзины: {e}")
+            logger.exception(f"Ошибка удаления из корзины: {e}")
             return jsonify({'error': 'Ошибка удаления из корзины'}), 500
         
         return jsonify({
@@ -189,7 +192,7 @@ def remove_cart_item(cart_item_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка удаления из корзины: {e}")
+        logger.exception(f"Ошибка удаления из корзины: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
@@ -215,7 +218,7 @@ def check_in_cart(solution_id):
         }), 200
         
     except Exception as e:
-        print(f"Ошибка проверки корзины: {e}")
+        logger.exception(f"Ошибка проверки корзины: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Внутренняя ошибка сервера', 'details': str(e)}), 500
@@ -237,7 +240,7 @@ def get_cart_count():
         return jsonify({'count': count}), 200
         
     except Exception as e:
-        print(f"Ошибка подсчета корзины: {e}")
+        logger.exception(f"Ошибка подсчета корзины: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Внутренняя ошибка сервера', 'details': str(e)}), 500
