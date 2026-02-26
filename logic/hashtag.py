@@ -59,13 +59,9 @@ def add_hashtag():
             logger.error(f"Ошибка проверки уникальности: {e}")
             return jsonify({'error': 'Ошибка проверки уникальности'}), 500
         
-        # Создаем новый хэштег
-        # Добавляем символ # в начало, если его нет
-        if not hashtag_name.startswith('#'):
-            hashtag_name = '#' + hashtag_name
-        
+        # Создаем новый хэштег (сохраняем без #, с маленькой буквы)
         new_hashtag = Hashtag(
-            name=hashtag_name,
+            name=normalized_req_name,
             creator=user_id,  # Используем creator, а не creator_id
             created_date=datetime.utcnow(),
             modified_date=datetime.utcnow(),
@@ -176,12 +172,8 @@ def update_hashtag(hashtag_id):
             if normalized_existing_name == normalized_new_name:
                 return jsonify({'error': 'Хэштег с таким именем уже существует'}), 400
         
-        # Добавляем символ # в начало, если его нет
-        if not new_name.startswith('#'):
-            new_name = '#' + new_name
-        
-        # Обновляем хэштег
-        hashtag.name = new_name
+        # Обновляем хэштег (без #, с маленькой буквы)
+        hashtag.name = normalized_new_name
         hashtag.modified_date = datetime.utcnow()
         
         try:

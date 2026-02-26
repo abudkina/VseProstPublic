@@ -19,14 +19,16 @@ let currentFilters = {
   hashtags: [],
   category: null,
   topic: null,
+  sort: 'default',
   limit: 50,
   offset: 0
 };
 
 // Функция для перезагрузки карточек
 function reloadCards() {
-    loadProblemsCards(currentFilters, (data) => {
-        renderProblemCards(data, { 
+    loadProblemsCards(currentFilters, (list, meta) => {
+        renderProblemCards(list, {
+            ...meta, 
             isAdmin: false,
             onTopicClick: (topicId) => {
                 // При клике на тему фильтруем по этой теме
@@ -96,6 +98,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         initTagClickHandler(choicesInstance, currentFilters, reloadCards);
     }
     
+    // Скрываем ссылку "Добавить проблему" для неавторизованных
+    const addProblemLink = document.getElementById('addProblem');
+    if (addProblemLink && localStorage.getItem('isLoggedIn') !== 'true') {
+        addProblemLink.style.display = 'none';
+    }
+
     // Загружаем карточки
     reloadCards();
 });

@@ -339,14 +339,119 @@ body {
 }
 
 /* Адаптивность */
-@media (max-width: 1024px) {
+
+/* Desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
   .cart-main {
-    max-width: 100%;
-    padding: 16px;
+    max-width: 95%;
+    padding: 18px;
+  }
+
+  .cart-header h1 {
+    font-size: 1.9rem;
+  }
+
+  .cart-summary {
+    font-size: 1.1rem;
   }
 }
 
-@media (max-width: 768px) {
+/* Tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .cart-main {
+    padding: 14px 10px;
+  }
+
+  .cart-header {
+    padding: 14px 0;
+    margin-bottom: 18px;
+  }
+
+  .cart-header h1 {
+    font-size: 1.7rem;
+  }
+
+  .cart-summary {
+    font-size: 1.05rem;
+  }
+
+  .cart-item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .cart-item-image {
+    width: 110px;
+    height: 83px;
+    border-radius: 10px;
+  }
+
+  .cart-item-content {
+    gap: 8px;
+  }
+
+  .cart-item-title {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .cart-item-remove {
+    width: 36px;
+    height: 36px;
+  }
+
+  .cart-item-remove .remove-icon {
+    font-size: 26px;
+  }
+
+  .cart-item-problem,
+  .cart-item-status {
+    font-size: 0.85rem;
+  }
+
+  .problem-label,
+  .status-label {
+    font-size: 0.85rem;
+  }
+
+  .status-badge {
+    font-size: 0.8rem;
+    padding: 4px 12px;
+  }
+
+  .cart-item-stats {
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .cart-item-stats .stat-item {
+    padding: 10px 14px;
+  }
+
+  .cart-empty {
+    padding: 50px 20px;
+  }
+
+  .cart-empty i {
+    font-size: 72px;
+  }
+
+  .cart-empty h2 {
+    font-size: 1.5rem;
+  }
+
+  .cart-empty p {
+    font-size: 1rem;
+  }
+
+  .btn-primary {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+}
+
+/* Medium Phones (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
   .cart-main {
     padding: 12px 8px;
   }
@@ -468,34 +573,37 @@ body {
   }
 }
 
-@media (max-width: 480px) {
+/* Small Phones (<480px) */
+@media (max-width: 479px) {
   .cart-main {
-    padding: 8px 4px;
+    padding: 10px 6px;
   }
 
   .cart-header {
-    padding: 8px 0;
-    margin-bottom: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 0;
+    margin-bottom: 14px;
   }
 
   .cart-header h1 {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
   }
 
   .cart-summary {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   .cart-item {
     flex-direction: row;
-    padding: 8px;
-    gap: 8px;
+    padding: 9px;
+    gap: 9px;
     border-radius: 10px;
   }
 
   .cart-item-image {
-    width: 80px;
-    height: 60px;
+    width: 85px;
+    height: 64px;
     flex-shrink: 0;
   }
 
@@ -505,7 +613,7 @@ body {
 
   .cart-item-title {
     font-size: 0.9rem;
-    line-height: 1.2;
+    line-height: 1.25;
     -webkit-line-clamp: 2;
   }
 
@@ -514,17 +622,17 @@ body {
   }
 
   .cart-item-remove {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
   }
 
   .cart-item-remove .remove-icon {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .cart-item-problem,
   .cart-item-status {
-    font-size: 0.75rem;
+    font-size: 0.73rem;
     gap: 4px;
   }
 
@@ -535,36 +643,56 @@ body {
 
   .status-badge {
     font-size: 0.7rem;
-    padding: 2px 8px;
+    padding: 2px 9px;
+  }
+
+  .cart-item-stats {
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 7px;
+  }
+
+  .cart-item-stats .stat-item {
+    padding: 7px 10px;
   }
 
   .cart-empty {
-    padding: 30px 12px;
+    padding: 35px 14px;
     border-radius: 10px;
   }
 
   .cart-empty i {
-    font-size: 48px;
-    margin-bottom: 12px;
+    font-size: 54px;
+    margin-bottom: 14px;
   }
 
   .cart-empty h2 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
   .cart-empty p {
-    font-size: 0.85rem;
-    margin-bottom: 16px;
+    font-size: 0.87rem;
+    margin-bottom: 18px;
   }
 
   .btn-primary {
-    padding: 8px 16px;
-    font-size: 0.85rem;
+    padding: 9px 18px;
+    font-size: 0.87rem;
     border-radius: 6px;
   }
 }
 
-@media (max-width: 360px) {
+/* Very Small Phones (<375px) */
+@media (max-width: 374px) {
+  .cart-main {
+    padding: 8px 4px;
+  }
+
+  .cart-header {
+    padding: 8px 0;
+    margin-bottom: 12px;
+  }
+
   .cart-header h1 {
     font-size: 1.2rem;
   }
@@ -590,11 +718,59 @@ body {
   }
 
   .cart-item-title {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+
+  .cart-item-remove {
+    width: 26px;
+    height: 26px;
+  }
+
+  .cart-item-remove .remove-icon {
+    font-size: 18px;
+  }
+
+  .cart-item-problem,
+  .cart-item-status {
+    font-size: 0.7rem;
+  }
+
+  .problem-label,
+  .status-label {
+    font-size: 0.7rem;
+  }
+
+  .status-badge {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+  }
+
+  .cart-item-stats .stat-item {
+    padding: 6px 8px;
+  }
+
+  .cart-empty {
+    padding: 28px 12px;
+  }
+
+  .cart-empty i {
+    font-size: 44px;
+    margin-bottom: 12px;
   }
 
   .cart-empty h2 {
     font-size: 1rem;
+  }
+
+  .cart-empty p {
+    font-size: 0.8rem;
+    margin-bottom: 14px;
+  }
+
+  .btn-primary {
+    padding: 7px 14px;
+    font-size: 0.8rem;
   }
 }
 

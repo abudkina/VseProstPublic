@@ -338,10 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!solutionDetails) {
-            alert('Пожалуйста, введите описание решения');
-            return;
-        }
+        
         
         if (selectedProblemsList.length === 0) {
             alert('Пожалуйста, выберите хотя бы одну связанную проблему');

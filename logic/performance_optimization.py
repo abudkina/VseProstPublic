@@ -29,8 +29,15 @@ def add_performance_headers(app):
     """
     @app.after_request
     def add_headers(response):
-        # Кэширование статических файлов
-        if request.path.endswith(('.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2')):
+        # Изображения через прокси — кэш задаётся в роуте, не перезаписываем
+        if request.path in ('/api/storage-image', '/api/image-proxy'):
+            pass  # Cache-Control уже в ответе роута
+        # API и HTML — не кэшировать (актуальные данные/страницы)
+        elif request.path.startswith('/api/') or (response.content_type and 'text/html' in response.content_type):
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+        # Статика — кэшировать надолго
+        elif request.path.startswith('/static/') or request.path.endswith(('.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2')):
             response.headers['Cache-Control'] = 'public, max-age=2592000'  # 30 дней
         else:
             response.headers['Cache-Control'] = 'public, max-age=3600'  # 1 час
@@ -102,17 +109,13 @@ class PerformanceOptimization:
         def wrapper(*args, **kwargs):
             from logic.model import db
             
-            # Включаем оптимизации SQLAlchemy
             db.engine.echo = False
-            
             try:
-                result = func(*args, **kwargs)
-                return result
+                return func(*args, **kwargs)
             finally:
-                # Закрываем сессию после запроса
-                db.session.close()
-        
-        return wrapper
+                # Не закрывать сессию здесь: Flask-SQLAlchemy сам делает remove в teardown.
+                # Раннее close() ломает scoped session для текущего запроса и следующих.
+                pass
     
     @staticmethod
     def add_resource_hints(html_content):

@@ -1,5 +1,9 @@
 # user.py - исправленная версия
-from flask import Blueprint, jsonify, g, request
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+from flask import Blueprint, jsonify, g, request, current_app
 from logic.model import User, Problem, Solution
 from logic.middleware import token_required
 from logic.model import db
@@ -459,3 +463,73 @@ def update_user_knowledge_endpoint():
     except Exception as e:
         logger.error(f"Ошибка обновления персональных знаний: {e}")
         return jsonify({'error': 'Ошибка базы данных'}), 500
+
+
+def _send_feedback_email(name, email, message):
+    """Отправка письма обратной связи на Yandex почту."""
+    try:
+        mail_server = current_app.config.get('MAIL_SERVER', 'smtp.yandex.ru')
+        mail_port = current_app.config.get('MAIL_PORT', 465)
+        mail_use_ssl = current_app.config.get('MAIL_USE_SSL', True)
+        mail_use_tls = current_app.config.get('MAIL_USE_TLS', False)
+        mail_username = current_app.config.get('MAIL_USERNAME', '')
+        mail_password = current_app.config.get('MAIL_PASSWORD', '')
+        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER', mail_username)
+        to_email = mail_sender
+
+        if not mail_username or not mail_password:
+            logger.warning("MAIL_USERNAME или MAIL_PASSWORD не настроены")
+            return False
+
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f'Обратная связь: {name}'
+        msg['From'] = mail_sender
+        msg['To'] = to_email
+        msg['Reply-To'] = email
+
+        text_content = f"Имя: {name}\nEmail: {email}\n\nСообщение:\n{message}"
+        part = MIMEText(text_content, 'plain', 'utf-8')
+        msg.attach(part)
+
+        if mail_use_ssl:
+            with smtplib.SMTP_SSL(mail_server, mail_port) as server:
+                server.login(mail_username, mail_password)
+                server.sendmail(mail_sender, to_email, msg.as_string())
+        else:
+            with smtplib.SMTP(mail_server, mail_port) as server:
+                if mail_use_tls:
+                    server.starttls()
+                server.login(mail_username, mail_password)
+                server.sendmail(mail_sender, to_email, msg.as_string())
+
+        logger.info(f"Обратная связь от {email} отправлена")
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка отправки обратной связи: {e}")
+        return False
+
+
+@user_bp.route('/user/feedback', methods=['POST'])
+@token_required
+def send_feedback():
+    """Отправка обратной связи на почту."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Нет данных'}), 400
+        name = (data.get('name') or '').strip()
+        email = (data.get('email') or '').strip()
+        message = (data.get('message') or '').strip()
+        if not name or not email or not message:
+            return jsonify({'error': 'Заполните все поля'}), 400
+        if not validate_email(email):
+            return jsonify({'error': 'Некорректный email'}), 400
+        if len(message) > 10000:
+            return jsonify({'error': 'Сообщение слишком длинное'}), 400
+
+        if not _send_feedback_email(name, email, message):
+            return jsonify({'error': 'Не удалось отправить сообщение'}), 500
+        return jsonify({'message': 'Сообщение отправлено'}), 200
+    except Exception as e:
+        logger.error(f"Ошибка обратной связи: {e}")
+        return jsonify({'error': 'Ошибка сервера'}), 500

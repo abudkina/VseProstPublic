@@ -49,13 +49,15 @@ async function loadCards(search = '', category = null, hashtags = [], offset = 0
     params.append('category', currentFilters.category);
   params.append('limit', currentFilters.limit);
   params.append('offset', currentFilters.offset);
+  params.set('_', String(Date.now())); // cache-busting
 
   try {
-    const response = await fetch(API_CONFIG.buildURL(`/solutions?${params.toString()}`));
+    const response = await fetch(API_CONFIG.buildURL(`/solutions?${params.toString()}`), { cache: 'no-store' });
     if (!response.ok) throw new Error('Ошибка HTTP: ' + response.status);
     const data = await response.json();
+    const list = (data && data.solutions !== undefined) ? data.solutions : (Array.isArray(data) ? data : []);
 
-    sortAndRender(data);
+    sortAndRender(list);
 
   } catch (error) {
     container.innerHTML = `<p style="color:red; text-align:center">Ошибка загрузки данных: ${error.message}</p>`;
@@ -106,11 +108,12 @@ function renderCards(data) {
     const card = template.cloneNode(true);
 
     const link = card.querySelector('.card-title-link');
-    link.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+    link.href = `/solution/${item.ID}`;
 
     const cardImg = card.querySelector('.card-image');
     const cardImageWrapper = card.querySelector('.card-image-wrapper');
-    
+    if (cardImg) cardImg.loading = 'lazy';
+
     // Функция для генерации SVG изображения с градиентом и названием
     function getImageFromInternet(solutionName) {
       if (!solutionName || solutionName.trim() === '') {
@@ -169,28 +172,42 @@ function renderCards(data) {
       return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
     
-    // Используем изображение из базы данных, но если это внешний URL или нет изображения, генерируем SVG
+    // Используем изображение из базы: наш origin или прокси — показываем как есть, внешние URL — fallback SVG
+    const isOurImage = item.Image && item.Image.trim() !== '' &&
+      (item.Image.startsWith('/') ||
+       item.Image.includes('/api/storage-image') ||
+       (item.Image.startsWith('http') && (item.Image.startsWith(window.location.origin) || item.Image.includes('storage-image'))));
+
     if (item.Image && item.Image.trim() !== '') {
-      // Если это внешний URL (не локальный файл), генерируем SVG изображение
-      if (item.Image.startsWith('http://') || item.Image.startsWith('https://')) {
+      if (isOurImage) {
+        cardImg.src = item.Image.startsWith('/') ? item.Image : (item.Image.startsWith('http') ? item.Image : '/' + item.Image.replace(/^\//, ''));
+        cardImg.alt = item.Name || 'Решение';
+        cardImg.style.display = 'block';
+        if (cardImageWrapper) cardImageWrapper.style.background = 'none';
+        cardImg.onerror = function() {
+          const generatedImage = getImageFromInternet(item.Name);
+          if (generatedImage) {
+            this.src = generatedImage;
+            if (cardImageWrapper) cardImageWrapper.style.background = 'none';
+          } else {
+            this.style.display = 'none';
+            if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+          }
+        };
+      } else if (item.Image.startsWith('http://') || item.Image.startsWith('https://')) {
         const generatedImage = getImageFromInternet(item.Name);
         if (generatedImage) {
           cardImg.src = generatedImage;
           cardImg.alt = item.Name || 'Решение';
           cardImg.style.display = 'block';
-          if (cardImageWrapper) {
-            cardImageWrapper.style.background = 'none';
-          }
+          if (cardImageWrapper) cardImageWrapper.style.background = 'none';
         } else {
-          // Не удалось сгенерировать - используем градиент
           cardImg.style.display = 'none';
-          if (cardImageWrapper) {
-            cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-          }
+          if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         }
       } else {
-        // Локальный файл - пытаемся загрузить
-        cardImg.src = item.Image;
+        // Локальный файл - нормализуем путь (с ведущим /)
+        cardImg.src = item.Image.startsWith('/') ? item.Image : '/' + item.Image.replace(/^\//, '');
         cardImg.alt = item.Name || 'Решение';
         cardImg.style.display = 'block';
         if (cardImageWrapper) {
@@ -235,7 +252,7 @@ function renderCards(data) {
     }
 
     const cardTitleText = card.querySelector('.card-title-text');
-    cardTitleText.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+    cardTitleText.href = `/solution/${item.ID}`;
     cardTitleText.textContent = item.Name;
 
     const favoriteCount = card.querySelector('.card-favorites .favorite-count');
@@ -317,7 +334,7 @@ function renderCards(data) {
       });
     }
     card.querySelector('.stat-item.views .stat-value').textContent = item.Show || 0;
-    card.querySelector('.stat-item.comments .stat-value').textContent = item.CommentSolutions.length || 0;
+    card.querySelector('.stat-item.comments .stat-value').textContent = item.CommentCount ?? item.CommentSolutions?.length ?? 0;
     card.querySelector('.stat-item.shares .stat-value').textContent = item.Reply || 0;
     
     // Количество линков (связанных решений)

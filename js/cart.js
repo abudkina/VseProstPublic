@@ -122,19 +122,19 @@ function renderCart() {
     // Ссылка на решение
     const link = card.querySelector('.cart-item-link');
     if (link) {
-      link.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+      link.href = `/solution/${item.ID}`;
     }
     
     const titleLink = card.querySelector('.cart-item-title');
     if (titleLink) {
-      titleLink.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+      titleLink.href = `/solution/${item.ID}`;
       titleLink.textContent = item.Name || 'Без названия';
     }
 
     // Информация о проблеме
     const problemLink = card.querySelector('.problem-link');
     if (problemLink && item.Problem) {
-      problemLink.href = `/html/problem.html?problemId=${encodeURIComponent(item.Problem.ID)}`;
+      problemLink.href = `/problem/${item.Problem.ID}`;
       problemLink.textContent = item.Problem.Name || 'Не указана';
     } else if (problemLink) {
       problemLink.textContent = 'Не указана';
@@ -157,6 +157,7 @@ function renderCart() {
     // Изображение
     const img = card.querySelector('.cart-item-img');
     if (img) {
+      img.loading = 'lazy';
       img.src = item.Image || '../images/default.png';
       img.alt = item.Name || 'Решение';
     }

@@ -83,7 +83,11 @@ def generate_image_with_openai(name: str, description: Optional[str] = None, sav
                 size = '1024x1024'
             generate_params['size'] = size
             generate_params['quality'] = 'standard'  # или 'hd' для более высокого качества
-        
+        elif model == 'gpt-image-1':
+            generate_params['size'] = size if size else '1024x1024'
+            if 'quality' not in generate_params:
+                generate_params['quality'] = 'low'
+
         # Генерируем изображение
         result = client.images.generate(**generate_params)
         

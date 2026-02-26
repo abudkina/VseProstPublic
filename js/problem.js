@@ -24,10 +24,20 @@ function setFavoriteIconState(icon, isFavorite) {
     icon.classList.toggle('far', !isFavoriteFlag);
 }
 
+// Извлекаем ID из URL: поддержка /problem/123, /problem/123-slug и ?id=123
+function getProblemIdFromURL() {
+    // Сначала проверяем красивый URL: /problem/123 или /problem/123-slug
+    const pathMatch = window.location.pathname.match(/\/problem\/(\d+)/);
+    if (pathMatch) return pathMatch[1];
+
+    // Фоллбэк на query параметры
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('problemId') || urlParams.get('id');
+}
+
 // Загружаем данные из JSON файлов
 async function loadData() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const problemId = urlParams.get('problemId') || urlParams.get('id');
+    const problemId = getProblemIdFromURL();
     if (!problemId) {
         throw new Error("Отсутствует параметр problemId в URL");
     }
@@ -51,7 +61,7 @@ async function displaySolutions() {
 
     // Обновляем SEO мета-теги
     const baseUrl = window.location.origin;
-    const problemUrl = `/html/problem.html?id=${problem.ID}`;
+    const problemUrl = `/problem/${problem.ID}`;
     const problemImage = problem.Image || '/assets/og-image.png';
     
     updateSEOMetaTags({
@@ -73,7 +83,7 @@ async function displaySolutions() {
     const problemInfo = problemInfoTemplate.content.cloneNode(true);
 
     const img = problemInfo.querySelector('.problem-img');
-    img.src = problem.Image || '../images/default.png';
+    img.src = problem.Image || problem.image || '/assets/images/Screenshot_4-ww78noDj9-transformed.png';
     img.alt = problem.Name;
     
     // Добавляем обработчик клика для открытия модального окна
@@ -93,12 +103,12 @@ async function displaySolutions() {
             if (title === 'Лайки') {
                 statNumber.textContent = problem.Favourite || 0;
                 
-                // Делаем иконку избранного кликабельной
+                // Делаем иконку избранного кликабельной (только для авторизованных)
                 const favoriteIcon = statItem.querySelector('.icon');
                 if (favoriteIcon) {
-                    // Проверяем статус избранного и устанавливаем правильную иконку
                     setFavoriteIconState(favoriteIcon, problem.IsFavourite);
-                    
+
+                    if (localStorage.getItem('isLoggedIn') !== 'true') return;
                     statItem.style.cursor = 'pointer';
                     statItem.addEventListener('click', async (e) => {
                         e.preventDefault();
@@ -165,16 +175,18 @@ async function displaySolutions() {
                 statNumber.textContent = problem.Show || 0;
             } else if (title === 'Ссылки') {
                 // Количество прилинкованных проблем
-                const linkedCount = problem.LinkedProblemsCount !== undefined 
-                    ? problem.LinkedProblemsCount 
+                const linkedCount = problem.LinkedProblemsCount !== undefined
+                    ? problem.LinkedProblemsCount
                     : (problem.LinkedProblems ? problem.LinkedProblems.length : 0);
                 statNumber.textContent = linkedCount;
-                
-                // Делаем иконку кликабельной
-                statItem.style.cursor = 'pointer';
-                statItem.addEventListener('click', () => {
-                    openLinkedProblemModal();
-                });
+
+                // Делаем иконку кликабельной только для авторизованных
+                if (localStorage.getItem('isLoggedIn') === 'true') {
+                    statItem.style.cursor = 'pointer';
+                    statItem.addEventListener('click', () => {
+                        openLinkedProblemModal();
+                    });
+                }
             }
         }
     });
@@ -208,18 +220,21 @@ async function displaySolutions() {
     
     tagsAndButtonContainer.appendChild(tagsContainer);
     
-    // Добавляем кнопку добавления решения
-    const addSolutionBtnContainer = document.createElement('div');
-    addSolutionBtnContainer.className = 'add-solution-button-container';
-    const addSolutionBtn = document.createElement('button');
-    addSolutionBtn.id = 'addSolutionBtn';
-    addSolutionBtn.className = 'add-solution-btn';
-    addSolutionBtn.innerHTML = `
-        <i class="fas fa-plus-circle btn-icon" aria-hidden="true"></i>
-        <span>Добавить решение</span>
-    `;
-    addSolutionBtnContainer.appendChild(addSolutionBtn);
-    tagsAndButtonContainer.appendChild(addSolutionBtnContainer);
+    // Добавляем кнопку добавления решения (только для авторизованных)
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (isLoggedIn) {
+        const addSolutionBtnContainer = document.createElement('div');
+        addSolutionBtnContainer.className = 'add-solution-button-container';
+        const addSolutionBtn = document.createElement('button');
+        addSolutionBtn.id = 'addSolutionBtn';
+        addSolutionBtn.className = 'add-solution-btn';
+        addSolutionBtn.innerHTML = `
+            <i class="fas fa-plus-circle btn-icon" aria-hidden="true"></i>
+            <span>Добавить решение</span>
+        `;
+        addSolutionBtnContainer.appendChild(addSolutionBtn);
+        tagsAndButtonContainer.appendChild(addSolutionBtnContainer);
+    }
     
     solutionContainer.appendChild(tagsAndButtonContainer);
 
@@ -361,12 +376,13 @@ async function displaySolutions() {
 
             const link = card.querySelector('.card-title-link');
             if (link) {
-                link.href = `/html/solution.html?solutionId=${encodeURIComponent(solution.ID)}`;
+                link.href = `/solution/${solution.ID}`;
             }
 
             const cardImg = card.querySelector('.card-image');
             const cardImageWrapper = card.querySelector('.card-image-wrapper');
-            
+            if (cardImg) cardImg.loading = 'lazy';
+
             if (cardImg) {
                 // Функция для генерации SVG изображения с градиентом и названием
                 function getImageFromInternet(solutionName) {
@@ -416,33 +432,37 @@ async function displaySolutions() {
                 
                 let imageSrc = solution.Image;
                 
-                // Если у решения нет картинки или это внешний URL, ищем в интернете
-                if (!imageSrc || imageSrc.trim() === '' || imageSrc === '../images/default.png' || 
-                    imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
-                    // Ищем изображение в интернете по названию
+                // Внешний URL (Yandex Storage и т.д.) — используем как есть
+                if (imageSrc && (imageSrc.startsWith('http://') || imageSrc.startsWith('https://'))) {
+                    cardImg.src = imageSrc;
+                    cardImg.alt = solution.Name || 'Решение';
+                    cardImg.style.display = 'block';
+                    if (cardImageWrapper) cardImageWrapper.style.background = 'none';
+                    cardImg.onerror = function() {
+                        const internetImage = getImageFromInternet(solution.Name);
+                        if (internetImage) {
+                            this.src = internetImage;
+                        } else {
+                            this.style.display = 'none';
+                            if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        }
+                    };
+                } else if (!imageSrc || imageSrc.trim() === '' || imageSrc === '../images/default.png') {
                     const internetImage = getImageFromInternet(solution.Name);
                     if (internetImage) {
                         cardImg.src = internetImage;
                         cardImg.style.display = 'block';
-                        if (cardImageWrapper) {
-                            cardImageWrapper.style.background = 'none';
-                        }
-                        
+                        if (cardImageWrapper) cardImageWrapper.style.background = 'none';
                         cardImg.onerror = function() {
                             this.style.display = 'none';
-                            if (cardImageWrapper) {
-                                cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                            }
+                            if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                         };
                     } else {
-                        // Используем градиентный фон
                         cardImg.style.display = 'none';
-                        if (cardImageWrapper) {
-                            cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                        }
+                        if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                     }
                 } else {
-                    // Локальный файл - исправляем пути и пытаемся загрузить
+                    // Локальный/относительный путь
                     if (!imageSrc.startsWith('/')) {
                         if (imageSrc.startsWith('../images/')) {
                             imageSrc = imageSrc.replace('../images/', '/images/');
@@ -455,11 +475,7 @@ async function displaySolutions() {
                     cardImg.src = imageSrc;
                     cardImg.alt = solution.Name || 'Решение';
                     cardImg.style.display = 'block';
-                    if (cardImageWrapper) {
-                        cardImageWrapper.style.background = 'none';
-                    }
-                    
-                    // Обработка ошибки загрузки локального изображения - пробуем интернет
+                    if (cardImageWrapper) cardImageWrapper.style.background = 'none';
                     cardImg.onerror = function() {
                         const internetImage = getImageFromInternet(solution.Name);
                         if (internetImage) {
@@ -499,12 +515,14 @@ async function displaySolutions() {
             const favoriteIcon = card.querySelector('.favorite-icon');
             if (favoriteIcon) {
                 setFavoriteIconState(favoriteIcon, solution.IsFavourite);
-                favoriteIcon.style.cursor = 'pointer';
-                favoriteIcon.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    await toggleSolutionFavorite(solution.ID, favoriteIcon, favoriteCount);
-                });
+                if (localStorage.getItem('isLoggedIn') === 'true') {
+                    favoriteIcon.style.cursor = 'pointer';
+                    favoriteIcon.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        await toggleSolutionFavorite(solution.ID, favoriteIcon, favoriteCount);
+                    });
+                }
             }
 
             const ratingNumber = card.querySelector('.rating-number');
@@ -512,7 +530,7 @@ async function displaySolutions() {
 
             const cardTitleText = card.querySelector('.card-title-text');
             if (cardTitleText) {
-                cardTitleText.href = `/html/solution.html?solutionId=${encodeURIComponent(solution.ID)}`;
+                cardTitleText.href = `/solution/${solution.ID}`;
                 cardTitleText.textContent = solution.Name || 'Решение';
             }
 
@@ -740,7 +758,7 @@ async function displaySolutions() {
             
             // Ссылка на изображение
             const imageLink = document.createElement('a');
-            imageLink.href = `/html/problem.html?problemId=${encodeURIComponent(linkedProblem.ID)}`;
+            imageLink.href = `/problem/${linkedProblem.ID}`;
             imageLink.className = 'card-title-link';
             
             const img = document.createElement('img');
@@ -758,6 +776,7 @@ async function displaySolutions() {
             img.src = imageSrc;
             img.alt = linkedProblem.Name || 'Проблема';
             img.className = 'card-image';
+            img.loading = 'lazy';
             
             // Добавляем обработчик клика для открытия модального окна
             img.addEventListener('click', (e) => {
@@ -781,7 +800,7 @@ async function displaySolutions() {
             
             // Название проблемы (ссылка)
             const titleLink = document.createElement('a');
-            titleLink.href = `/html/problem.html?problemId=${encodeURIComponent(linkedProblem.ID)}`;
+            titleLink.href = `/problem/${linkedProblem.ID}`;
             titleLink.className = 'card-title-text';
             titleLink.textContent = linkedProblem.Name || 'Без названия';
             imageWrapper.appendChild(titleLink);
@@ -971,7 +990,9 @@ async function displaySolutions() {
     renderSimilarProblems(problem.LinkedProblems || []);
 }
 
-displaySolutions();
+displaySolutions().finally(function () {
+    if (typeof window.__showProblemPage === 'function') window.__showProblemPage();
+});
 
 // Переменные для модального окна похожих проблем
 let selectedLinkedProblemsList = [];
@@ -1181,7 +1202,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedProblems = document.getElementById('selectedProblems');
 
     if (!solutionModalOverlay || !solutionModal || !form) {
-        console.error('Не найдены необходимые элементы DOM для модального окна решения');
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('#addSolutionBtn')) {
+                try {
+                    await auth.checkAuth(true);
+                    const problemId = currentProblem?.ID;
+                    window.location.href = problemId ? `/html/add_solution.html?problem_id=${problemId}` : '/html/add_solution.html';
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        });
         return;
     }
 
@@ -1635,10 +1666,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!solutionDetails) {
-            alert('Пожалуйста, введите описание решения');
-            return;
-        }
         
         if (selectedProblemsList.length === 0) {
             alert('Пожалуйста, выберите хотя бы одну связанную проблему');

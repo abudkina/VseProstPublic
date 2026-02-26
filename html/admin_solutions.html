@@ -24,13 +24,15 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="/css/variables.css" />
     <link rel="stylesheet" href="/css/index.css" />
+    <link rel="stylesheet" href="/css/solutions.css" />
     <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/mobile-menu.css" />
     <link rel="stylesheet" href="/css/admin_problems.css" />
     <link rel="stylesheet" href="/css/admin_modal.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 </head>
@@ -45,20 +47,25 @@
         <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
         <li><a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
     </ul>
-    <ul class="nav-menu mobile-menu">
-        <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-        <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-        <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart"><i class="fas fa-heart"></i></a></li>
-        <li><a href="#" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
-        <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-        <li><a href="/html/profile.html" title="Профиль" class="menu-item"><i class="fas fa-user"></i></a></li>
-    </ul>
+    
+
 </header>
+
+<ul class="nav-menu mobile-menu">
+    <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+    <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+    <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
+    <li><a href="#" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
+    <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
+    <li><a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
+</ul>
+
+
 
 <section class="search-filters">
     <div class="top-row">
         <input type="search" placeholder="Найти решение по названию" id="search" />
-        <button id="addSolution">Добавить решение</button>
+        <a href="/html/add_solution.html" id="addSolution" class="add-solution-link">Добавить решение</a>
     </div>
     <div class="filters desktop">
         <select id="sort">
@@ -117,79 +124,8 @@
     </div>
 </main>
 
-<!-- Модальное окно для добавления решения -->
-<div id="solution-modal-overlay" class="modal-overlay">
-    <div id="solution-modal" class="modal-content">
-        <div class="modal-header">
-            <h2>Добавить решение</h2>
-            <button class="modal-close" id="closeSolutionModal">&times;</button>
-        </div>
-        <form id="solutionForm">
-            <input type="text" id="solution" placeholder="Напишите решение" />
-            <textarea id="details" placeholder="Напишите подробности для решения"></textarea>
-            
-            <div class="problem-search-container">
-                <input type="text" id="problemSearch" placeholder="Поиск похожих проблем..." />
-                <div id="problemDropdown"></div>
-                <div id="selectedProblems"></div>
-            </div>
-
-            <div class="file-inputs">
-                <input type="file" id="mainImage" accept="image/*" />
-                <input type="file" id="additionalImage" accept="image/*" />
-            </div>
-
-            <div class="checkbox-group">
-                <label><input type="checkbox" id="canBuy" /> Можно ли купить?</label>
-                <label><input type="checkbox" id="canEvaluate" /> Можно ли оценить?</label>
-            </div>
-
-            <div class="buttons">
-                <button type="button" class="clear" id="clearSolutionBtn">Очистить</button>
-                <button type="submit" class="save">Сохранить</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Модальные окна для добавления темы, категории, хэштега -->
-<div id="modal-overlay" class="modal-overlay">
-    <!-- Модал для темы -->
-    <div id="topic-modal" class="modal">
-        <h2>Добавить тему</h2>
-        <input type="text" id="topic-name-input" placeholder="Введите имя темы">
-        <div class="modal-buttons">
-            <button id="topic-add-btn">Добавить</button>
-            <button id="topic-cancel-btn">Отмена</button>
-        </div>
-        <div id="topic-error" class="error-message"></div>
-    </div>
-
-    <!-- Модал для категории -->
-    <div id="category-modal" class="modal">
-        <h2>Добавить категорию</h2>
-        <input type="text" id="category-name-input" placeholder="Введите имя категории">
-        <div class="modal-buttons">
-            <button id="category-add-btn">Добавить</button>
-            <button id="category-cancel-btn">Отмена</button>
-        </div>
-        <div id="category-error" class="error-message"></div>
-    </div>
-
-    <!-- Модал для хэштега -->
-    <div id="hashtag-modal" class="modal">
-        <h2>Добавить хэштег</h2>
-        <input type="text" id="hashtag-name-input" placeholder="Введите имя хэштега">
-        <div class="modal-buttons">
-            <button id="hashtag-add-btn">Добавить</button>
-            <button id="hashtag-cancel-btn">Отмена</button>
-        </div>
-        <div id="hashtag-error" class="error-message"></div>
-    </div>
-</div>
-
 <!-- Модальное окно для редактирования решения -->
-<div id="editModal" class="modal">
+<div id="editModal" class="modal" style="display:none" aria-hidden="true">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Редактировать решение</h2>
@@ -202,7 +138,7 @@
             
             <select id="editProblems" multiple placeholder="Выберите связанные проблемы"></select>
             
-            <input type="file" id="editImage" accept="image/*" />
+            <input type="file" id="editImage" accept="image/*" capture="environment" />
             <div id="currentImagePreview" style="margin: 10px 0;"></div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
@@ -255,7 +191,7 @@
 <script src="/js/config.js"></script>
 <script type="module" src="/js/admin_solutions.js"></script>
 <script type="module" src="/js/logoAdmin.js"></script>
-<script type="module" src="/js/modalSolution.js"></script>
+<script src="/js/mobile-menu.js"></script>
 </body>
 </html>
 

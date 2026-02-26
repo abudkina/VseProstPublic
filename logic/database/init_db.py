@@ -38,6 +38,17 @@ def init_database(db, app):
         # Создаем недостающие таблицы
         _create_missing_tables(db, table_names)
 
+        # Синхронизируем имена таблиц с БД (регистр: problem vs Problem, user vs User и т.д.)
+        table_name_mapping = _get_table_name_mapping(table_names)
+        try:
+            from logic.model import Problem, User, Solution
+            Problem.__table__.name = table_name_mapping['problem']
+            User.__table__.name = table_name_mapping['user']
+            Solution.__table__.name = table_name_mapping['solution']
+            logger.info(f"Используется таблица проблем: '{Problem.__table__.name}'")
+        except Exception as sync_err:
+            logger.debug(f"Синхронизация имён таблиц: {sync_err}")
+
     except Exception as e:
         logger.error(f"⚠️ Ошибка при подключении к базе данных: {e}", exc_info=True)
         logger.warning("⚠️ Сервер будет запущен, но некоторые функции могут не работать")
@@ -62,6 +73,8 @@ def _create_missing_tables(db, existing_tables):
     _check_and_create_recommendation_tables(db, existing_tables, table_name_mapping)
     _check_and_create_password_reset_table(db, existing_tables, table_name_mapping)
     _check_and_create_user_knowledge_table(db, existing_tables, table_name_mapping)
+    _check_and_create_payment_tables(db, existing_tables, table_name_mapping)
+    _check_and_create_temporary_tables(db, existing_tables, table_name_mapping)
 
 
 def _get_table_name_mapping(existing_tables):
@@ -385,6 +398,138 @@ def _check_and_create_user_knowledge_table(db, existing_tables, table_mapping):
         _execute_sql(db, create_sql, "Таблица 'user_knowledge' успешно создана")
     else:
         logger.info("✅ Таблица 'user_knowledge' существует")
+
+
+def _check_and_create_payment_tables(db, existing_tables, table_mapping):
+    """Таблицы для платежей ЮKassa: user_balance, transactions, usage_history"""
+    user_table = table_mapping.get('user', 'user')
+    if 'user_balance' not in existing_tables:
+        logger.info("⚠️ Таблица 'user_balance' не найдена. Создаю таблицу...")
+        _execute_sql(db, f"""
+            CREATE TABLE IF NOT EXISTS `user_balance` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `user_id` INT NOT NULL,
+                `balance` DECIMAL(12,2) DEFAULT 0.00,
+                `reserved_balance` DECIMAL(12,2) DEFAULT 0.00,
+                `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `unique_user_balance` (`user_id`),
+                FOREIGN KEY (`user_id`) REFERENCES `{user_table}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """, "Таблица 'user_balance' успешно создана")
+    if 'transactions' not in existing_tables:
+        logger.info("⚠️ Таблица 'transactions' не найдена. Создаю таблицу...")
+        _execute_sql(db, f"""
+            CREATE TABLE IF NOT EXISTS `transactions` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `user_id` INT NOT NULL,
+                `yookassa_payment_id` VARCHAR(255) NULL,
+                `service_type` VARCHAR(64) NULL,
+                `calculation_category` VARCHAR(64) NULL,
+                `amount` DECIMAL(12,2) NOT NULL,
+                `type` VARCHAR(32) NOT NULL,
+                `description` TEXT NULL,
+                `status` VARCHAR(32) NOT NULL,
+                `chart_id` INT NULL,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `updated_at` TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+                `completed_at` TIMESTAMP NULL,
+                `expires_at` TIMESTAMP NULL,
+                PRIMARY KEY (`id`),
+                INDEX `idx_transactions_user` (`user_id`),
+                INDEX `idx_yookassa_payment_id` (`yookassa_payment_id`),
+                FOREIGN KEY (`user_id`) REFERENCES `{user_table}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """, "Таблица 'transactions' успешно создана")
+    if 'usage_history' not in existing_tables:
+        logger.info("⚠️ Таблица 'usage_history' не найдена. Создаю таблицу...")
+        _execute_sql(db, f"""
+            CREATE TABLE IF NOT EXISTS `usage_history` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `user_id` INT NOT NULL,
+                `service_type` VARCHAR(64) NOT NULL,
+                `amount` DECIMAL(12,2) NOT NULL,
+                `description` TEXT NULL,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                INDEX `idx_usage_user` (`user_id`),
+                FOREIGN KEY (`user_id`) REFERENCES `{user_table}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """, "Таблица 'usage_history' успешно создана")
+    if 'subscription' not in existing_tables:
+        logger.info("⚠️ Таблица 'subscription' не найдена. Создаю таблицу...")
+        _execute_sql(db, f"""
+            CREATE TABLE IF NOT EXISTS `subscription` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `user_id` INT NOT NULL,
+                `plan_type` VARCHAR(64) NOT NULL DEFAULT 'ai_monthly',
+                `period_end` TIMESTAMP NULL,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `updated_at` TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `unique_user_plan` (`user_id`, `plan_type`),
+                INDEX `idx_subscription_user` (`user_id`),
+                FOREIGN KEY (`user_id`) REFERENCES `{user_table}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """, "Таблица 'subscription' успешно создана")
+
+
+def _check_and_create_temporary_tables(db, existing_tables, table_mapping):
+    """Создает таблицы временных связей (temporary_link_problem, temporary_link_solution, temporary_problem_solution)."""
+    problem_t = table_mapping['problem']
+    solution_t = table_mapping['solution']
+    user_t = table_mapping['user']
+
+    temporary_tables = [
+        ('temporary_link_problem', f"""
+            CREATE TABLE IF NOT EXISTS `temporary_link_problem` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `currentproblem` INT NOT NULL,
+                `linkproblem` INT NOT NULL,
+                `creator` INT NOT NULL,
+                `modified_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                `created_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                FOREIGN KEY (`currentproblem`) REFERENCES `{problem_t}`(`id`) ON DELETE CASCADE,
+                FOREIGN KEY (`linkproblem`) REFERENCES `{problem_t}`(`id`) ON DELETE CASCADE,
+                FOREIGN KEY (`creator`) REFERENCES `{user_t}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """),
+        ('temporary_link_solution', f"""
+            CREATE TABLE IF NOT EXISTS `temporary_link_solution` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `problem` INT NOT NULL,
+                `solution` INT NOT NULL,
+                `creator` INT NOT NULL,
+                `modified_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                `created_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                FOREIGN KEY (`problem`) REFERENCES `{problem_t}`(`id`) ON DELETE CASCADE,
+                FOREIGN KEY (`solution`) REFERENCES `{solution_t}`(`id`) ON DELETE CASCADE,
+                FOREIGN KEY (`creator`) REFERENCES `{user_t}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """),
+        ('temporary_problem_solution', f"""
+            CREATE TABLE IF NOT EXISTS `temporary_problem_solution` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `problem` INT NOT NULL,
+                `solution` INT NOT NULL,
+                `creator` INT NOT NULL,
+                `modified_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                `created_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                FOREIGN KEY (`problem`) REFERENCES `{problem_t}`(`id`) ON DELETE CASCADE,
+                FOREIGN KEY (`solution`) REFERENCES `{solution_t}`(`id`) ON DELETE CASCADE,
+                FOREIGN KEY (`creator`) REFERENCES `{user_t}`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """),
+    ]
+    for name, create_sql in temporary_tables:
+        if name not in existing_tables:
+            logger.info(f"⚠️ Таблица '{name}' не найдена. Создаю таблицу...")
+            _execute_sql(db, create_sql, f"Таблица '{name}' успешно создана")
+        else:
+            logger.info(f"✅ Таблица '{name}' существует")
 
 
 def _execute_sql(db, sql, success_message):

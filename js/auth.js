@@ -2,8 +2,8 @@
 import * as auth from './authorizationFunctions.js';
 
 document.getElementById('registerBtn').addEventListener('click', function() {
-        // Переход на страницу регистрации
-        sessionStorage.setItem('redirectAfterLogin', window.location.href);
+        const isAuthPage = /authorization\.html$/.test(window.location.pathname);
+        if (!isAuthPage) sessionStorage.setItem('redirectAfterLogin', window.location.href);
         window.location.href = '/html/registration.html';
     });
 

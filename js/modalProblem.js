@@ -56,6 +56,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         return;
     }
 
+    // Скрываем кнопку "Добавить проблему" для неавторизованных пользователей
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) {
+        addProblemBtn.style.display = 'none';
+    }
+
     // Добавим скрытые поля для ID
     const topicIDHidden = document.createElement('input');
     topicIDHidden.type = 'hidden';
@@ -670,10 +676,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 return;
             }
             
-            if (!problemDescription) {
-                alert('Пожалуйста, введите описание проблемы');
-                return;
-            }
             
             if (!categoryValue) {
                 alert('Пожалуйста, выберите категорию');

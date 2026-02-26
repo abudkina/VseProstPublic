@@ -1,18 +1,23 @@
-from flask import Blueprint, jsonify, request, g
+from flask import Blueprint, jsonify, request, g, current_app
 from datetime import datetime, timedelta
 import os
-from logic.model import Hashtag, Problem, Solution, User, SolutionRating, Topic, solution_problems, hashtag_problem, favourite_solution, solution_link_solution
+import threading
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from logic.model import Hashtag, Problem, Solution, User, SolutionRating, Topic, CommentSolution, solution_problems, hashtag_problem, favourite_solution, solution_link_solution
 from logic.middleware import token_required
-from sqlalchemy import or_, func, and_
-from sqlalchemy.orm import joinedload
+from sqlalchemy import or_, func, and_, exists
+from sqlalchemy.orm import joinedload, selectinload
 
 from logic.model import db
-from logic.utils.file_utils import allowed_file, save_file, delete_file
+from logic.utils.file_utils import allowed_file, save_file_to_yandex_storage, delete_image, normalize_image_url, image_url_for_display
 from logic.utils.validators import parse_int_list, parse_bool
 from logic.utils.image_search import generate_image_with_openai
 from logic.recommendations import track_user_activity, get_user_recommendations, create_embedding
 from logic.rag_search import search_with_rag, hybrid_search, semantic_search
 from logic.utils.logger import get_logger
+from logic.utils.normalizers import capitalize_title, capitalize_first
+from logic.services.solution_service import SolutionService
+from logic.utils.error_handler import ResourceNotFoundError, AuthorizationError, DatabaseError
 
 logger = get_logger(__name__)
 
@@ -35,6 +40,7 @@ def get_solution_by_id(solution_id):
         # Увеличиваем счетчик просмотров
         solution.show = (solution.show or 0) + 1
         db.session.commit()
+        db.session.refresh(solution)  # актуальные данные из БД (в т.ч. image после только что созданного решения)
 
         # Отслеживаем просмотр решения
         user_id = None
@@ -54,13 +60,15 @@ def get_solution_by_id(solution_id):
                 is_favourite = any(u.id == user_id for u in solution.favourite_users)
         except Exception as e:
             logger.debug(f"Не удалось проверить избранное: {e}")
+
+        base_url = request.url_root.rstrip('/')
         
-        # Формат, ожидаемый фронтендом из solution.js
+        # Формат, ожидаемый фронтендом из solution.js и admin_solutions (редактирование)
         solution_data = {
             'ID': solution.id,
             'Name': solution.name,
             'Describe': solution.describe or '',
-            'Image': solution.image or '../images/default.png',
+            'Image': image_url_for_display(solution.image, base_url, '/assets/images/default.png'),
             'Show': solution.show or 0,
             'Favourite': solution.favourite or 0,
             'IsFavourite': is_favourite,
@@ -70,8 +78,16 @@ def get_solution_by_id(solution_id):
             'Complexity': solution.complexity or 0,
             'Time': solution.time or 0,
             'Rating': solution.rating or 0,
+            'IsBought': bool(getattr(solution, 'isbought', False)),
+            'IsRating': bool(getattr(solution, 'israting', False)),
+            'IsNew': bool(getattr(solution, 'isnew', True)),
+            'FromAuthor': bool(getattr(solution, 'fromauthor', False)),
             'Comments': []
         }
+        if hasattr(solution, 'problems') and solution.problems:
+            solution_data['Problems'] = [{'ID': p.id, 'Name': getattr(p, 'name', '')} for p in solution.problems]
+        else:
+            solution_data['Problems'] = []
         
         # Добавляем комментарии, если они есть
         if hasattr(solution, 'comments') and solution.comments:
@@ -171,7 +187,7 @@ def get_solution_by_id(solution_id):
                                 linked_solution_data = {
                                     'ID': linked_solution.id,
                                     'Name': linked_solution.name,
-                                    'Image': linked_solution.image or '../images/default.png',
+                                    'Image': image_url_for_display(linked_solution.image, base_url, '/assets/images/default.png'),
                                     'Describe': linked_solution.describe or '',
                                     'Favourite': linked_solution.favourite or 0,
                                     'IsFavourite': is_favourite,
@@ -236,11 +252,14 @@ def get_solutions():
         if limit > 100:
             limit = 100
         
-        # Начинаем формировать запрос с eager loading (исправление N+1)
+        # Начинаем формировать запрос с eager loading (без comments для списка — считаем кол-во отдельно)
+        # Только решения, привязанные хотя бы к одной проблеме (есть запись в solution_problems)
         query = Solution.query.options(
             joinedload(Solution.problems).joinedload(Problem.hashtags),
-            joinedload(Solution.comments),
-            joinedload(Solution.favourite_users)
+            joinedload(Solution.favourite_users),
+            selectinload(Solution.linked_solutions)
+        ).filter(
+            exists().where(solution_problems.c.solution_id == Solution.id)
         )
 
         # Фильтр по поиску
@@ -378,6 +397,12 @@ def get_solutions():
         
         logger.debug(f"Найдено решений: {len(solutions)}")
         
+        # Оставляем только решения, существующие в БД (защита от устаревших данных)
+        solution_ids_raw = [s.id for s in solutions]
+        if solution_ids_raw:
+            existing_ids = {r[0] for r in db.session.query(Solution.id).filter(Solution.id.in_(solution_ids_raw)).all()}
+            solutions = [s for s in solutions if s.id in existing_ids]
+        
         # Получаем user_id из токена, если он есть (опционально)
         user_id = None
         try:
@@ -393,70 +418,66 @@ def get_solutions():
             except Exception as e:
                 logger.debug(f"Не удалось отследить поиск: {e}")
         
-        # Получаем рекомендации для пользователя (если авторизован)
+        # Рекомендации в потоке с таймаутом, чтобы не блокировать ответ
         recommended_ids = set()
         if user_id:
             try:
-                recommended_list = get_user_recommendations(user_id, 'solution', limit=20)
-                recommended_ids = set(recommended_list)
-            except Exception as e:
-                logger.warning(f"Ошибка получения рекомендаций: {e}")
+                with ThreadPoolExecutor(max_workers=1) as ex:
+                    fut = ex.submit(get_user_recommendations, user_id, 'solution', 20)
+                    recommended_ids = set(fut.result(timeout=2))
+            except (FuturesTimeoutError, Exception) as e:
+                logger.debug(f"Рекомендации не получены (таймаут/ошибка): {e}")
 
-        # Формируем ответ в формате, ожидаемом фронтендом
+        # Предзагрузка: счёт комментариев одним запросом
+        solution_ids = [s.id for s in solutions]
+        comment_counts = {}
+        if solution_ids:
+            counts_rows = db.session.query(
+                CommentSolution.solution_id,
+                func.count(CommentSolution.id)
+            ).filter(CommentSolution.solution_id.in_(solution_ids)).group_by(CommentSolution.solution_id).all()
+            comment_counts = {sid: cnt for sid, cnt in counts_rows}
+
+        # Предзагрузка: темы для всех проблем в решениях
+        topic_ids = set()
+        for s in solutions:
+            if getattr(s, 'problems', None):
+                for p in s.problems[:5]:
+                    if p.topic:
+                        topic_ids.add(p.topic)
+        topics_dict = {}
+        if topic_ids:
+            topics = Topic.query.filter(Topic.id.in_(topic_ids)).all()
+            topics_dict = {t.id: {'ID': t.id, 'Name': t.name} for t in topics}
+
+        # Предзагрузка: избранные решения пользователя (один запрос)
+        user_favourite_solution_ids = set()
+        if user_id:
+            user = User.query.options(joinedload(User.favourite_solutions)).get(user_id)
+            if user and getattr(user, 'favourite_solutions', None):
+                user_favourite_solution_ids = {s.id for s in user.favourite_solutions}
+
+        base_url = request.url_root.rstrip('/')
         solutions_list = []
         for solution in solutions:
-            # Получаем комментарии
-            comments = []
-            if hasattr(solution, 'comments') and solution.comments:
-                comments = [
-                    {
-                        'ID': comment.id,
-                        'Text': comment.text,
-                        'CreatedDate': comment.created_date.isoformat() if comment.created_date else '',
-                        'Creator': comment.creator_user.username if comment.creator_user else 'Неизвестно',
-                        'LikeCount': comment.likecount or 0,
-                        'NotLikeCount': comment.notlikecount or 0
-                    }
-                    for comment in solution.comments[:10]  # Ограничиваем количество
-                ]
+            comments_count = comment_counts.get(solution.id, 0)
             
-            # Получаем связанные проблемы
+            # Связанные проблемы (темы из предзагруженного словаря)
             problems_data = []
             if hasattr(solution, 'problems') and solution.problems:
-                for problem in solution.problems[:5]:  # Ограничиваем количество
+                for problem in solution.problems[:5]:
                     problem_dict = {
                         'ID': problem.id,
                         'Name': problem.name,
-                        'Hashtags': []
+                        'Hashtags': [
+                            {'ID': h.id, 'Name': h.name}
+                            for h in (getattr(problem, 'hashtags', None) or [])[:3]
+                        ],
+                        'TopicInfo': topics_dict.get(problem.topic) if problem.topic else None
                     }
-                    
-                    # Получаем хэштеги проблемы
-                    if hasattr(problem, 'hashtags') and problem.hashtags:
-                        problem_dict['Hashtags'] = [
-                            {
-                                'ID': hashtag.id,
-                                'Name': hashtag.name
-                            }
-                            for hashtag in problem.hashtags[:3]  # Ограничиваем количество
-                        ]
-                    
-                    # Получаем информацию о теме проблемы
-                    if problem.topic:
-                        topic = Topic.query.get(problem.topic)
-                        if topic:
-                            problem_dict['TopicInfo'] = {
-                                'ID': topic.id,
-                                'Name': topic.name
-                            }
-                    
                     problems_data.append(problem_dict)
             
-            # Проверяем, добавлено ли в избранное текущим пользователем
-            is_favourite = False
-            if user_id:
-                user = User.query.get(user_id)
-                if user and solution in user.favourite_solutions:
-                    is_favourite = True
+            is_favourite = solution.id in user_favourite_solution_ids
             
             # Отмечаем, является ли решение рекомендованным
             is_recommended = solution.id in recommended_ids if recommended_ids else False
@@ -473,7 +494,7 @@ def get_solutions():
                 'ID': solution.id,
                 'Name': solution.name,
                 'Describe': solution.describe or '',
-                'Image': solution.image or '../images/default.png',
+                'Image': image_url_for_display(solution.image, base_url, '/assets/images/default.png'),
                 'Favourite': solution.favourite or 0,
                 'IsFavourite': is_favourite,
                 'IsRecommended': is_recommended,
@@ -491,15 +512,28 @@ def get_solutions():
                 'Creator': solution.creator,
                 'CreatedDate': solution.created_date.isoformat() if solution.created_date else '',
                 'ModifiedDate': solution.modified_date.isoformat() if solution.modified_date else '',
-                'CommentSolutions': comments,  # Для совместимости с фронтендом
-                'Comments': comments,  # Дублируем для разных названий
-                'Problems': problems_data,  # Связанные проблемы
-                'LinkedSolutionsCount': linked_solutions_count  # Количество связанных решений
+                'CommentSolutions': [],  # В списке не грузим комментарии
+                'Comments': [],
+                'CommentCount': comments_count,
+                'Problems': problems_data,
+                'LinkedSolutionsCount': linked_solutions_count
             }
             
             solutions_list.append(solution_data)
         
-        return jsonify(solutions_list), 200
+        has_filters = bool(search or category_param or hashtags_param)
+        resp_payload = {"solutions": solutions_list}
+        if len(solutions_list) == 0 and has_filters:
+            resp_payload["suggest_ai"] = True
+            resp_payload["ai_plan_price_rub"] = 999
+        resp = jsonify(resp_payload if has_filters else solutions_list)
+        resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        resp.headers['Pragma'] = 'no-cache'
+        if len(solutions_list) == 0 and has_filters:
+            return resp, 200
+        if has_filters:
+            return resp, 200
+        return resp, 200
         
     except Exception as e:
         logger.exception(f"Ошибка получения решений: {e}")
@@ -540,8 +574,8 @@ def create_solution():
             return jsonify({'error': 'Неверный формат данных'}), 400
         
         # Получаем данные из формы
-        name = request.form.get('solution', '').strip() or request.form.get('name', '').strip()
-        describe = request.form.get('details', '').strip() or request.form.get('describe', '').strip()
+        name = capitalize_title((request.form.get('solution', '') or request.form.get('name', '')).strip())
+        describe = capitalize_first((request.form.get('details', '') or request.form.get('describe', '')).strip())
         related_problems_str = request.form.get('relatedProblems', '')
         can_buy = request.form.get('canBuy') == 'on'
         can_evaluate = request.form.get('canEvaluate') == 'on'
@@ -549,33 +583,22 @@ def create_solution():
         # Валидация
         if not name:
             return jsonify({'error': 'Название решения обязательно'}), 400
-        
-        if not describe:
-            return jsonify({'error': 'Описание решения обязательно'}), 400
+
+        if Solution.query.filter(func.lower(Solution.name) == name.lower()).first():
+            return jsonify({'error': 'Решение с таким названием уже существует'}), 409
         
         if not related_problems_str:
             return jsonify({'error': 'Необходимо выбрать хотя бы одну связанную проблему'}), 400
         
-        # Обработка файла изображения
+        # Обработка файла изображения (Yandex Storage) — только одно изображение
         image_path = None
         if 'image' in request.files:
             file = request.files['image']
             if file.filename != '' and allowed_file(file.filename):
-                image_path = save_file(file)
-        
-        # Если изображение не загружено, генерируем через OpenAI API
-        if not image_path:
-            try:
-                image_path = generate_image_with_openai(name, describe)
-                if image_path:
-                    logger.info(f"Автоматически сгенерировано изображение для решения '{name}': {image_path}")
-            except Exception as e:
-                logger.warning(f"Ошибка автоматической генерации изображения: {e}")
-                # Продолжаем без изображения
-        
-        # Если всё ещё нет изображения, используем дефолтное
+                image_path = save_file_to_yandex_storage(file, 'solutions')
         if not image_path:
             image_path = '../images/default.png'
+        defer_image_generation = (image_path == '../images/default.png')
         
         # Парсим связанные проблемы
         problem_ids = parse_int_list(related_problems_str) if related_problems_str else []
@@ -612,15 +635,33 @@ def create_solution():
         except Exception as e:
             db.session.rollback()
             logger.error(f"Ошибка сохранения решения: {e}")
-            # Удаляем скачанное изображение, если оно было автоматически найдено
-            if image_path and image_path != '../images/default.png' and os.path.exists(image_path):
+            if image_path and image_path != '../images/default.png':
                 try:
-                    delete_file(image_path)
-                except (OSError, IOError) as e:
-                    logger.warning(f"Не удалось удалить временный файл: {e}")
+                    delete_image(image_path)
+                except Exception as del_err:
+                    logger.warning(f"Не удалось удалить изображение: {del_err}")
             return jsonify({'error': 'Ошибка сохранения решения'}), 500
         
+        if defer_image_generation:
+            app = current_app._get_current_object()
+            sol_id, sol_name, sol_describe = solution.id, name, describe
+            def _generate_and_update_image():
+                with app.app_context():
+                    try:
+                        sol = Solution.query.get(sol_id)
+                        if not sol or sol.image != '../images/default.png':
+                            return
+                        path = generate_image_with_openai(sol_name, sol_describe)
+                        if path:
+                            sol.image = path
+                            db.session.commit()
+                            logger.info(f"Фоново обновлено изображение решения ID={sol_id}: {path}")
+                    except Exception as e:
+                        logger.warning(f"Фоновая генерация изображения для решения {sol_id}: {e}")
+            threading.Thread(target=_generate_and_update_image, daemon=True).start()
+
         # Возвращаем в формате, ожидаемом фронтендом
+        base_url = request.url_root.rstrip('/')
         return jsonify({
             'message': 'Решение сохранено',
             'id': solution.id,
@@ -628,10 +669,13 @@ def create_solution():
                 'ID': solution.id,
                 'Name': solution.name,
                 'Describe': solution.describe,
-                'Image': solution.image
+                'Image': image_url_for_display(solution.image, base_url, '/assets/images/default.png')
             }
         }), 201
         
+    except ValueError as e:
+        logger.warning(f"Ошибка валидации при создании решения: {e}")
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         logger.exception(f"Ошибка создания решения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
@@ -705,43 +749,66 @@ def update_solution(solution_id):
             return jsonify({'error': 'Нет прав на обновление'}), 403
         
         # Получаем данные из формы
-        name = request.form.get('name', solution.name).strip()
-        describe = request.form.get('describe', solution.describe).strip()
+        name = capitalize_title(request.form.get('name', solution.name).strip())
+        describe = capitalize_first(request.form.get('describe', solution.describe).strip())
         related_problems_str = request.form.get('relatedProblems', '')
         can_buy = request.form.get('canBuy') == 'on'
         can_evaluate = request.form.get('canEvaluate') == 'on'
+        is_new_str = request.form.get('isNew', '')
+        from_author_str = request.form.get('fromAuthor', '')
+        price_str = request.form.get('price', '')
+        efficiency_str = request.form.get('efficiency', '')
+        complexity_str = request.form.get('complexity', '')
+        time_str = request.form.get('time', '')
         
         # Валидация
         if not name:
             return jsonify({'error': 'Название решения обязательно'}), 400
         
-        # Обработка файла изображения
+        # Обработка файла изображения (Yandex Storage)
         if 'image' in request.files:
             file = request.files['image']
             if file.filename != '':
-                # Удаляем старое изображение, если есть
                 if solution.image:
-                    delete_file(solution.image)
-                
-                # Сохраняем новое
-                solution.image = save_file(file)
+                    delete_image(solution.image)
+                solution.image = save_file_to_yandex_storage(file, 'solutions')
         
         # Обновляем решение
         solution.name = name
         solution.describe = describe
-        solution.is_bought = can_buy
-        solution.is_rating = can_evaluate
+        solution.isbought = can_buy
+        solution.israting = can_evaluate
         solution.modified_date = datetime.utcnow()
+        if is_new_str:
+            solution.isnew = parse_bool(is_new_str)
+        if from_author_str:
+            solution.fromauthor = parse_bool(from_author_str)
+        if price_str != '':
+            try:
+                solution.price = float(price_str) if price_str else None
+            except (ValueError, TypeError):
+                pass
+        if efficiency_str != '':
+            try:
+                solution.efficiency = int(efficiency_str) if efficiency_str else None
+            except (ValueError, TypeError):
+                pass
+        if complexity_str != '':
+            try:
+                solution.complexity = int(complexity_str) if complexity_str else None
+            except (ValueError, TypeError):
+                pass
+        if time_str != '':
+            try:
+                solution.time = int(time_str) if time_str else None
+            except (ValueError, TypeError):
+                pass
         
-        # Обработка связанных проблем
-        if related_problems_str is not None:
-            # Очищаем старые связи
+        # Обработка связанных проблем — только если поле явно передано в форме
+        if 'relatedProblems' in request.form:
             solution.problems.clear()
-            
-            # Добавляем новые проблемы
             if related_problems_str:
                 problem_ids = parse_int_list(related_problems_str)
-                
                 if problem_ids:
                     problems = Problem.query.filter(Problem.id.in_(problem_ids)).all()
                     solution.problems.extend(problems)
@@ -770,30 +837,16 @@ def delete_solution(solution_id):
         user_id = getattr(g, 'user_id', None)
         if not user_id:
             return jsonify({'error': 'userID не найден'}), 401
-        
-        # Проверяем, существует ли решение и принадлежит ли пользователю
-        solution = Solution.query.get(solution_id)
-        if not solution:
-            return jsonify({'error': 'Решение не найдено'}), 404
-        
-        if solution.creator != user_id:
-            return jsonify({'error': 'Нет прав на удаление'}), 403
-        
-        # Удаляем связанные файлы
-        if solution.image:
-            delete_file(solution.image)
-        
-        # Удаляем решение (каскадное удаление настроено в моделях)
         try:
-            db.session.delete(solution)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
+            SolutionService.delete_solution(solution_id, user_id)
+        except ResourceNotFoundError:
+            return jsonify({'error': 'Решение не найдено'}), 404
+        except AuthorizationError:
+            return jsonify({'error': 'Нет прав на удаление'}), 403
+        except DatabaseError as e:
             logger.error(f"Ошибка удаления решения: {e}")
             return jsonify({'error': 'Ошибка удаления решения'}), 500
-
         return jsonify({'message': 'Решение удалено'}), 200
-
     except Exception as e:
         logger.error(f"Ошибка удаления решения: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
@@ -950,6 +1003,7 @@ def get_favourite_solutions():
         # Сортировка и пагинация
         solutions = query.order_by(Solution.created_date.desc()).offset(offset).limit(limit).all()
         
+        base_url = request.url_root.rstrip('/')
         solutions_list = []
         for solution in solutions:
             # Получаем связанные проблемы
@@ -959,7 +1013,7 @@ def get_favourite_solutions():
                     problem_dict = {
                         'ID': problem.id,
                         'Name': problem.name,
-                        'Image': problem.image or '../images/default.png',
+                        'Image': image_url_for_display(problem.image, base_url, '/assets/images/default.png'),
                         'Hashtags': []
                     }
                     
@@ -1004,7 +1058,7 @@ def get_favourite_solutions():
                 'ID': solution.id,
                 'Name': solution.name,
                 'Describe': solution.describe or '',
-                'Image': solution.image or '../images/default.png',
+                'Image': image_url_for_display(solution.image, base_url, '/assets/images/default.png'),
                 'Favourite': 1,  # Так как это решение в избранном
                 'Show': solution.show or 0,
                 'Reply': solution.reply or 0,

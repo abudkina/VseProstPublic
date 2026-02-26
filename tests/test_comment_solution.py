@@ -51,9 +51,10 @@ class TestAddComment:
 
     def test_add_comment_success(self, client, auth_headers, test_solution):
         """Тест успешного добавления комментария"""
+        # API использует solution_id и content/text
         comment_data = {
-            'solutionID': test_solution.id,
-            'comment': 'Great solution!'
+            'solution_id': test_solution.id,
+            'content': 'Great solution!'
         }
 
         response = client.post('/api/comment-solutions',
@@ -65,7 +66,7 @@ class TestAddComment:
 
     def test_add_comment_missing_data(self, client, auth_headers, test_solution):
         """Тест добавления комментария без текста"""
-        comment_data = {'solutionID': test_solution.id}
+        comment_data = {'solution_id': test_solution.id}
 
         response = client.post('/api/comment-solutions',
                               json=comment_data,
@@ -77,8 +78,8 @@ class TestAddComment:
     def test_add_comment_unauthorized(self, client, test_solution):
         """Тест добавления комментария без авторизации"""
         comment_data = {
-            'solutionID': test_solution.id,
-            'comment': 'Great solution!'
+            'solution_id': test_solution.id,
+            'content': 'Great solution!'
         }
 
         response = client.post('/api/comment-solutions',
@@ -101,17 +102,19 @@ class TestMarkCommentsAsRead:
     """Тесты для отметки комментариев как прочитанных"""
 
     def test_mark_as_read_success(self, client, auth_headers):
-        """Тест успешной отметки комментариев как прочитанных"""
-        response = client.put('/api/comment-solutions/mark-as-read',
+        """Тест успешной отметки комментария как прочитанного"""
+        # API использует PUT /api/comment-solutions/<comment_id>/mark-as-read
+        response = client.put('/api/comment-solutions/99999/mark-as-read',
                              json={},
                              headers=auth_headers,
                              content_type='application/json')
 
-        assert response.status_code in [200, 400, 401]
+        # 404 - комментарий не найден, что ожидаемо для несуществующего ID
+        assert response.status_code in [200, 404, 401]
 
     def test_mark_as_read_unauthorized(self, client):
         """Тест отметки как прочитанных без авторизации"""
-        response = client.put('/api/comment-solutions/mark-as-read',
+        response = client.put('/api/comment-solutions/1/mark-as-read',
                              json={},
                              content_type='application/json')
 

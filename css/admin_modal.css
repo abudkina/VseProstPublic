@@ -62,16 +62,6 @@
     height: 100% !important;
 }
 
-/* Универсальное правило для центрирования editModal - применяется всегда когда видим */
-#editModal:not([style*="display: none"]):not([style*="display:none"]) {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    left: 0 !important;
-    right: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
 
 /* Правила для показа модального окна с центрированием */
 .modal.active,
@@ -158,6 +148,18 @@
     margin-left: auto !important;
     margin-right: auto !important;
     transform: none !important;
+}
+
+/* Desktop: ширина модала редактирования ~75% */
+@media (min-width: 769px) {
+    #editModal .modal-content,
+    #editModal[style*="flex"] .modal-content,
+    #editModal.active .modal-content,
+    html body div#editModal .modal-content,
+    html body div#editModal.active > .modal-content {
+        width: 75% !important;
+        max-width: 75% !important;
+    }
 }
 
 /* Декоративный элемент */
@@ -1508,22 +1510,6 @@ html body div#editModal[style*="flex"] {
     align-content: center !important;
 }
 
-/* ФИНАЛЬНОЕ ПРАВИЛО: Универсальное центрирование для любого видимого editModal */
-/* Это правило применяется ко всем возможным вариантам показа модального окна */
-div#editModal:not([style*="display: none"]):not([style*="display:none"]) {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    margin: 0 !important;
-    padding: 20px !important;
-    width: 100% !important;
-    height: 100% !important;
-    position: fixed !important;
-}
 
 /* Исключение для скрытого состояния */
 div#editModal[style*="display: none"],
@@ -1682,10 +1668,16 @@ html body div#editModal.centered-modal .modal-content.centered {
     max-height: 90vh !important;
 }
 
-/* Полноэкранное модальное окно редактирования */
-html body div#editModal[style*="display"],
+/* Полноэкранное модальное окно редактирования — только при явном display: flex/block (не при отсутствии style) */
+html body div#editModal[style*="display: flex"],
+html body div#editModal[style*="display:flex"],
+html body div#editModal[style*="display: block"],
+html body div#editModal[style*="display:block"],
 html body div#editModal.active,
-html body div.modal#editModal[style*="display"],
+html body div.modal#editModal[style*="display: flex"],
+html body div.modal#editModal[style*="display:flex"],
+html body div.modal#editModal[style*="display: block"],
+html body div.modal#editModal[style*="display:block"],
 html body div.modal#editModal.active {
     display: block !important;
     position: fixed !important;

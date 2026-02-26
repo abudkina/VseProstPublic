@@ -19,28 +19,30 @@
     <meta http-equiv="Permissions-Policy" content="local-network=(), private-network=()" />
     
     <!-- SEO Meta Tags -->
-    <title>Всё Прост (VseProst) - Платформа для поиска решений и обсуждения проблем</title>
-    <meta name="description" content="Всё Прост (VseProst, ВсеПрост, Все Просто, ВсёПрост) - это платформа, где вы можете найти решения для различных проблем, задать вопросы и получить помощь от сообщества. Найдите ответы на свои вопросы и поделитесь опытом." />
-    <meta name="keywords" content="VseProst, ВсеПрост, Все Просто, ВсёПрост, Всё Прост, решения проблем, вопросы и ответы, помощь, сообщество, обсуждения, советы, решения" />
+    <title>Всё Прост - Найди решение любой проблемы | Вопросы и ответы</title>
+    <meta name="description" content="Всё Прост (VseProst) - платформа с решениями для любых проблем. Задавайте вопросы, находите ответы, делитесь опытом. Тысячи решений на русском языке от реальных людей." />
+    <meta name="keywords" content="VseProst, ВсеПрост, Всё Прост, решение проблем, как решить проблему, вопросы и ответы, помощь онлайн, найти решение, ответы на вопросы, сообщество, форум, советы, лайфхаки, инструкции, решения онлайн, помощь бесплатно" />
     <meta name="author" content="Всё Прост (VseProst)" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://vseprost.com/" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="/" />
-    <meta property="og:title" content="Всё Прост (VseProst) - Платформа для поиска решений и обсуждения проблем" />
-    <meta property="og:description" content="Всё Прост (VseProst, ВсеПрост, Все Просто, ВсёПрост) - это платформа, где вы можете найти решения для различных проблем, задать вопросы и получить помощь от сообщества." />
-    <meta property="og:image" content="/assets/images/Screenshot_4-ww78noDj9-transformed.png" />
+    <meta property="og:url" content="https://vseprost.com/" />
+    <meta property="og:title" content="Всё Прост - Найди решение любой проблемы | Вопросы и ответы" />
+    <meta property="og:description" content="Всё Прост - платформа с решениями для любых проблем. Задавайте вопросы, находите ответы, делитесь опытом. Тысячи решений на русском языке." />
+    <meta property="og:image" content="https://vseprost.com/assets/images/Screenshot_4-ww78noDj9-transformed.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="ru_RU" />
-    <meta property="og:site_name" content="Всё Прост (VseProst)" />
+    <meta property="og:site_name" content="Всё Прост" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="/" />
-    <meta name="twitter:title" content="Всё Прост (VseProst) - Платформа для поиска решений и обсуждения проблем" />
-    <meta name="twitter:description" content="Всё Прост (VseProst, ВсеПрост, Все Просто, ВсёПрост) - это платформа, где вы можете найти решения для различных проблем, задать вопросы и получить помощь от сообщества." />
-    <meta name="twitter:image" content="/assets/images/Screenshot_4-ww78noDj9-transformed.png" />
+    <meta name="twitter:url" content="https://vseprost.com/" />
+    <meta name="twitter:title" content="Всё Прост - Найди решение любой проблемы" />
+    <meta name="twitter:description" content="Платформа с решениями для любых проблем. Задавайте вопросы, находите ответы, делитесь опытом." />
+    <meta name="twitter:image" content="https://vseprost.com/assets/images/Screenshot_4-ww78noDj9-transformed.png" />
     
     <!-- Яндекс.Вебмастер (заполните после регистрации в Яндекс.Вебмастере) -->
     <meta name="yandex-verification" content="" />
@@ -78,11 +80,23 @@
         "Все Просто",
         "ВсёПрост"
       ],
-      "url": "/",
-      "description": "Всё Прост (VseProst, ВсеПрост, Все Просто, ВсёПрост) - платформа для поиска решений и обсуждения проблем",
+      "url": "https://vseprost.com/",
+      "description": "Платформа для поиска решений любых проблем. Вопросы и ответы на русском языке от реальных людей.",
+      "inLanguage": "ru-RU",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Всё Прост",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://vseprost.com/assets/images/logo1-Photoroom1.png"
+        }
+      },
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "/?search={search_term_string}",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://vseprost.com/?search={search_term_string}"
+        },
         "query-input": "required name=search_term_string"
       }
     }
@@ -90,16 +104,19 @@
     <link rel="stylesheet" href="/css/variables.css" />
     <link rel="stylesheet" href="/css/index.css" />
     <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/mobile-menu.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 </head>
 <body>
 <header>
     <a href="/" class="logo"><img src="/assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
+
+    <!-- Десктоп меню -->
     <ul class="nav-menu desktop-menu">
         <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
         <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
@@ -108,20 +125,24 @@
         <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
         <li><a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
     </ul>
-    <ul class="nav-menu mobile-menu">
-        <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-        <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-        <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart"><i class="fas fa-heart"></i></a></li>
-        <li><a href="/html/cart.html" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
-        <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-        <li><a href="/html/profile.html" title="Профиль" class="menu-item"><i class="fas fa-user"></i></a></li>
-    </ul>
+
 </header>
+
+<ul class="nav-menu mobile-menu">
+    <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+    <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+    <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
+    <li><a href="/html/cart.html" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
+    <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
+    <li><a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
+</ul>
+
+
 
 <section class="search-filters">
     <div class="top-row">
         <input type="search" placeholder="Найти проблему по названию" id="search" />
-        <button id="addProblem">Добавить проблему</button>
+        <a href="/html/add_problem.html" id="addProblem" class="add-problem-link">Добавить проблему</a>
     </div>
     <div class="filters desktop">
         <select id="sort">
@@ -142,9 +163,8 @@
     <template id="card-template">
         <article class="card">
             <div class="card-image-wrapper">
-                 <a href="#" class="card-title-link">
-                <img src="" alt="" class="card-image" />
-                </a>
+                <img src="" alt="" class="card-image" loading="lazy" />
+                <a href="#" class="card-title-link"></a>
              <div class="card-title-overlay"></div>
             <a href="#" class="card-title-text"></a>
             <div class="card-favorites">
@@ -152,7 +172,6 @@
       <span class="favorite-count">0</span>
          </div>
           </div>
-           </div>
             <div class="card-content">
                 <div class="problem-topic"></div>
                 <div class="tags-column"></div>
@@ -183,84 +202,9 @@
     </div>
 </main>
 
-<!-- Модальное окно для добавления проблемы -->
-<div id="problem-modal-overlay" class="modal-overlay">
-    <div id="problem-modal" class="modal-content">
-        <div class="modal-header">
-            <h2>Добавить проблему</h2>
-            <button class="modal-close" id="closeProblemModal">&times;</button>
-        </div>
-        <form id="problemForm">
-            <select id="generalTopicSelect">
-                <option value="" disabled selected>Выберите общую тему</option>
-            </select>
-            <button type="button" class="add-button" id="addTopicBtn">Добавить тему</button>
-
-            <input type="text" id="problemTitle" placeholder="Введите название проблемы" required />
-
-            <textarea id="problemDescription" placeholder="Введите описание (необязательно)"></textarea>
-
-            <select id="categorySelect">
-                <option value="" disabled selected>Выберите категорию</option>
-            </select>
-            <button type="button" class="add-button" id="addCategoryBtn">Добавить категорию</button>
-
-            <div class="problem-search-container">
-                <input type="text" id="hashtagSearch" placeholder="Поиск хэштегов...">
-                <div id="hashtagDropdown" style="display: none;"></div>
-                <div id="selectedHashtags"></div>
-            </div>
-            <button type="button" class="add-button" id="addHashtagBtn">Добавить хэштег</button>
-
-            <input type="file" id="problemImage" accept="image/*" />
-
-            <div class="form-buttons">
-                <button type="button" class="clear-btn" id="clearProblemBtn">Очистить</button>
-                <button type="submit" class="save-btn">Сохранить</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Модальные окна для добавления темы, категории, хэштега -->
-<div id="modal-overlay" class="modal-overlay">
-    <!-- Модал для темы -->
-    <div id="topic-modal" class="modal">
-        <h2>Добавить тему</h2>
-        <input type="text" id="topic-name-input" placeholder="Введите имя темы">
-        <div class="modal-buttons">
-            <button id="topic-add-btn">Добавить</button>
-            <button id="topic-cancel-btn">Отмена</button>
-        </div>
-        <div id="topic-error" class="error-message"></div>
-    </div>
-
-    <!-- Модал для категории -->
-    <div id="category-modal" class="modal">
-        <h2>Добавить категорию</h2>
-        <input type="text" id="category-name-input" placeholder="Введите имя категории">
-        <div class="modal-buttons">
-            <button id="category-add-btn">Добавить</button>
-            <button id="category-cancel-btn">Отмена</button>
-        </div>
-        <div id="category-error" class="error-message"></div>
-    </div>
-
-    <!-- Модал для хэштега -->
-    <div id="hashtag-modal" class="modal">
-        <h2>Добавить хэштег</h2>
-        <input type="text" id="hashtag-name-input" placeholder="Введите имя хэштега">
-        <div class="modal-buttons">
-            <button id="hashtag-add-btn">Добавить</button>
-            <button id="hashtag-cancel-btn">Отмена</button>
-        </div>
-        <div id="hashtag-error" class="error-message"></div>
-    </div>
-</div>
-
 <script src="/js/config.js"></script>
 <script type="module" src="/js/index.js"></script>
 <script type="module" src="/js/logoAdmin.js"></script>
-<script type="module" src="/js/modalProblem.js"></script>
+<script src="/js/mobile-menu.js"></script>
 </body>
 </html>

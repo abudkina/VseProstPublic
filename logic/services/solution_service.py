@@ -11,13 +11,17 @@ from flask import g
 
 from logic.model import (
     db, Solution, Problem, User, Category, Hashtag,
-    hashtag_solution
+    hashtag_solution, SolutionRating, TemporaryLinkSolution, TemporaryProblemSolution,
+    UserCartSolution, UserSolutionCategories, Embedding, CommentSolution,
+    comment_solution_likes, comment_solution_dislikes
 )
 from logic.utils.error_handler import (
     ValidationError, AuthorizationError, ResourceNotFoundError,
-    DatabaseError, AppError
+    DatabaseError, ConflictError, AppError
 )
 from logic.utils.logger import get_logger
+from logic.utils.normalizers import capitalize_title, capitalize_first
+from logic.utils.file_utils import delete_image
 from logic.recommendations import track_user_activity, create_embedding
 from logic.cache_config import cache, CACHE_TIMEOUTS
 
@@ -92,7 +96,7 @@ class SolutionService:
         
         # Применяем сортировку и пагинацию
         solutions = query.order_by(
-            Solution.modified_date.desc().nulls_last(),
+            Solution.modified_date.desc(),
             Solution.created_date.desc()
         ).offset(offset).limit(limit).all()
         
@@ -153,14 +157,18 @@ class SolutionService:
             DatabaseError: При ошибках БД
         """
         # Валидация входных данных
-        name = data.get('name', '').strip()
-        describe = data.get('describe', '').strip()
+        name = capitalize_title(data.get('name', '').strip())
+        describe = capitalize_first(data.get('describe', '').strip())
         problem_id = data.get('problem_id')
         hashtag_ids = data.get('hashtag_ids', [])
         
         # Проверка обязательных полей
         if not name:
             raise ValidationError("Название решения обязательно")
+
+        existing = Solution.query.filter(func.lower(Solution.name) == name.lower()).first()
+        if existing:
+            raise ConflictError("Решение с таким названием уже существует")
         
         if len(name) > SolutionService.MAX_TITLE_LENGTH:
             raise ValidationError(
@@ -249,13 +257,13 @@ class SolutionService:
         if not solution:
             raise ResourceNotFoundError('Solution', solution_id)
         
-        if solution.creator_id != user_id:
+        if solution.creator != user_id:
             raise AuthorizationError("Только создатель может редактировать решение")
         
         try:
             # Обновляем поля
             if 'name' in data:
-                name = data['name'].strip()
+                name = capitalize_title(data['name'].strip())
                 if not name:
                     raise ValidationError("Название не может быть пустым")
                 if len(name) > SolutionService.MAX_TITLE_LENGTH:
@@ -263,7 +271,7 @@ class SolutionService:
                 solution.name = name
             
             if 'describe' in data:
-                describe = data['describe'].strip()
+                describe = capitalize_first(data['describe'].strip())
                 if describe and len(describe) > SolutionService.MAX_DESCRIPTION_LENGTH:
                     raise ValidationError(f"Описание слишком длинное (максимум {SolutionService.MAX_DESCRIPTION_LENGTH} символов)")
                 solution.describe = describe
@@ -330,10 +338,28 @@ class SolutionService:
         if not solution:
             raise ResourceNotFoundError('Solution', solution_id)
         
-        if solution.creator_id != user_id:
+        if solution.creator != user_id:
             raise AuthorizationError("Только создатель может удалить решение")
         
+        if solution.image:
+            try:
+                delete_image(solution.image)
+            except Exception as e:
+                logger.warning(f"Не удалось удалить изображение: {e}")
         try:
+            # Удаление из связанных таблиц (до удаления решения)
+            comment_ids = [c.id for c in solution.comments]
+            if comment_ids:
+                db.session.execute(comment_solution_likes.delete().where(
+                    comment_solution_likes.c.commentid.in_(comment_ids)))
+                db.session.execute(comment_solution_dislikes.delete().where(
+                    comment_solution_dislikes.c.commentid.in_(comment_ids)))
+            SolutionRating.query.filter_by(solution_id=solution_id).delete()
+            TemporaryLinkSolution.query.filter_by(solution=solution_id).delete()
+            TemporaryProblemSolution.query.filter_by(solution=solution_id).delete()
+            UserCartSolution.query.filter_by(solution=solution_id).delete()
+            UserSolutionCategories.query.filter_by(solution=solution_id).delete()
+            Embedding.query.filter_by(entity_type='solution', entity_id=solution_id).delete()
             db.session.delete(solution)
             db.session.commit()
             
@@ -376,7 +402,7 @@ class SolutionService:
             'Name': solution.name,
             'Describe': solution.describe,
             'ProblemID': solution.problem_id,
-            'Creator_id': solution.creator_id,
+            'Creator_id': solution.creator,
             'Creator_name': solution.creator.username if solution.creator else None,
             'Hashtags': hashtags_list,
             'CreatedDate': solution.created_date.isoformat() if solution.created_date else None,

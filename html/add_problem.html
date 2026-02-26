@@ -26,36 +26,43 @@
     <link rel="stylesheet" href="/css/variables.css" />
     <link rel="stylesheet" href="/css/add_problem.css" />
     <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/mobile-menu.css" />
     <link rel="stylesheet" href="/css/index.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 </head>
 
-<body>
+<body class="add-form-page">
     <header>
     <a href="/" class="logo"><img src="/assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
-        <ul class="nav-menu desktop-menu">
+    <ul class="nav-menu desktop-menu">
             <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
             <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
             <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart"><i class="fas fa-heart"></i></a></li>
             <li><a href="#" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
             <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-            <li><a href="/html/profile.html" title="Профиль" class="menu-item"><i class="fas fa-user"></i></a></li>
+        <li><a href="/html/profile.html" title="Профиль" class="menu-item"><i class="fas fa-user"></i></a></li>
         </ul>
-        <ul class="nav-menu mobile-menu">
-            <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-            <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-            <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart"><i class="fas fa-heart"></i></a></li>
-            <li><a href="#" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
-            <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-            <li><a href="/html/profile.html" title="Профиль" class="menu-item"><i class="fas fa-user"></i></a></li>
-        </ul>
-    </header>
-    <div class="container">
+        
+    
+</header>
+
+<ul class="nav-menu mobile-menu">
+    <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+    <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+    <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart"><i class="fas fa-heart"></i></a></li>
+    <li><a href="#" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
+    <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
+    <li><a href="/html/profile.html" title="Профиль" class="menu-item"><i class="fas fa-user"></i></a></li>
+</ul>
+
+
+
+<div class="container">
         <h1>Добавить проблему</h1>
         <form id="problemForm">
             <select id="generalTopicSelect">
@@ -64,7 +71,7 @@
 
             <button type="button" class="add-button" id="addTopicBtn">Добавить тему</button>
 
-            <input type="text" id="problemTitle" placeholder="Введите название проблемы" required />
+            <input type="text" id="problemTitle" placeholder="Введите название проблемы" required autocomplete="off" />
 
             <textarea id="problemDescription" placeholder="Введите описание (необязательно)"></textarea>
 
@@ -74,15 +81,18 @@
 
             <button type="button" class="add-button" id="addCategoryBtn">Добавить категорию</button>
 
-            <select id="hashtags" multiple placeholder="Выберите хэштеги"></select>
+            <div class="search-select-wrap" id="wrap-hashtags">
+                <input type="text" id="filter-hashtags-input" class="filter-search-input" placeholder="Выберите хэштеги" autocomplete="off">
+                <div class="search-select-tags" id="filter-hashtags-tags"></div>
+                <div class="search-select-dropdown" id="filter-hashtags-dropdown"></div>
+            </div>
 
             <button type="button" class="add-button" id="addHashtagBtn">Добавить хэштег</button>
 
             <input type="text" id="relatedProblems" placeholder="Выберите связанные проблемы" />
 
-            <input type="text" id="badSolutions" placeholder="Выберите плохие решения" />
-
-            <input type="file" id="problemImage" accept="image/*" />
+            <input type="file" id="problemImage" accept="image/*" capture="environment" />
+            <div id="problemImageError" class="error-message" aria-live="polite"></div>
 
             <div class="form-buttons">
                 <button type="reset" class="clear-btn">Очистить</button>
@@ -127,6 +137,7 @@
     </div>
     <script src="/js/config.js"></script>
     <script type="module" src="/js/add_problem.js"></script>
+<script src="/js/mobile-menu.js"></script>
 </body>
 
 </html>

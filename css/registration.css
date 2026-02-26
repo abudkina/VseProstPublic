@@ -102,13 +102,112 @@ button:active {
     transform: translateY(0);
 }
 
-@media (max-width: 520px) {
+/* Адаптивность */
+
+/* Desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .registration-container {
+        width: min(90%, 400px);
+        padding: var(--spacing-7) var(--spacing-5);
+    }
+
+    .registration-container h1 {
+        font-size: 1.9rem;
+    }
+}
+
+/* Tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .registration-container {
+        width: min(88%, 380px);
+        padding: var(--spacing-6) var(--spacing-5);
+        margin: var(--spacing-10) auto var(--spacing-14);
+    }
+
+    .registration-container h1 {
+        font-size: 1.8rem;
+        margin-bottom: var(--spacing-4);
+    }
+
+    input {
+        padding: 10px 14px;
+        font-size: 0.95rem;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Medium Phones (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+    .registration-container {
+        width: min(92%, 360px);
+        padding: 32px 26px;
+        margin: var(--spacing-8) auto var(--spacing-12);
+    }
+
+    .registration-container h1 {
+        font-size: 1.7rem;
+        margin-bottom: var(--spacing-4);
+    }
+
+    input {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    button {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Small Phones (<480px) */
+@media (max-width: 479px) {
     .registration-container {
         padding: 28px 22px;
         margin: 32px auto 48px;
+        width: min(94%, 340px);
     }
 
     .registration-container h1 {
         font-size: 1.6rem;
+        margin-bottom: var(--spacing-3);
+    }
+
+    input {
+        padding: 9px 12px;
+        font-size: 0.85rem;
+    }
+
+    button {
+        padding: 9px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Very Small Phones (<375px) */
+@media (max-width: 374px) {
+    .registration-container {
+        padding: 24px 18px;
+        margin: 24px auto 40px;
+        width: min(96%, 320px);
+    }
+
+    .registration-container h1 {
+        font-size: 1.4rem;
+        margin-bottom: var(--spacing-2);
+    }
+
+    input {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+
+    button {
+        padding: 8px 14px;
+        font-size: 0.8rem;
     }
 }

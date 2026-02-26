@@ -540,53 +540,480 @@ body {
   transform: translateY(0);
 }
 
+/* Сообщения для неавторизованных пользователей */
+.auth-required-message {
+  color: var(--text-light, #6b7280);
+  font-style: italic;
+  font-size: var(--font-size-sm, 14px);
+  padding: var(--spacing-4, 16px) 0;
+  text-align: center;
+}
+
+.rating-auth-message {
+  color: var(--text-light, #6b7280);
+  font-style: italic;
+  font-size: var(--font-size-xs, 12px);
+  flex: 1;
+}
+
 /* Адаптивность */
-@media (min-width: 1200px) and (max-width: 2000px){
 
-  .filters.mobile {
-    display: none; /* Скрываем мобильные фильтры */
-  }
- 
-}
-
-@media (min-width: 992px) and (max-width: 1199px) {
-
-  .filters.mobile {
-    display: none; /* Скрываем мобильные фильтры */
-  }
-
-}
-
+/* Tablets (768px-991px) */
 @media (min-width: 768px) and (max-width: 991px) {
+  .container {
+    padding: 0 15px;
+  }
 
-  .filters.mobile {
-    display: none; /* Скрываем мобильные фильтры */
+  .solution-title {
+    font-size: var(--font-size-3xl);
+    margin-top: var(--spacing-4);
+  }
+
+  .top-block {
+    flex-direction: column;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+  }
+
+  .top-block img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+  }
+
+  .main-block {
+    flex-direction: column;
+    gap: var(--spacing-4);
+  }
+
+  .solution-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
+
+  .desc-and-ratings {
+    flex-direction: column;
+  }
+
+  .ratings-wrapper {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+  }
+
+  .rating-block {
+    flex: 1 1 calc(50% - var(--spacing-3));
   }
 
   .linked-solutions-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
   }
 
+  .icons-block {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .solution-bottom-block {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
-@media (max-width: 767px) {
+/* Medium Phones (480px-767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .container {
+    padding: 0 10px;
+  }
+
+  .solution-title {
+    font-size: var(--font-size-2xl);
+    margin-top: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
+  }
+
+  .top-block {
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    margin: var(--spacing-2) auto;
+  }
+
+  .top-block img {
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+    border-radius: var(--radius-2xl);
+  }
+
+  .solution-description {
+    font-size: var(--font-size-base);
+  }
+
+  .icons-block {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .icon-item {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-xs);
+  }
+
+  .icon-item .icon {
+    font-size: 16px;
+  }
+
+  .main-block {
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+  }
+
+  .solution-image {
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+  }
+
+  .desc-and-ratings {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .ratings-wrapper {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .rating-label {
+    min-width: 80px;
+    font-size: var(--font-size-sm);
+  }
+
+  .solution-bottom-block {
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+  }
+
+  /* Комментарии */
+  .comment {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-3);
+  }
+
+  .comment-text {
+    margin-right: 0;
+    margin-bottom: var(--spacing-2);
+    max-width: 100%;
+  }
+
+  .comment-votes {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .comment-form textarea {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-3);
+  }
+
+  /* Похожие решения */
   .linked-solutions-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  
+
+  .linked-solution-image {
+    height: 130px;
+  }
+
   .section-header {
     flex-wrap: wrap;
+    gap: var(--spacing-2);
   }
-  
+
   .comments-title,
   .linked-solutions-title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
-  
+
+  .toggle-btn {
+    width: 28px;
+    height: 28px;
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Small Phones (<480px) */
+@media (max-width: 479px) {
+  html, body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    padding: 0 8px;
+    max-width: 100%;
+  }
+
+  .solution-title {
+    font-size: var(--font-size-xl);
+    margin-top: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+  }
+
+  .top-block {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+    margin: var(--spacing-1) auto;
+    border-radius: var(--radius-2xl);
+  }
+
+  .top-block img {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    border-radius: var(--radius-xl);
+    border-width: 2px;
+  }
+
+  .solution-description {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+  }
+
+  .icons-block {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .icon-item {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: var(--radius-lg);
+  }
+
+  .icon-item .icon {
+    font-size: 14px;
+  }
+
+  .header-row {
+    padding: 8px 10px;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  .solution-header {
+    font-size: var(--font-size-xl);
+    padding: 8px 10px;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  .main-block {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  }
+
+  .solution-image {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    border-radius: var(--radius-xl);
+    border-width: 2px;
+  }
+
+  .desc-and-ratings {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .ratings-wrapper {
+    flex-direction: column;
+    gap: var(--spacing-1);
+  }
+
+  .rating-block {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .rating-label {
+    min-width: 70px;
+    font-size: var(--font-size-xs);
+  }
+
+  .stars span {
+    font-size: 1rem;
+  }
+
+  .solution-bottom-block {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-xl);
+  }
+
+  /* Комментарии */
+  .comments-section,
+  .linked-solutions-section {
+    margin: var(--spacing-4) auto;
+    padding: 0 10px;
+  }
+
+  .comment {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+    border-radius: var(--radius-xl);
+  }
+
+  .comment-text {
+    margin-right: 0;
+    margin-bottom: var(--spacing-2);
+    max-width: 100%;
+    font-size: var(--font-size-sm);
+  }
+
+  .comment-votes {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .comment-votes button {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-xs);
+  }
+
+  .comment-votes button .icon {
+    font-size: 14px;
+  }
+
+  .comment-form {
+    padding: 0 10px;
+    margin-top: var(--spacing-4);
+  }
+
+  .comment-form textarea {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    min-height: 100px;
+  }
+
+  .comment-form button {
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Похожие решения */
+  .linked-solutions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .linked-solution-card {
+    padding: 8px;
+    border-radius: var(--radius-xl);
+  }
+
   .linked-solution-image {
-    height: 120px;
+    height: 110px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 8px;
+  }
+
+  .linked-solution-name {
+    font-size: var(--font-size-sm);
+  }
+
+  .section-header {
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+    padding: 8px 0;
+  }
+
+  .comments-title,
+  .linked-solutions-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .toggle-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+
+  /* Модальные окна */
+  .modal-content {
+    max-width: 95%;
+    margin: var(--spacing-2);
+  }
+
+  .modal-header {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  .modal-header h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .modal-close {
+    width: 32px;
+    height: 32px;
+  }
+
+  .linked-solution-search-container {
+    padding: var(--spacing-3);
+  }
+
+  .modal-content .buttons {
+    padding: var(--spacing-3);
+    flex-direction: column;
+  }
+
+  .modal-content .clear,
+  .modal-content .save {
+    width: 100%;
+  }
+}
+
+/* Very Small Phones (<375px) */
+@media (max-width: 375px) {
+  .solution-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .top-block img {
+    max-height: 180px;
+  }
+
+  .solution-image {
+    max-height: 180px;
+  }
+
+  .linked-solutions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .icon-item {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .icon-item .icon {
+    font-size: 12px;
   }
 }
 

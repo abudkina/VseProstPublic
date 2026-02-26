@@ -1,5 +1,21 @@
 # normalizers.py - функции нормализации имен
 
+def capitalize_title(text):
+    """Первая буква заглавная, остальные строчные (названия, заголовки)."""
+    if not text or not str(text).strip():
+        return "" if text is None else str(text)
+    s = str(text).strip()
+    return s[0].upper() + s[1:].lower() if s else s
+
+
+def capitalize_first(text):
+    """Только первая буква строки заглавная (описания)."""
+    if not text or not str(text).strip():
+        return "" if text is None else str(text)
+    s = str(text).strip()
+    return s[0].upper() + s[1:] if len(s) > 1 else s.upper()
+
+
 def normalize_category_name(name):
     """
     Нормализует имя категории:
@@ -46,6 +62,12 @@ def normalize_hashtag_name(name):
     name = name.replace('ё', 'е')
     
     return name
+
+
+def normalize_category_display_name(name):
+    """Имя категории для сохранения: с большой буквы."""
+    return capitalize_title(name) if name else ""
+
 
 def normalize_topic_name(name):
     """

@@ -4,7 +4,7 @@ from datetime import datetime
 from logic.model import Category, User
 from logic.middleware import token_required
 from logic.model import db
-from logic.utils.normalizers import normalize_category_name
+from logic.utils.normalizers import normalize_category_name, normalize_category_display_name
 from logic.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -56,9 +56,9 @@ def add_category():
             logger.error(f"Ошибка проверки уникальности: {e}")
             return jsonify({'error': 'Ошибка проверки уникальности'}), 500
         
-        # Создаем новую категорию
+        # Создаем новую категорию (название с большой буквы)
         new_category = Category(
-            name=category_name,
+            name=normalize_category_display_name(category_name),
             creator=user_id,  # Используем creator, а не creator_id
             created_date=datetime.utcnow(),
             modified_date=datetime.utcnow(),
@@ -177,8 +177,8 @@ def update_category(category_id):
             if normalized_existing_name == normalized_new_name:
                 return jsonify({'error': 'Категория с таким именем уже существует'}), 400
         
-        # Обновляем категорию
-        category.name = new_name
+        # Обновляем категорию (название с большой буквы)
+        category.name = normalize_category_display_name(new_name)
         category.modified_date = datetime.utcnow()
         
         try:

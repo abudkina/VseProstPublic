@@ -179,7 +179,8 @@ def register_handler():
         ).to_dict()), 200)
         
         # Устанавливаем токены в HttpOnly cookies
-        set_cookie(response, 'access_token', access_token, 15*60, http_only=True)
+        access_expires = current_app.config.get('JWT_ACCESS_TOKEN_EXPIRES', 86400)
+        set_cookie(response, 'access_token', access_token, access_expires, http_only=True)
         set_cookie(response, 'refresh_token', refresh_token, 30*24*3600, http_only=True)
         
         return response

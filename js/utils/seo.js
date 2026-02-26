@@ -99,7 +99,7 @@ export function addStructuredData(structuredData) {
  */
 export function createProblemStructuredData(problem) {
     const baseUrl = window.location.origin;
-    const problemUrl = `${baseUrl}/html/problem.html?id=${problem.ID}`;
+    const problemUrl = `${baseUrl}/problem/${problem.ID}`;
     const imageUrl = problem.Image 
         ? (problem.Image.startsWith('http') ? problem.Image : `${baseUrl}${problem.Image}`)
         : `${baseUrl}/assets/og-image.png`;
@@ -129,7 +129,7 @@ export function createProblemStructuredData(problem) {
  */
 export function createSolutionStructuredData(solution) {
     const baseUrl = window.location.origin;
-    const solutionUrl = `${baseUrl}/html/solution.html?id=${solution.ID}`;
+    const solutionUrl = `${baseUrl}/solution/${solution.ID}`;
     const imageUrl = solution.Image 
         ? (solution.Image.startsWith('http') ? solution.Image : `${baseUrl}${solution.Image}`)
         : `${baseUrl}/assets/og-image.png`;

@@ -25,13 +25,25 @@ let currentFilters = {
 
 // Функция для перезагрузки карточек
 function reloadCards() {
-    loadProblemsCards(currentFilters, (data) => {
-        renderProblemCards(data, { isAdmin: true });
+    loadProblemsCards(currentFilters, (list, meta) => {
+        renderProblemCards(list, { ...meta, isAdmin: true });
     });
+}
+
+// Сразу скрыть модал при наличии в DOM (до load)
+const _editModal = document.getElementById('editModal');
+if (_editModal) {
+    _editModal.style.display = 'none';
+    _editModal.classList.remove('active');
 }
 
 // При загрузке — опционально проверить авторизацию
 window.addEventListener('load', async function() {
+    const modal = document.getElementById('editModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+    }
     if (localStorage.getItem('isLoggedIn')) {
         auth.checkAuth(false).catch(() => {
             localStorage.removeItem('isLoggedIn');
@@ -88,16 +100,14 @@ document.getElementById('profileBtn').addEventListener('click', () => {
 
 // Клик на карточку: открыть модал редактирования
 document.addEventListener('click', (event) => {
-    // Клик на иконку избранного - не открываем модал
+    if (!event.isTrusted) return;
     if (event.target.closest('.favorite-icon')) {
         return;
     }
-    
-    // Клик на карточку - открываем модал редактирования
     const card = event.target.closest('.card');
     if (card) {
         const problemId = card.getAttribute('data-problem-id');
-        if (problemId) {
+        if (problemId && problemId.trim()) {
             event.preventDefault();
             event.stopPropagation();
             loadProblemById(problemId).then(problem => {
@@ -115,7 +125,6 @@ document.addEventListener('click', (event) => {
                 
                 // Функция для полноэкранного модального окна
                 const centerModal = () => {
-                    // Устанавливаем стили через CSS в style элементе для полноэкранного режима
                     forceStyle.textContent = `
                         #editModal {
                             display: block !important;
@@ -135,24 +144,47 @@ document.addEventListener('click', (event) => {
                             overflow: auto !important;
                             box-sizing: border-box !important;
                         }
-                        #editModal .modal-content {
-                            position: relative !important;
-                            left: auto !important;
-                            right: auto !important;
-                            top: auto !important;
-                            transform: none !important;
-                            width: 100% !important;
-                            max-width: 100% !important;
-                            height: 100% !important;
-                            max-height: 100% !important;
-                            margin: 0 !important;
-                            padding: 20px !important;
-                            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
-                            border-radius: 0 !important;
-                            box-shadow: none !important;
-                            overflow-y: auto !important;
-                            display: flex !important;
-                            flex-direction: column !important;
+                        @media (min-width: 769px) {
+                            #editModal .modal-content {
+                                position: relative !important;
+                                left: auto !important;
+                                right: auto !important;
+                                top: auto !important;
+                                transform: none !important;
+                                width: 75% !important;
+                                max-width: 75% !important;
+                                height: auto !important;
+                                max-height: 90vh !important;
+                                margin: auto !important;
+                                padding: 20px !important;
+                                background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+                                border-radius: 20px !important;
+                                box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+                                overflow-y: auto !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                            }
+                        }
+                        @media (max-width: 768px) {
+                            #editModal .modal-content {
+                                position: relative !important;
+                                left: auto !important;
+                                right: auto !important;
+                                top: auto !important;
+                                transform: none !important;
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                height: 100% !important;
+                                max-height: 100% !important;
+                                margin: 0 !important;
+                                padding: 20px !important;
+                                background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+                                border-radius: 0 !important;
+                                box-shadow: none !important;
+                                overflow-y: auto !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                            }
                         }
                     `;
                 };

@@ -223,53 +223,257 @@
 }
 
 /* Адаптивность */
-@media (max-width: 768px) {
+
+/* Desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
     .notifications-page {
-        padding: 15px;
+        padding: 18px;
     }
-    
+
+    .notifications-page h1 {
+        font-size: 1.9em;
+    }
+
+    .notification-card {
+        padding: var(--spacing-4);
+    }
+}
+
+/* Tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .notifications-page {
+        padding: 16px;
+    }
+
+    .notifications-page h1 {
+        font-size: 1.7em;
+        margin-bottom: 25px;
+    }
+
+    .notification-card {
+        padding: 18px;
+    }
+
+    .notification-title {
+        font-size: 1.2em;
+        padding-right: 75px;
+    }
+
+    .notification-text {
+        font-size: 0.95em;
+        padding-right: 75px;
+    }
+
+    .notification-right {
+        top: 18px;
+        right: 18px;
+    }
+
+    .notification-icon {
+        font-size: 26px;
+        width: 38px;
+        height: 38px;
+    }
+
+    .modal-content {
+        width: 92%;
+        padding: 25px 30px;
+    }
+
+    .modal-title {
+        font-size: 1.6em;
+        padding-right: 35px;
+    }
+}
+
+/* Medium Phones (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+    .notifications-page {
+        padding: 14px;
+    }
+
     .notifications-page h1 {
         font-size: 1.5em;
         margin-bottom: 20px;
     }
-    
+
     .notification-card {
-        padding: 15px;
+        padding: 14px;
     }
-    
+
     .notification-title {
         font-size: 1.1em;
         padding-right: 70px;
     }
-    
+
     .notification-text {
-        font-size: 0.95em;
+        font-size: 0.9em;
         padding-right: 70px;
     }
-    
+
     .notification-right {
-        top: 15px;
-        right: 15px;
+        top: 14px;
+        right: 14px;
     }
-    
+
     .notification-icon {
         font-size: 24px;
         width: 35px;
         height: 35px;
     }
-    
+
     .modal-content {
-        width: 95%;
-        padding: 20px 25px;
+        width: 94%;
+        padding: 22px 26px;
         margin: 10% auto;
     }
-    
+
     .modal-title {
         font-size: 1.5em;
-        padding-right: 30px;
+        padding-right: 32px;
     }
-    
+
     .modal-text {
         font-size: 1em;
+    }
+
+    .close {
+        font-size: 28px;
+        top: 12px;
+        right: 16px;
+    }
+}
+
+/* Small Phones (<480px) */
+@media (max-width: 479px) {
+    .notifications-page {
+        padding: 12px;
+    }
+
+    .notifications-page h1 {
+        font-size: 1.3em;
+        margin-bottom: 18px;
+    }
+
+    .notification-card {
+        padding: 12px;
+        margin-bottom: var(--spacing-3);
+    }
+
+    .notification-title {
+        font-size: 1em;
+        padding-right: 65px;
+        margin-bottom: var(--spacing-1);
+    }
+
+    .notification-text {
+        font-size: 0.85em;
+        padding-right: 65px;
+        margin-bottom: var(--spacing-2);
+    }
+
+    .notification-right {
+        top: 12px;
+        right: 12px;
+        gap: 6px;
+    }
+
+    .notification-icon {
+        font-size: 22px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .notification-date {
+        font-size: 0.75rem;
+    }
+
+    .modal-content {
+        width: 96%;
+        padding: 18px 20px;
+        margin: 15% auto;
+        border-radius: 12px;
+    }
+
+    .modal-title {
+        font-size: 1.3em;
+        padding-right: 28px;
+        margin-bottom: 10px;
+    }
+
+    .modal-date {
+        font-size: 0.85em;
+        margin-bottom: 15px;
+    }
+
+    .modal-text {
+        font-size: 0.95em;
+        line-height: 1.5;
+    }
+
+    .close {
+        font-size: 26px;
+        top: 10px;
+        right: 12px;
+    }
+}
+
+/* Very Small Phones (<375px) */
+@media (max-width: 374px) {
+    .notifications-page {
+        padding: 10px;
+    }
+
+    .notifications-page h1 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+    }
+
+    .notification-card {
+        padding: 10px;
+    }
+
+    .notification-title {
+        font-size: 0.95em;
+        padding-right: 60px;
+    }
+
+    .notification-text {
+        font-size: 0.8em;
+        padding-right: 60px;
+    }
+
+    .notification-right {
+        top: 10px;
+        right: 10px;
+    }
+
+    .notification-icon {
+        font-size: 20px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .notification-date {
+        font-size: 0.7rem;
+    }
+
+    .modal-content {
+        width: 98%;
+        padding: 15px 18px;
+        margin: 20% auto;
+    }
+
+    .modal-title {
+        font-size: 1.2em;
+        padding-right: 25px;
+    }
+
+    .modal-text {
+        font-size: 0.9em;
+    }
+
+    .close {
+        font-size: 24px;
     }
 }

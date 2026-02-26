@@ -12,14 +12,16 @@ class TestAddHashtag:
 
     def test_add_hashtag_success(self, client, auth_headers):
         """Тест успешного добавления хэштега"""
-        hashtag_data = {'name': 'test-hashtag'}
+        import uuid
+        hashtag_data = {'name': f'test-hashtag-{uuid.uuid4().hex[:8]}'}
 
         response = client.post('/api/hashtags',
                               json=hashtag_data,
                               headers=auth_headers,
                               content_type='application/json')
 
-        data = ResponseHelper.assert_success(response)
+        # API возвращает 201 при создании
+        data = ResponseHelper.assert_success(response, expected_status=201)
         assert_valid_id_response(data)
 
     def test_add_hashtag_empty_name(self, client, auth_headers):
@@ -52,14 +54,16 @@ class TestAddHashtag:
 
     def test_add_hashtag_with_spaces(self, client, auth_headers):
         """Тест добавления хэштега с пробелами"""
-        hashtag_data = {'name': '  test-hashtag  '}
+        import uuid
+        hashtag_data = {'name': f'  test-hashtag-{uuid.uuid4().hex[:8]}  '}
 
         response = client.post('/api/hashtags',
                               json=hashtag_data,
                               headers=auth_headers,
                               content_type='application/json')
 
-        data = ResponseHelper.assert_success(response)
+        # API возвращает 201 при создании
+        data = ResponseHelper.assert_success(response, expected_status=201)
         assert_valid_id_response(data)
 
 

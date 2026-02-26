@@ -111,7 +111,8 @@ async function loadCards() {
       throw new Error('Ошибка HTTP: ' + response.status);
     }
     
-    const data = await response.json();
+    const raw = await response.json();
+    const data = Array.isArray(raw) ? raw : (raw?.solutions ?? raw?.problems ?? []);
     
     // Применяем сортировку перед рендерингом
     const sortedData = sortData(data);
@@ -187,11 +188,12 @@ function renderProblemCards(data) {
 
     const link = card.querySelector('.card-title-link');
     if (link) {
-      link.href = `/html/problem.html?problemId=${encodeURIComponent(item.ID)}`;
+      link.href = `/problem/${item.ID}`;
     }
 
     const cardImg = card.querySelector('.card-image');
     if (cardImg) {
+      cardImg.loading = 'lazy';
       cardImg.src = item.Image || '../images/default.png';
       cardImg.alt = item.Name || 'Проблема';
     }
@@ -200,7 +202,7 @@ function renderProblemCards(data) {
     if (cardTitleText) {
       cardTitleText.textContent = item.Name || 'Без названия';
       if (cardTitleText.tagName === 'A') {
-        cardTitleText.href = `/html/problem.html?problemId=${encodeURIComponent(item.ID)}`;
+        cardTitleText.href = `/problem/${item.ID}`;
       }
     }
 
@@ -303,12 +305,13 @@ function renderSolutionCards(data) {
 
     const link = card.querySelector('.card-title-link');
     if (link) {
-      link.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+      link.href = `/solution/${item.ID}`;
     }
 
     const cardImg = card.querySelector('.card-image');
     const cardImageWrapper = card.querySelector('.card-image-wrapper');
-    
+    if (cardImg) cardImg.loading = 'lazy';
+
     if (cardImg) {
       // Функция для получения изображения из интернета по названию
       function getImageFromInternet(solutionName) {
@@ -435,7 +438,7 @@ function renderSolutionCards(data) {
     if (cardTitleText) {
       cardTitleText.textContent = item.Name || 'Без названия';
       if (cardTitleText.tagName === 'A') {
-        cardTitleText.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+        cardTitleText.href = `/solution/${item.ID}`;
       }
     }
 

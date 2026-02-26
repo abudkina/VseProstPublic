@@ -3,6 +3,7 @@ from datetime import datetime
 from logic.model import UserCartSolution, Solution, User, Problem, db
 from logic.middleware import token_required
 from logic.utils.logger import get_logger
+from logic.utils.file_utils import normalize_image_url, image_url_for_display
 
 logger = get_logger(__name__)
 
@@ -23,6 +24,7 @@ def get_cart():
             is_bought=False
         ).all()
         
+        base_url = request.url_root.rstrip('/')
         solutions_list = []
         for item in cart_items:
             solution = Solution.query.get(item.solution)
@@ -41,7 +43,7 @@ def get_cart():
                     'ID': solution.id,
                     'Name': solution.name,
                     'Describe': solution.describe or '',
-                    'Image': solution.image or '../images/default.png',
+                    'Image': image_url_for_display(solution.image, base_url, '/assets/images/default.png'),
                     'Price': float(solution.price) if solution.price else 0,
                     'Efficiency': solution.efficiency or 0,
                     'Complexity': solution.complexity or 0,

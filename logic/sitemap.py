@@ -7,6 +7,7 @@ from flask import Blueprint, current_app
 from datetime import datetime
 from logic.model import db, Problem, Solution, Category, Topic, User
 from logic.utils.logger import get_logger
+from logic.utils.file_utils import normalize_image_url
 import xml.etree.ElementTree as ET
 
 logger = get_logger(__name__)
@@ -33,16 +34,21 @@ def generate_sitemap_xml():
     Соответствует стандарту https://www.sitemaps.org/protocol.html
     """
     try:
+        from flask import request
+
         # Создаем корневой элемент
         urlset = ET.Element('urlset')
         urlset.set('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9')
         urlset.set('xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1')
         urlset.set('xmlns:mobile', 'http://www.google.com/schemas/sitemap-mobile/1.0')
 
-        base_url = current_app.config.get('BASE_URL', 'https://vseprost.com')
+        # Получаем base_url из request или конфигурации
+        base_url = request.url_root.rstrip('/') if request else ''
+        if not base_url or base_url == '/':
+            base_url = current_app.config.get('BASE_URL', 'https://vseprost.com')
 
         # 1. Главная страница
-        add_url_entry(urlset, f'{base_url}/', 
+        add_url_entry(urlset, f'{base_url}/',
                      datetime.utcnow(), PRIORITY_HOME, CHANGE_FREQ_HOME)
 
         # 2. Статические страницы
@@ -50,14 +56,14 @@ def generate_sitemap_xml():
             '/html/solutions.html',
         ]
         for page in static_pages:
-            add_url_entry(urlset, f'{base_url}{page}', 
+            add_url_entry(urlset, f'{base_url}{page}',
                          datetime.utcnow(), 0.8, 'daily')
 
         # 3. Категории
         categories = Category.query.all()
         for category in categories:
             url = f'{base_url}/?category={category.id}'
-            add_url_entry(urlset, url, 
+            add_url_entry(urlset, url,
                          category.modified_date or datetime.utcnow(),
                          PRIORITY_CATEGORY, CHANGE_FREQ_CATEGORY)
 
@@ -69,35 +75,68 @@ def generate_sitemap_xml():
                          topic.modified_date or datetime.utcnow(),
                          PRIORITY_TOPIC, CHANGE_FREQ_TOPIC)
 
-        # 5. Проблемы (вопросы)
-        problems = Problem.query.filter_by(is_deleted=False).all()
+        # 5. Проблемы (только опубликованные)
+        # MySQL не поддерживает NULLS LAST, используем альтернативный подход
+        problems = Problem.query.filter(
+            Problem.id.isnot(None),
+            Problem.show.isnot(None)
+        ).order_by(
+            db.case((Problem.modified_date.is_(None), 1), else_=0),
+            Problem.modified_date.desc(),
+            Problem.created_date.desc()
+        ).limit(50000).all()
+
         for problem in problems:
-            # Используем slug для SEO-friendly URL
-            slug = problem.slug or problem.id
-            url = f'{base_url}/problem/{slug}'
+            # Генерируем slug для красивого URL
+            import re
+            slug = re.sub(r'[^\w\s-]', '', problem.name.lower())
+            slug = re.sub(r'[-\s]+', '-', slug).strip('-')[:50]
+
+            # Используем новый красивый URL
+            url = f'{base_url}/problem/{problem.id}'
+            if slug:
+                url = f'{base_url}/problem/{problem.id}-{slug}'
+
             add_url_entry(urlset, url,
                          problem.modified_date or problem.created_date or datetime.utcnow(),
                          PRIORITY_PROBLEM, CHANGE_FREQ_PROBLEM,
-                         image_url=problem.image)
+                         image_url=normalize_image_url(problem.image))
 
-        # 6. Решения
-        solutions = Solution.query.filter_by(is_deleted=False).all()
+        # 6. Решения (только опубликованные)
+        # MySQL не поддерживает NULLS LAST, используем альтернативный подход
+        solutions = Solution.query.filter(
+            Solution.id.isnot(None),
+            Solution.show.isnot(None)
+        ).order_by(
+            db.case((Solution.modified_date.is_(None), 1), else_=0),
+            Solution.modified_date.desc(),
+            Solution.created_date.desc()
+        ).limit(50000).all()
+
         for solution in solutions:
-            slug = solution.slug or solution.id
-            url = f'{base_url}/solution/{slug}'
+            # Генерируем slug для красивого URL
+            import re
+            slug = re.sub(r'[^\w\s-]', '', solution.name.lower())
+            slug = re.sub(r'[-\s]+', '-', slug).strip('-')[:50]
+
+            # Используем новый красивый URL
+            url = f'{base_url}/solution/{solution.id}'
+            if slug:
+                url = f'{base_url}/solution/{solution.id}-{slug}'
+
             add_url_entry(urlset, url,
                          solution.modified_date or solution.created_date or datetime.utcnow(),
                          PRIORITY_SOLUTION, CHANGE_FREQ_SOLUTION,
-                         image_url=solution.image)
+                         image_url=normalize_image_url(solution.image))
 
         # Конвертируем в строку
         tree_str = ET.tostring(urlset, encoding='unicode')
         xml_declaration = '<?xml version="1.0" encoding="UTF-8"?>\n'
-        
+
         return xml_declaration + tree_str
 
     except Exception as e:
-        logger.error(f"Ошибка при генерации sitemap: {e}")
+        logger.error(f"Ошибка при генерации sitemap: {e}", exc_info=True)
         return None
 
 

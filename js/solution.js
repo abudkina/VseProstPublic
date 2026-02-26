@@ -49,9 +49,16 @@ function createIconWithCount(iconClass, count, title) {
 function createRatingBlock(label, rating, solutionID, ratingType) {
   const block = createElem('div', 'rating-block');
   const labelElem = createElem('span', 'rating-label', label);
-  const starsElem = createInteractiveStars(solutionID, ratingType);
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  if (isLoggedIn) {
+    const starsElem = createInteractiveStars(solutionID, ratingType);
+    block.append(labelElem, starsElem);
+  } else {
+    const authMsg = createElem('span', 'rating-auth-message', 'Оценивать могут только авторизованные пользователи');
+    block.append(labelElem, authMsg);
+  }
   const valueElem = createElem('span', 'rating-value', rating.toString());
-  block.append(labelElem, starsElem, valueElem);
+  block.appendChild(valueElem);
   return block;
 }
 
@@ -78,6 +85,13 @@ function createComment(comment) {
 }
 
 function getParameterByName(name) {
+  // Сначала проверяем красивый URL: /solution/123 или /solution/123-slug
+  if (name === 'solutionId' || name === 'id') {
+    const pathMatch = window.location.pathname.match(/\/solution\/(\d+)/);
+    if (pathMatch) return pathMatch[1];
+  }
+
+  // Фоллбэк на query параметры
   const url = window.location.href;
   const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
   const results = regex.exec(url);
@@ -143,14 +157,7 @@ function createInteractiveStars(solutionID, ratingType) {
       savedRating = newRating;
       updateStars();
       
-      // Отправляем оценку на сервер
       try {
-        const token = localStorage.getItem('accessToken');
-        if (!token || token === 'null' || token === 'undefined') {
-          alert('Необходимо авторизоваться для оценки');
-          return;
-        }
-        
         const response = await fetch(API_CONFIG.buildURL(`/solutions/${solutionID}/rating`), {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -166,10 +173,14 @@ function createInteractiveStars(solutionID, ratingType) {
           // Обновляем общий рейтинг на странице, если нужно
           console.log('Оценка сохранена:', data);
         } else {
-          const error = await response.json();
+          const error = await response.json().catch(() => ({}));
+          if (response.status === 401) {
+            localStorage.setItem('isLoggedIn', 'false');
+            alert('Необходимо авторизоваться для оценки');
+          } else {
+            alert('Не удалось сохранить оценку: ' + (error.error || 'Неизвестная ошибка'));
+          }
           console.error('Ошибка сохранения оценки:', error);
-          alert('Не удалось сохранить оценку: ' + (error.error || 'Неизвестная ошибка'));
-          // Откатываем визуальное изменение
           savedRating = 0;
           updateStars();
         }
@@ -221,9 +232,10 @@ function createSolutionCard(item) {
   
   // Ссылка на изображение
   const imageLink = createElem('a', 'card-title-link');
-  imageLink.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+  imageLink.href = `/solution/${item.ID}`;
   
   const cardImg = createElem('img', 'card-image');
+  cardImg.loading = 'lazy';
   let imageSrc = item.Image;
   
   // Функция для генерации SVG изображения с градиентом и названием
@@ -272,23 +284,31 @@ function createSolutionCard(item) {
     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   }
   
-  // Если у решения нет картинки или это внешний URL, ищем в интернете
-  if (!imageSrc || imageSrc.trim() === '' || imageSrc === '../images/default.png' || 
-      imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
-    // Ищем изображение в интернете по названию
+  // Внешний URL (Yandex Storage и т.д.) — используем как есть
+  if (imageSrc && (imageSrc.startsWith('http://') || imageSrc.startsWith('https://'))) {
+    cardImg.src = imageSrc;
+    cardImg.alt = item.Name || 'Решение';
+    cardImg.style.display = 'block';
+    cardImg.onerror = function() {
+      const internetImage = getImageFromInternet(item.Name);
+      if (internetImage) {
+        this.src = internetImage;
+      } else {
+        this.style.display = 'none';
+      }
+    };
+  } else if (!imageSrc || imageSrc.trim() === '' || imageSrc === '../images/default.png') {
+    // Нет картинки — плейсхолдер
     const internetImage = getImageFromInternet(item.Name);
     if (internetImage) {
       cardImg.src = internetImage;
       cardImg.style.display = 'block';
-      
-      cardImg.onerror = function() {
-        this.style.display = 'none';
-      };
+      cardImg.onerror = function() { this.style.display = 'none'; };
     } else {
       cardImg.style.display = 'none';
     }
   } else {
-    // Локальный файл - исправляем пути и пытаемся загрузить
+    // Локальный/относительный путь
     if (!imageSrc.startsWith('/')) {
       if (imageSrc.startsWith('../images/')) {
         imageSrc = imageSrc.replace('../images/', '/images/');
@@ -301,8 +321,6 @@ function createSolutionCard(item) {
     cardImg.src = imageSrc;
     cardImg.alt = item.Name || 'Решение';
     cardImg.style.display = 'block';
-    
-    // Обработка ошибки загрузки локального изображения - пробуем интернет
     cardImg.onerror = function() {
       const internetImage = getImageFromInternet(item.Name);
       if (internetImage) {
@@ -337,7 +355,7 @@ function createSolutionCard(item) {
   
   // Название решения
   const cardTitleText = createElem('a', 'card-title-text');
-  cardTitleText.href = `/html/solution.html?solutionId=${encodeURIComponent(item.ID)}`;
+  cardTitleText.href = `/solution/${item.ID}`;
   cardTitleText.textContent = item.Name || 'Решение';
   imageWrapper.appendChild(cardTitleText);
   
@@ -672,7 +690,7 @@ async function renderSolutionPage() {
 
     // Обновляем SEO мета-теги
     const baseUrl = window.location.origin;
-    const solutionUrl = `/html/solution.html?id=${solution.ID}`;
+    const solutionUrl = `/solution/${solution.ID}`;
     const solutionImage = solution.Image || '/assets/og-image.png';
     
     updateSEOMetaTags({
@@ -738,28 +756,31 @@ async function renderSolutionPage() {
   topBlock.appendChild(cartButton);
   topBlock.appendChild(createIconWithCount('fas fa-eye', solution.Show, 'Просмотры'));
   
-  // Создаем иконку избранного с возможностью клика
+  // Создаем иконку избранного с возможностью клика (только для авторизованных)
   const favoriteIconWrapper = createIconWithCount('fas fa-heart', solution.Favourite, 'Избранное');
   const favoriteIcon = favoriteIconWrapper.querySelector('.icon');
   setFavoriteIconState(favoriteIcon, solution.IsFavourite);
-  
-  // Делаем иконку кликабельной
-  favoriteIconWrapper.style.cursor = 'pointer';
-  const favoriteCount = favoriteIconWrapper.querySelector('span');
-  favoriteIconWrapper.addEventListener('click', async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await toggleSolutionFavorite(solutionID, favoriteIcon, favoriteCount);
-  });
-  
+
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    favoriteIconWrapper.style.cursor = 'pointer';
+    const favoriteCount = favoriteIconWrapper.querySelector('span');
+    favoriteIconWrapper.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await toggleSolutionFavorite(solutionID, favoriteIcon, favoriteCount);
+    });
+  }
+
   topBlock.appendChild(favoriteIconWrapper);
   
-  // Кнопка для добавления похожих решений
+  // Кнопка для добавления похожих решений (только для авторизованных)
   const linkButton = createIconWithCount('fas fa-link', solution.Reply, 'Ссылки');
-  linkButton.style.cursor = 'pointer';
-  linkButton.addEventListener('click', () => {
-    openLinkedSolutionModal(solutionID);
-  });
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    linkButton.style.cursor = 'pointer';
+    linkButton.addEventListener('click', () => {
+      openLinkedSolutionModal(solutionID);
+    });
+  }
   topBlock.appendChild(linkButton);
 
   headerRow.appendChild(topBlock);
@@ -769,7 +790,13 @@ async function renderSolutionPage() {
   const mainBlock = createElem('div', 'main-block');
 
   const img = createElem('img');
-  img.src = solution.Image;
+  let mainImageSrc = solution.Image || '';
+  if (mainImageSrc && !mainImageSrc.startsWith('http') && !mainImageSrc.startsWith('/')) {
+    if (mainImageSrc.startsWith('../images/')) mainImageSrc = '/images/' + mainImageSrc.slice(13);
+    else if (mainImageSrc.startsWith('../assets/')) mainImageSrc = '/assets/' + mainImageSrc.slice(14);
+    else mainImageSrc = '/' + mainImageSrc.replace(/^\//, '');
+  }
+  img.src = mainImageSrc || '/assets/images/Screenshot_4-ww78noDj9-transformed.png';
   img.alt = solution.Name;
   img.className = 'solution-image';
   
@@ -804,16 +831,17 @@ async function renderSolutionPage() {
   // Блок комментариев с возможностью сворачивания
   const commentsSection = createElem('div', 'comments-section');
   
+  const commentsCount = (solution.CommentSolutions && solution.CommentSolutions.length) || 0;
   const commentsHeader = createElem('div', 'section-header');
-  const commentsTitle = createElem('h2', 'comments-title', 'Комментарии');
-  const commentsToggle = createElem('button', 'toggle-btn', '▼');
+  const commentsTitle = createElem('h2', 'comments-title', `Комментарии (${commentsCount})`);
+  const commentsToggle = createElem('button', 'toggle-btn', '▶');
   commentsToggle.title = 'Свернуть/Развернуть';
   commentsHeader.appendChild(commentsTitle);
   commentsHeader.appendChild(commentsToggle);
   commentsSection.appendChild(commentsHeader);
 
   const commentsContent = createElem('div', 'section-content');
-  commentsContent.style.display = 'block'; // По умолчанию открыт
+  commentsContent.style.display = 'none'; // По умолчанию скрыт
 
   if (Array.isArray(solution.CommentSolutions) && solution.CommentSolutions.length > 0) {
     solution.CommentSolutions.forEach(comment => {
@@ -824,41 +852,48 @@ async function renderSolutionPage() {
     commentsContent.appendChild(noComments);
   }
 
-  // Поле для нового комментария
-  const commentForm = createElem('form', 'comment-form');
+  // Поле для нового комментария (только для авторизованных)
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  if (isLoggedIn) {
+    const commentForm = createElem('form', 'comment-form');
 
-  const textarea = document.createElement('textarea');
-  textarea.placeholder = 'Напишите свой комментарий';
-  textarea.rows = 3;
+    const textarea = document.createElement('textarea');
+    textarea.placeholder = 'Напишите свой комментарий';
+    textarea.rows = 3;
 
-  const submitBtn = createElem('button', null, 'Отправить');
-  submitBtn.type = 'submit';
+    const submitBtn = createElem('button', null, 'Отправить');
+    submitBtn.type = 'submit';
 
-  commentForm.append(textarea, submitBtn);
-  commentsContent.appendChild(commentForm);
+    commentForm.append(textarea, submitBtn);
+    commentsContent.appendChild(commentForm);
 
-  // Обработка отправки комментария
-  commentForm.addEventListener('submit', e => {
-    e.preventDefault();
-    if (!textarea.value.trim()) return alert('Введите текст комментария');
-    // Добавляем комментарий в объект и на страницу
-    const newComment = {
-      date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }),
-      author: 'Пользователь',
-      text: textarea.value.trim(),
-      likes: 0,
-      unlikes: 0
-    };
-    if (!Array.isArray(solution.comments)) {
-      solution.comments = [];
-    }
-    solution.comments.push(newComment);
-    commentsContent.insertBefore(createComment(newComment), commentForm);
-    textarea.value = '';
-  });
+    // Обработка отправки комментария
+    commentForm.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!textarea.value.trim()) return alert('Введите текст комментария');
+      const newComment = {
+        date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }),
+        author: 'Пользователь',
+        text: textarea.value.trim(),
+        likes: 0,
+        unlikes: 0
+      };
+      if (!Array.isArray(solution.comments)) {
+        solution.comments = [];
+      }
+      solution.comments.push(newComment);
+      commentsContent.insertBefore(createComment(newComment), commentForm);
+      const newCount = (solution.CommentSolutions?.length || 0) + (solution.comments?.length || 0);
+      if (commentsTitle) commentsTitle.textContent = `Комментарии (${newCount})`;
+      textarea.value = '';
+    });
+  } else {
+    const authMsg = createElem('p', 'auth-required-message', 'Комментарии могут оставлять только авторизованные пользователи.');
+    commentsContent.appendChild(authMsg);
+  }
 
   // Обработчик сворачивания/разворачивания комментариев
-  let commentsExpanded = true;
+  let commentsExpanded = false;
   commentsToggle.addEventListener('click', () => {
     commentsExpanded = !commentsExpanded;
     commentsContent.style.display = commentsExpanded ? 'block' : 'none';
@@ -871,22 +906,23 @@ async function renderSolutionPage() {
   // Блок похожих решений с возможностью сворачивания
   const linkedSolutionsSection = createElem('div', 'linked-solutions-section');
   
+  const linkedSolutions = solution.LinkedSolutions || [];
   const linkedSolutionsHeader = createElem('div', 'section-header');
-  const linkedSolutionsTitle = createElem('h2', 'linked-solutions-title', 'Похожие решения');
-  const linkedSolutionsToggle = createElem('button', 'toggle-btn', '▼');
+  const linkedSolutionsTitle = createElem('h2', 'linked-solutions-title', `Похожие решения (${linkedSolutions.length})`);
+  const linkedSolutionsToggle = createElem('button', 'toggle-btn', '▶');
   linkedSolutionsToggle.title = 'Свернуть/Развернуть';
   linkedSolutionsHeader.appendChild(linkedSolutionsTitle);
   linkedSolutionsHeader.appendChild(linkedSolutionsToggle);
   linkedSolutionsSection.appendChild(linkedSolutionsHeader);
 
   const linkedSolutionsContent = createElem('div', 'section-content linked-solutions-content');
-  linkedSolutionsContent.style.display = 'block'; // По умолчанию открыт
+  linkedSolutionsContent.style.display = 'none'; // По умолчанию скрыт
 
-  const linkedSolutions = solution.LinkedSolutions || [];
-  if (linkedSolutions.length > 0) {
+  const linkedSolutionsList = linkedSolutions;
+  if (linkedSolutionsList.length > 0) {
     const linkedSolutionsContainer = createElem('div', 'cards-container');
     
-    linkedSolutions.forEach(linkedSolution => {
+    linkedSolutionsList.forEach(linkedSolution => {
       const card = createSolutionCard(linkedSolution);
       linkedSolutionsContainer.appendChild(card);
     });
@@ -903,7 +939,7 @@ async function renderSolutionPage() {
   }
 
   // Обработчик сворачивания/разворачивания похожих решений
-  let linkedSolutionsExpanded = true;
+  let linkedSolutionsExpanded = false;
   linkedSolutionsToggle.addEventListener('click', () => {
     linkedSolutionsExpanded = !linkedSolutionsExpanded;
     linkedSolutionsContent.style.display = linkedSolutionsExpanded ? 'block' : 'none';
@@ -1247,6 +1283,8 @@ renderSolutionPage().catch(error => {
   if (container) {
     container.innerHTML = `<p style="color:red; text-align:center; padding:20px;">Произошла ошибка при загрузке страницы. Пожалуйста, обновите страницу или вернитесь на главную.</p>`;
   }
+}).finally(function () {
+  if (typeof window.__showSolutionPage === 'function') window.__showSolutionPage();
 });
 
 // Обновляем бейдж корзины при загрузке страницы

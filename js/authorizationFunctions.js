@@ -3,6 +3,16 @@ const API_CONFIG = window.API_CONFIG;
 let tokenExpiry = null;
 let refreshTimer = null;
 
+function getRedirectAfterLogin() {
+    const url = sessionStorage.getItem('redirectAfterLogin') || '/';
+    sessionStorage.removeItem('redirectAfterLogin');
+    const authPath = '/html/authorization.html';
+    if (url === authPath || url.endsWith(authPath) || url.replace(/\/$/, '').endsWith(authPath.replace('.html', ''))) {
+        return '/';
+    }
+    return url;
+}
+
 // Инициализация при загрузке модуля
 if (typeof window !== 'undefined') {
     // Восстанавливаем время истечения токена из localStorage, если есть
@@ -16,9 +26,18 @@ if (typeof window !== 'undefined') {
             // Токен истек, пытаемся обновить
             localStorage.removeItem('tokenExpiry');
             refreshToken().catch(() => {
-                // Если не удалось обновить, очищаем сессию
+                // Очищаем локальное состояние без редиректа (редирект сделает checkAuth при необходимости)
                 if (localStorage.getItem('isLoggedIn')) {
-                    logout();
+                    if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+                    tokenExpiry = null;
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('isAdmin');
+                    sessionStorage.removeItem('trustLocalAuthUntil');
+                    sessionStorage.removeItem('justLoggedIn');
                 }
             });
         }
@@ -60,11 +79,10 @@ export function register() {
     .then(data => {
         console.log('Регистрация успешна:', data.message);
         alert(data.message);
-        
-        // Токены уже в cookies, перенаправляем
-        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/html/index.html';
-        sessionStorage.removeItem('redirectAfterLogin');
-        window.location.href = redirectUrl;
+        sessionStorage.setItem('justLoggedIn', '1');
+        sessionStorage.setItem('trustLocalAuthUntil', String(Date.now() + 60000));
+        const target = getRedirectAfterLogin();
+        setTimeout(() => { window.location.href = target; }, 150);
     })
     .catch(error => {
         console.error('Ошибка регистрации:', error);
@@ -136,10 +154,10 @@ export function authorize() {
             localStorage.setItem('tokenExpiry', tokenExpiry.toString());
             startTokenRefreshTimer();
         }
-        
-        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/html/index.html';
-        sessionStorage.removeItem('redirectAfterLogin');
-        window.location.href = redirectUrl;
+        sessionStorage.setItem('justLoggedIn', '1');
+        sessionStorage.setItem('trustLocalAuthUntil', String(Date.now() + 60000));
+        const target = getRedirectAfterLogin();
+        setTimeout(() => { window.location.href = target; }, 150);
     })
     .catch(error => {
         console.error('Ошибка авторизации:', error);
@@ -342,7 +360,6 @@ window.fetch = function(...args) {
 
 // Функция проверки авторизации (переиспользуемая)
 export function checkAuth(redirectIfUnauthorized = true) {
-    // Проверяем, есть ли сессия
     if (localStorage.getItem('isLoggedIn') !== 'true') {
         if (redirectIfUnauthorized) {
             sessionStorage.setItem('redirectAfterLogin', window.location.href);
@@ -350,39 +367,58 @@ export function checkAuth(redirectIfUnauthorized = true) {
         }
         throw new Error('Не авторизован');
     }
-    
-    return fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.VALIDATE_TOKEN), {
-        method: 'GET',
-        credentials: 'include'
-    })
-        .then(response => response.ok ? response.json() : response.json().then(() => { throw new Error('Ошибка сервера'); }))
-        .then(data => {
-            if (data.valid === false || !data.userID) {
+    const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+    if (justLoggedIn) {
+        setTimeout(() => sessionStorage.removeItem('justLoggedIn'), 2500);
+        const uid = localStorage.getItem('userId');
+        if (uid) return Promise.resolve(parseInt(uid, 10));
+    }
+    const trustUntil = sessionStorage.getItem('trustLocalAuthUntil');
+    if (trustUntil && Date.now() < parseInt(trustUntil, 10)) {
+        const uid = localStorage.getItem('userId');
+        if (uid) return Promise.resolve(parseInt(uid, 10));
+    }
+    function doValidate() {
+        return fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.VALIDATE_TOKEN), {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then(response => response.ok ? response.json() : response.json().then(() => { throw new Error('Ошибка сервера'); }))
+            .then(data => {
+                if (data.valid === false || !data.userID) {
+                    return Promise.reject(data);
+                }
+                if (data.userID) localStorage.setItem('userId', data.userID.toString());
+                if (data.username) localStorage.setItem('username', data.username);
+                if (data.isAdmin !== undefined) localStorage.setItem('isAdmin', data.isAdmin.toString());
+                if (data.accessExpiry) {
+                    const tokenExpiry = new Date(data.accessExpiry).getTime();
+                    localStorage.setItem('tokenExpiry', tokenExpiry.toString());
+                    startTokenRefreshTimer();
+                }
+                return data.userID;
+            });
+    }
+    return doValidate()
+        .catch(dataOrErr => {
+            const isValidateResponse = dataOrErr && typeof dataOrErr === 'object' && dataOrErr.valid === false;
+            if (isValidateResponse) {
+                return refreshToken().then(() => doValidate());
+            }
+            throw dataOrErr;
+        })
+        .catch(error => {
+            const isUnauth = (error && typeof error === 'object' && error.valid === false) || (error && error.message === 'Не авторизован');
+            if (isUnauth) {
+                sessionStorage.removeItem('trustLocalAuthUntil');
                 localStorage.removeItem('isLoggedIn');
                 if (redirectIfUnauthorized) {
                     sessionStorage.setItem('redirectAfterLogin', window.location.href);
                     window.location.href = '/html/authorization.html';
                 }
-                throw new Error('Не авторизован');
             }
-            if (data.userID) localStorage.setItem('userId', data.userID.toString());
-            if (data.username) localStorage.setItem('username', data.username);
-            if (data.isAdmin !== undefined) localStorage.setItem('isAdmin', data.isAdmin.toString());
-            if (data.accessExpiry) {
-                const tokenExpiry = new Date(data.accessExpiry).getTime();
-                localStorage.setItem('tokenExpiry', tokenExpiry.toString());
-                startTokenRefreshTimer();
-            }
-            return data.userID;
-        })
-        .catch(error => {
             console.error('Ошибка проверки авторизации:', error);
-            if (redirectIfUnauthorized) {
-                localStorage.removeItem('isLoggedIn');
-                sessionStorage.setItem('redirectAfterLogin', window.location.href);
-                window.location.href = '/html/authorization.html';
-            }
-            throw error;
+            throw error instanceof Error ? error : new Error('Не авторизован');
         });
 }
 

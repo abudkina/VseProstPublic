@@ -1,12 +1,72 @@
 # image_proxy.py - прокси для загрузки изображений из интернета
+import os
+import hashlib
+from urllib.parse import unquote, urlparse
 from flask import Blueprint, request, Response, jsonify
 import requests
-from urllib.parse import urlparse
 from logic.utils.logger import get_logger
+from logic.cache_config import cache
 
 logger = get_logger(__name__)
 
 image_proxy_bp = Blueprint('image_proxy', __name__, url_prefix='/api')
+
+STORAGE_IMAGE_CACHE_TIMEOUT = 86400  # 1 день
+
+
+@image_proxy_bp.route('/storage-image', methods=['GET'])
+def proxy_storage_image():
+    """
+    Прокси для изображений из приватного Yandex Object Storage.
+    Использование: /api/storage-image?url=https://storage.yandexcloud.net/bucket/key
+    """
+    try:
+        image_url = request.args.get('url')
+        if not image_url:
+            return jsonify({'error': 'URL не указан'}), 400
+        image_url = unquote(image_url)
+        parsed = urlparse(image_url)
+        if parsed.scheme not in ('http', 'https') or not parsed.netloc:
+            return jsonify({'error': 'Некорректный URL'}), 400
+        bucket = os.getenv('YANDEX_STORAGE_BUCKET')
+        if not bucket or 'storage.yandexcloud.net' not in parsed.netloc or bucket not in image_url:
+            return jsonify({'error': 'Домен не разрешён'}), 403
+
+        cache_key = 'storage_image_' + hashlib.sha256(image_url.encode()).hexdigest()
+        try:
+            cached = cache.get(cache_key)
+            if cached is not None:
+                body, content_type = cached
+                return Response(
+                    body,
+                    mimetype=content_type,
+                    headers={'Cache-Control': 'public, max-age=86400'}
+                )
+        except Exception as cache_err:
+            logger.warning(f"storage-image cache get: {cache_err}")
+
+        try:
+            from logic.utils.yandex_storage import get_object_bytes_by_url
+            body, content_type = get_object_bytes_by_url(image_url)
+        except Exception as storage_err:
+            logger.exception(f"storage-image get_object_bytes_by_url: {storage_err}")
+            return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
+        if body is None:
+            return jsonify({'error': 'Не удалось загрузить изображение'}), 404
+        content_type = content_type or 'application/octet-stream'
+        try:
+            cache.set(cache_key, (body, content_type), timeout=STORAGE_IMAGE_CACHE_TIMEOUT)
+        except Exception as cache_err:
+            logger.warning(f"storage-image cache set: {cache_err}")
+        return Response(
+            body,
+            mimetype=content_type,
+            headers={'Cache-Control': 'public, max-age=86400'}
+        )
+    except Exception as e:
+        logger.exception(f"Ошибка storage-image: {e}")
+        return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
+
 
 @image_proxy_bp.route('/image-proxy', methods=['GET'])
 def proxy_image():

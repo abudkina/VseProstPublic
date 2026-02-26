@@ -54,9 +54,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         { endpoint: 'problems/count-new', elementId: 'new_problems-count', label: 'Проблемы' },
         { endpoint: 'solutions/count-new', elementId: 'new_solutions-count', label: 'Решения' },
         { endpoint: 'comment-solutions/count', elementId: 'new_solution_comments-count', label: 'Комментарии решений' },
-        { endpoint: 'temporary-problem-solutions/count', elementId: 'link_problem_solutions', label: 'Проблемы - Решения' },
-        { endpoint: 'temporary-link-solutions/count', elementId: 'link_solution_problems', label: 'Решения - Проблемы' },
-        { endpoint: 'temporary-link-problems/count', elementId: 'link_problem_problems', label: 'Проблемы - Проблемы' },
+        { endpoint: 'temporary-problem-solutions/count', elementId: 'link_problem_solutions-count', label: 'Проблемы - Решения' },
+        { endpoint: 'temporary-link-solutions/count', elementId: 'link_solution_problems-count', label: 'Решения - Проблемы' },
+        { endpoint: 'temporary-link-problems/count', elementId: 'link_problem_problems-count', label: 'Проблемы - Проблемы' },
         { endpoint: 'users/count-new', elementId: 'users-count', label: 'Пользователи' }
     ];
 
@@ -189,5 +189,24 @@ function setupNavigationHandlers() {
                 window.location.href = '/html/admin_users.html';
             });
         }
+    }
+
+    const linkProblemSolutions = document.getElementById('link_problem_solutions');
+    if (linkProblemSolutions) {
+        linkProblemSolutions.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/html/admin_problem_solution.html'; });
+        const block = linkProblemSolutions.nextElementSibling;
+        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = '/html/admin_problem_solution.html'; }); }
+    }
+    const linkSolutionProblems = document.getElementById('link_solution_problems');
+    if (linkSolutionProblems) {
+        linkSolutionProblems.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/html/admin_link_solution.html'; });
+        const block = linkSolutionProblems.nextElementSibling;
+        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = '/html/admin_link_solution.html'; }); }
+    }
+    const linkProblemProblems = document.getElementById('link_problem_problems');
+    if (linkProblemProblems) {
+        linkProblemProblems.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/html/admin_link_problem.html'; });
+        const block = linkProblemProblems.nextElementSibling;
+        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = '/html/admin_link_problem.html'; }); }
     }
 }

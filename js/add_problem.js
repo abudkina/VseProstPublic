@@ -1,8 +1,9 @@
 // add_problem.js
 import * as auth from './authorizationFunctions.js';
 
-let hashtagsTomSelect;
 let generalTopicTomSelect;
+const MAX_HASHTAGS = 5;
+const selectedHashtags = []; // { id, name }
 const TOPIC_MIN_QUERY_LEN = 2;
 
 // Функции нормализации (аналогичные бэкенду)
@@ -105,7 +106,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     const generalTopicSelect = document.getElementById('generalTopicSelect');
     if (generalTopicSelect) {
         generalTopicTomSelect = new TomSelect('#generalTopicSelect', {
-            // Меняем дефолтный wrapperClass="ts-wrapper" на свой
             wrapperClass: 'vs-wrapper',
             controlClass: 'ts-control vs-control',
             multiple: false,
@@ -117,16 +117,17 @@ document.addEventListener('DOMContentLoaded', async function () {
             maxOptions: null,
             loadThrottle: 300,
             create: false,
+            dropdownParent: 'body',
             shouldLoad: function(query) {
-                return query && query.length >= TOPIC_MIN_QUERY_LEN;
+                return query !== undefined && (query.length === 0 || query.length >= TOPIC_MIN_QUERY_LEN);
             },
             load: function (query, callback) {
-                if (!query || query.length < TOPIC_MIN_QUERY_LEN) {
-                    callback();
-                    return;
-                }
+                const q = (query || '').trim();
                 const token = localStorage.getItem('accessToken');
-                fetch(API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.TOPICS, {search: query}), {
+                const url = q.length >= TOPIC_MIN_QUERY_LEN
+                    ? API_CONFIG.buildURLWithParams(API_CONFIG.ENDPOINTS.TOPICS, { search: q })
+                    : API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.TOPICS);
+                fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -155,48 +156,20 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
                 topicIDHidden.value = value;
                 setTimeout(() => {
-                    if (generalTopicTomSelect.isOpen) {
-                        generalTopicTomSelect.close();
-                        generalTopicTomSelect.blur();
-                    }
-                    const tsWrapper = generalTopicSelect.closest('.vs-wrapper');
-                    if (tsWrapper) {
-                        const tsDropdown = tsWrapper.querySelector('.ts-dropdown');
-                        if (tsDropdown) {
-                            tsDropdown.style.display = 'none';
-                            tsDropdown.style.visibility = 'hidden';
-                            tsDropdown.style.opacity = '0';
-                            tsWrapper.classList.remove('focus', 'input-active');
-                        }
-                    }
+                    if (generalTopicTomSelect.isOpen) generalTopicTomSelect.close();
+                    generalTopicTomSelect.blur();
                 }, 0);
             },
-            onItemAdd: function(value, item) {
-                // Закрываем выпадающий список после выбора
+            onItemAdd: function() {
                 const self = this;
-                setTimeout(() => {
-                    self.close();
-                    self.blur();
-                    // Принудительно скрываем выпадающий список
-                    const tsWrapper = generalTopicSelect.closest('.vs-wrapper');
-                    if (tsWrapper) {
-                        const tsDropdown = tsWrapper.querySelector('.ts-dropdown');
-                        if (tsDropdown) {
-                            tsDropdown.style.display = 'none';
-                            tsDropdown.style.visibility = 'hidden';
-                            tsDropdown.style.opacity = '0';
-                            tsWrapper.classList.remove('focus', 'input-active');
-                        }
-                    }
-                }, 0);
+                setTimeout(() => { self.close(); self.blur(); }, 0);
             },
             onFocus: function() {
-                // Выпадающий список показываем только после ввода 2+ символов
                 const q = (this.control_input?.value || '').trim();
                 if (q.length >= TOPIC_MIN_QUERY_LEN) {
                     this.open();
                 } else {
-                    this.close();
+                    this.load('', () => { this.open(); });
                 }
             },
             onType: function(str) {
@@ -221,20 +194,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         });
         
-        // Функция для принудительного закрытия выпадающего списка
         const forceCloseDropdown = function() {
-            const tsWrapper = generalTopicSelect.closest('.vs-wrapper');
-            if (tsWrapper) {
-                const tsDropdown = tsWrapper.querySelector('.ts-dropdown');
-                if (tsDropdown) {
-                    // Принудительно скрываем через стили
-                    tsDropdown.style.display = 'none';
-                    tsDropdown.style.visibility = 'hidden';
-                    tsDropdown.style.opacity = '0';
-                    // Убираем классы, которые могут показывать список
-                    tsWrapper.classList.remove('focus', 'input-active');
-                }
-            }
             if (generalTopicTomSelect) {
                 generalTopicTomSelect.close();
                 generalTopicTomSelect.blur();
@@ -304,85 +264,99 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Инициализация Tom Select для хэштегов
-    const hashtagsElement = document.getElementById('hashtags');
-    if (hashtagsElement) {
-        hashtagsTomSelect = new TomSelect('#hashtags', {
-            wrapperClass: 'vs-wrapper',
-            controlClass: 'ts-control vs-control',
-            plugins: ['remove_button'],
-            multiple: true,
-            placeholder: 'Выберите хэштеги',
-            searchField: ['text'],
-            valueField: 'value',
-            labelField: 'text',
-            maxItems: 5,
-            dropdownParent: 'body',
-            create: false,
-            shouldLoad: function(query) {
-                return query && query.length >= 2;
-            },
-            onType: function(query) {
-                if (!query || query.length < 2) {
-                    this.clearOptions();
-                    this.close();
-                }
-            },
-            onItemAdd: function() {
-                this.control_input.placeholder = '';
-            },
-            onItemRemove: function() {
-                if (this.items.length === 0) {
-                    this.control_input.placeholder = this.settings.placeholder || 'Выберите хэштеги';
-                }
-            },
-            load: function (query, callback) {
-                if (query.length < 2) return callback();
-                
-                const token = localStorage.getItem('accessToken');
-                fetch(API_CONFIG.buildURLWithParams('/hashtags/search', {q: query}), {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                })
-                    .then(res => {
-                        if (!res.ok) throw new Error('Ошибка загрузки хэштегов');
-                        return res.json();
-                    })
-                    .then(data => {
-                        const list = Array.isArray(data) ? data : (data.hashtags || []);
-                        const options = list.map(item => {
-                            const id = item.ID != null ? item.ID : item.id;
-                            const name = item.Name != null ? item.Name : item.name;
-                            return { value: String(id), text: name };
-                        });
-                        callback(options);
-                    })
-                    .catch(err => {
-                        console.error('Ошибка загрузки хэштегов:', err);
-                        callback();
-                    });
-            },
-            onChange: function (values) {
-                if (!values || values.length === 0) {
-                    hashtagsIDsHidden.value = '';
-                    return;
-                }
-                hashtagsIDsHidden.value = values.join(',');
-            },
-            render: {
-                option: function (item, escape) {
-                    return `<div>${escape(item.text)}</div>`;
-                },
-                item: function (item, escape) {
-                    return `<div>${escape(item.text)}</div>`;
-                },
-                no_results: function(data, escape) {
-                    return '<div class="no-results">Ничего не найдено. Введите минимум 2 символа для поиска.</div>';
-                }
+    // Поле выбора хэштегов (search-select)
+    const wrapHashtags = document.getElementById('wrap-hashtags');
+    const hashtagsInput = document.getElementById('filter-hashtags-input');
+    const hashtagsTags = document.getElementById('filter-hashtags-tags');
+    const hashtagsDropdown = document.getElementById('filter-hashtags-dropdown');
+    function syncHashtagsToHidden() {
+        hashtagsIDsHidden.value = selectedHashtags.map(h => h.id).join(',');
+    }
+    function renderHashtagsTags() {
+        const frag = document.createDocumentFragment();
+        selectedHashtags.forEach(h => {
+            const span = document.createElement('span');
+            span.className = 'search-select-tag';
+            span.textContent = h.name + ' ';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'tag-remove';
+            btn.setAttribute('data-id', h.id);
+            btn.setAttribute('aria-label', 'Удалить');
+            btn.textContent = '×';
+            btn.addEventListener('click', () => {
+                const i = selectedHashtags.findIndex(x => String(x.id) === String(h.id));
+                if (i !== -1) selectedHashtags.splice(i, 1);
+                renderHashtagsTags();
+                syncHashtagsToHidden();
+            });
+            span.appendChild(btn);
+            frag.appendChild(span);
+        });
+        hashtagsTags.innerHTML = '';
+        hashtagsTags.appendChild(frag);
+    }
+    function addHashtag(id, name) {
+        if (selectedHashtags.length >= MAX_HASHTAGS) return;
+        const sid = String(id);
+        if (selectedHashtags.some(h => String(h.id) === sid)) return;
+        selectedHashtags.push({ id: sid, name: name || '#' + id });
+        renderHashtagsTags();
+        syncHashtagsToHidden();
+    }
+    function clearHashtagsWidget() {
+        selectedHashtags.length = 0;
+        renderHashtagsTags();
+        syncHashtagsToHidden();
+        if (hashtagsInput) hashtagsInput.value = '';
+        if (hashtagsDropdown) hashtagsDropdown.classList.remove('active');
+    }
+    if (wrapHashtags && hashtagsInput && hashtagsTags && hashtagsDropdown) {
+        let searchTimeout;
+        hashtagsInput.addEventListener('input', () => {
+            const q = hashtagsInput.value.trim();
+            clearTimeout(searchTimeout);
+            if (q.length < 2) {
+                hashtagsDropdown.classList.remove('active');
+                return;
             }
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const token = localStorage.getItem('accessToken');
+                    const res = await fetch(API_CONFIG.buildURLWithParams('/hashtags/search', { q }), {
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    });
+                    if (!res.ok) throw new Error('Ошибка загрузки хэштегов');
+                    const data = await res.json();
+                    const list = Array.isArray(data) ? data : (data.hashtags || []);
+                    hashtagsDropdown.innerHTML = '';
+                    list.forEach(item => {
+                        const id = item.ID != null ? item.ID : item.id;
+                        const name = item.Name != null ? item.Name : item.name;
+                        if (selectedHashtags.some(h => String(h.id) === String(id))) return;
+                        const div = document.createElement('div');
+                        div.className = 'dropdown-item';
+                        div.textContent = name;
+                        div.addEventListener('click', () => {
+                            addHashtag(id, name);
+                            hashtagsInput.value = '';
+                            hashtagsDropdown.classList.remove('active');
+                        });
+                        hashtagsDropdown.appendChild(div);
+                    });
+                    hashtagsDropdown.classList.add('active');
+                } catch (err) {
+                    console.error('Ошибка загрузки хэштегов:', err);
+                    hashtagsDropdown.classList.remove('active');
+                }
+            }, 300);
+        });
+        hashtagsInput.addEventListener('focus', () => {
+            if (hashtagsInput.value.trim().length >= 2 && hashtagsDropdown.children.length) hashtagsDropdown.classList.add('active');
+        });
+        document.addEventListener('click', (e) => {
+            if (wrapHashtags && !wrapHashtags.contains(e.target)) hashtagsDropdown.classList.remove('active');
         });
     }
 
@@ -397,7 +371,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             modalOverlay.style.display = 'flex';
             modal.style.display = 'block';
             const input = modal.querySelector('input');
-            if (input) input.focus();
+            if (input) setTimeout(() => input.focus(), 0);
         }
     }
 
@@ -584,22 +558,33 @@ document.addEventListener('DOMContentLoaded', async function () {
                 name = '#' + name;
             }
             
-            // Проверяем, нет ли уже такого хэштега
             const normalized = normalizeHashtagName(name);
-            if (hashtagsTomSelect) {
-                const allOptions = hashtagsTomSelect.options;
-                const existingOptions = Object.values(allOptions)
-                    .filter(opt => !opt.value.startsWith('__new__'))
-                    .map(opt => ({ Name: opt.text }));
-                
-                if (checkExists(existingOptions, normalized, normalizeHashtagName)) {
-                    hashtagError.textContent = 'Хэштег с таким именем уже существует';
-                    return;
-                }
+            if (selectedHashtags.some(h => normalizeHashtagName(h.name) === normalized)) {
+                hashtagError.textContent = 'Хэштег с таким именем уже добавлен';
+                return;
             }
-            
+
+            const token = localStorage.getItem('accessToken');
             try {
-                const token = localStorage.getItem('accessToken');
+                const checkRes = await fetch(API_CONFIG.buildURLWithParams('/hashtags/search', { q: name }), {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
+                });
+                if (checkRes.ok) {
+                    const checkData = await checkRes.json();
+                    const list = Array.isArray(checkData) ? checkData : (checkData.hashtags || []);
+                    const exists = list.some(h => {
+                        const n = (h.Name != null ? h.Name : h.name) || '';
+                        return normalizeHashtagName(n) === normalized;
+                    });
+                    if (exists) {
+                        hashtagError.textContent = 'Хэштег с таким именем уже существует';
+                        return;
+                    }
+                }
+            } catch (_) { /* продолжаем создание при ошибке проверки */ }
+
+            try {
                 const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.HASHTAGS), {
                     method: 'POST',
                     headers: { 
@@ -611,13 +596,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 
                 if (response.ok) {
                     const newHashtag = await response.json();
-                    if (hashtagsTomSelect) {
-                        hashtagsTomSelect.addOption({ 
-                            value: newHashtag.ID.toString(), 
-                            text: newHashtag.Name 
-                        });
-                        hashtagsTomSelect.addItem(newHashtag.ID.toString());
-                    }
+                    addHashtag(newHashtag.ID, newHashtag.Name);
                     hideModal();
                 } else {
                     const error = await response.json();
@@ -634,101 +613,109 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Обработчик для кнопки "Сохранить"
-    saveBtn.addEventListener('click', async function (event) {
-        event.preventDefault();
-
-        // Валидация
+    // Отправка формы (вызывается из submit и при повторе после 401)
+    async function submitProblem() {
         const problemTitle = document.getElementById('problemTitle').value.trim();
         const problemDescription = document.getElementById('problemDescription').value.trim();
         const categoryValue = categorySelect.value;
-        
+
         if (!problemTitle) {
             alert('Пожалуйста, введите название проблемы');
             return;
         }
-        
-        if (!problemDescription) {
-            alert('Пожалуйста, введите описание проблемы');
-            return;
-        }
-        
         if (!categoryValue) {
             alert('Пожалуйста, выберите категорию');
             return;
         }
 
-        // Собираем данные из формы
         const formData = new FormData();
         formData.append('name', problemTitle);
         formData.append('describe', problemDescription);
         formData.append('category_id', categoryValue);
-        
-        // Тема (если выбрана)
+
         const topicID = document.getElementById('topicID').value;
-        if (topicID) {
-            formData.append('topic_id', topicID);
-        }
-        
-        // Хэштеги (если выбраны)
+        if (topicID) formData.append('topic_id', topicID);
+
         const hashtagsIDs = document.getElementById('hashtagsIDs').value;
-        if (hashtagsIDs) {
-            formData.append('hashtags', hashtagsIDs);
-        }
-        
-        // Изображение
-        const problemImage = document.getElementById('problemImage').files[0];
-        if (problemImage) {
-            formData.append('image', problemImage);
+        if (hashtagsIDs) formData.append('hashtags', hashtagsIDs);
+
+        const problemImageEl = document.getElementById('problemImage');
+        const problemImageErrorEl = document.getElementById('problemImageError');
+        if (problemImageErrorEl) problemImageErrorEl.textContent = '';
+        const problemImage = problemImageEl?.files[0];
+        if (problemImage) formData.append('image', problemImage);
+
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEMS), {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+
+        if (response.status === 401) {
+            const refreshed = await auth.refreshToken();
+            if (refreshed) {
+                await submitProblem();
+                return;
+            }
+            throw new Error('Требуется авторизация');
         }
 
-        try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEMS), {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            if (response.status === 401) {
-                const refreshed = await auth.refreshToken();
-                if (refreshed) {
-                    // Повторяем отправку
-                    saveBtn.click();
-                    return;
+        if (response.ok) {
+            const result = await response.json();
+            const problemId = result.id || result.problem?.ID;
+            if (problemId) {
+                window.location.href = '/problem/' + problemId;
+                return;
+            }
+            form.reset();
+            if (generalTopicTomSelect) generalTopicTomSelect.clear();
+            clearHashtagsWidget();
+            document.getElementById('topicID').value = '';
+            document.getElementById('hashtagsIDs').value = '';
+        } else {
+            let msg = 'Неизвестная ошибка';
+            try {
+                const data = await response.json();
+                msg = data.error || msg;
+                if (problemImageErrorEl) {
+                    problemImageErrorEl.textContent = msg;
+                    problemImageErrorEl.style.display = '';
                 }
-                throw new Error('Требуется авторизация');
+            } catch (_) {
+                msg = await response.text() || response.statusText || msg;
             }
-            
-            if (response.ok) {
-                const result = await response.json();
-                alert('Проблема успешно сохранена! ID: ' + result.id);
-                form.reset();
-                
-                // Сброс Tom Select
-                if (generalTopicTomSelect) generalTopicTomSelect.clear();
-                if (hashtagsTomSelect) hashtagsTomSelect.clear();
-                
-                document.getElementById('topicID').value = '';
-                document.getElementById('hashtagsIDs').value = '';
-            } else {
-                const error = await response.json();
-                alert('Ошибка: ' + (error.error || 'Неизвестная ошибка'));
-            }
+            alert('Ошибка: ' + msg);
+        }
+    }
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        if (saveBtn.disabled) return;
+        saveBtn.disabled = true;
+        try {
+            await submitProblem();
         } catch (error) {
-            alert('Сетевая ошибка: ' + error.message);
+            alert('Ошибка: ' + (error.message || 'Не удалось отправить запрос'));
+        } finally {
+            saveBtn.disabled = false;
         }
     });
 
-    // Обработчик для кнопки "Очистить"
+    const problemImageInput = document.getElementById('problemImage');
+    if (problemImageInput) {
+        problemImageInput.addEventListener('change', function () {
+            const errEl = document.getElementById('problemImageError');
+            if (errEl) errEl.textContent = '';
+        });
+    }
     clearBtn.addEventListener('click', function () {
         form.reset();
         document.getElementById('topicID').value = '';
         document.getElementById('hashtagsIDs').value = '';
-        
+        const errEl = document.getElementById('problemImageError');
+        if (errEl) errEl.textContent = '';
         if (generalTopicTomSelect) generalTopicTomSelect.clear();
-        if (hashtagsTomSelect) hashtagsTomSelect.clear();
+        clearHashtagsWidget();
     });
 });

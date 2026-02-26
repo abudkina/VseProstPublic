@@ -27,7 +27,7 @@ function updateSelectedProblems() {
 }
 
 // Инициализация при загрузке DOM
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const form = document.getElementById('solutionForm');
     const clearBtn = document.getElementById('clearBtn');
     const problemSearch = document.getElementById('problemSearch');
@@ -37,6 +37,30 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!form || !clearBtn || !problemSearch || !problemDropdown || !selectedProblems) {
         console.error('Не найдены необходимые элементы DOM');
         return;
+    }
+
+    // Предзаполнение проблемы из URL ?problem_id=
+    const urlParams = new URLSearchParams(window.location.search);
+    const problemIdParam = urlParams.get('problem_id');
+    if (problemIdParam) {
+        const problemId = parseInt(problemIdParam, 10);
+        if (Number.isInteger(problemId)) {
+            try {
+                const token = localStorage.getItem('accessToken');
+                const res = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.PROBLEMS) + '/' + problemId, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (res.ok) {
+                    const problem = await res.json();
+                    selectedProblemsList.push({
+                        id: problem.ID,
+                        title: problem.Name || 'Без названия'
+                    });
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки проблемы:', e);
+            }
+        }
     }
 
     // Обновление выбранных проблем
@@ -135,10 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!solutionDetails) {
-            alert('Пожалуйста, введите описание решения');
-            return;
-        }
         
         if (selectedProblemsList.length === 0) {
             alert('Пожалуйста, выберите хотя бы одну связанную проблему');
@@ -157,15 +177,17 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('canBuy', document.getElementById('canBuy').checked ? 'on' : 'off');
         formData.append('canEvaluate', document.getElementById('canEvaluate').checked ? 'on' : 'off');
 
-        // Добавить файлы
         const mainImage = document.getElementById('mainImage').files[0];
-        const additionalImage = document.getElementById('additionalImage').files[0];
-        if (mainImage) formData.append('image', mainImage); // Исправлено имя поля
-        if (additionalImage) formData.append('additionalImage', additionalImage);
+        if (mainImage) formData.append('image', mainImage);
 
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const saveText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Сохранение...';
+        }
         try {
             const token = localStorage.getItem('accessToken');
-            // Исправленный endpoint для создания решения
             const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.SOLUTIONS), {
                 method: 'POST',
                 headers: {
@@ -187,16 +209,32 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (response.ok) {
                 const result = await response.json();
+                const id = result.id || (result.solution && result.solution.ID);
+                if (id) {
+                    window.location.href = `/solution/${id}`;
+                    return;
+                }
                 alert('Решение успешно добавлено!');
                 form.reset();
                 selectedProblemsList = [];
                 updateSelectedProblems();
             } else {
-                const error = await response.json();
-                alert('Ошибка: ' + (error.error || 'Неизвестная ошибка'));
+                let msg = 'Неизвестная ошибка';
+                try {
+                    const data = await response.json();
+                    msg = data.error || msg;
+                } catch (_) {
+                    msg = await response.text() || response.statusText || msg;
+                }
+                alert('Ошибка: ' + msg);
             }
         } catch (error) {
-            alert('Ошибка сети: ' + error.message);
+            alert('Ошибка: ' + (error.message || 'Не удалось отправить запрос'));
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = saveText;
+            }
         }
     });
 });

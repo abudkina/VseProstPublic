@@ -18,8 +18,16 @@
       "Bash(then sed -i 's|<script type=\"\"module\"\"|<script src=\"\"/js/config.js\"\"></script>\\\\n<script type=\"\"module\"\"|' \"$file\")",
       "Bash(if not exist \"c:\\\\Users\\\\budki\\\\Desktop\\\\VseProst\\\\logic\\\\services\" mkdir \"c:\\\\Users\\\\budki\\\\Desktop\\\\VseProst\\\\logic\\\\services\")",
       "Bash(git add:*)",
-      "Bash(git rebase:*)",
-      "Bash(GIT_EDITOR=true git rebase:*)"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add SEO, favicon, new tests, performance optimizations, and UI updates\n\nAdd SEO infrastructure \\(sitemap, SSR renderer, URL manager, search engine optimization\\),\nfavicon/logo assets, comprehensive test coverage, caching/DB optimizations,\nRAG search, feed system, and update CSS/HTML/JS across the project.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(python update_html_files.py:*)",
+      "Bash(python:*)",
+      "Bash(pytest:*)",
+      "Bash(curl:*)",
+      "Bash(iconv:*)",
+      "Bash(del:*)"
     ]
   }
 }

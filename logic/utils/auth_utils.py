@@ -2,11 +2,18 @@
 import os
 import jwt
 from datetime import datetime, timedelta
-from flask import make_response
+from flask import make_response, has_app_context, current_app
 
-# Конфигурация
+# Конфигурация (fallback при отсутствии app context)
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key')
 ENV = os.getenv('ENV', 'development')
+
+
+def _get_access_token_expires_sec():
+    """Один источник правды: совпадает с config и cookie max_age."""
+    if has_app_context() and current_app.config.get('JWT_ACCESS_TOKEN_EXPIRES') is not None:
+        return int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+    return int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 86400))
 
 def is_production():
     """Проверяет, является ли среда продакшеном"""
@@ -25,12 +32,12 @@ def set_cookie(response, name, value, max_age, secure=None, http_only=True):
         domain=None if not is_production() else None,
         secure=secure,
         httponly=http_only,
-        samesite='Strict'
+        samesite='Lax'
     )
 
 def generate_access_token(user_id, username):
     """Генерирует access token"""
-    expiration = datetime.utcnow() + timedelta(minutes=15)
+    expiration = datetime.utcnow() + timedelta(seconds=_get_access_token_expires_sec())
     payload = {
         'userID': user_id,
         'username': username,
@@ -56,4 +63,4 @@ def generate_refresh_token(user_id):
 
 def get_access_token_expiry():
     """Возвращает время истечения access token в ISO формате"""
-    return (datetime.utcnow() + timedelta(minutes=15)).isoformat() + 'Z'
+    return (datetime.utcnow() + timedelta(seconds=_get_access_token_expires_sec())).isoformat() + 'Z'

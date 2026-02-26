@@ -2,19 +2,23 @@
 from flask import Blueprint, jsonify, request, g, current_app
 from datetime import datetime, timedelta
 import os
+import threading
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 from logic.model import Category, Hashtag, Problem, Solution, User, Topic, favourite_problem
 from logic.middleware import token_required, extract_user_from_token
 import re
 
 from logic.model import db
-from logic.utils.file_utils import allowed_file, save_file, delete_file
+from logic.utils.file_utils import allowed_file, save_file_to_yandex_storage, delete_image, normalize_image_url, image_url_for_display
 from logic.utils.validators import parse_int_list, parse_bool
 from logic.utils.image_search import generate_image_with_openai
 from logic.recommendations import track_user_activity, get_user_recommendations, create_embedding
 from logic.rag_search import search_with_rag, hybrid_search, semantic_search
 from logic.utils.logger import get_logger
+from logic.utils.normalizers import capitalize_title, capitalize_first
 from logic.services.problem_service import ProblemService
 from logic.utils.error_handler import (
     ValidationError, AuthorizationError, ResourceNotFoundError, DatabaseError
@@ -78,6 +82,8 @@ def get_problems():
         hashtags_param = request.args.get('hashtags', '')
         topic_param = request.args.get('topic', '')
         exclude_param = request.args.get('exclude', '')
+        isnew_param = request.args.get('isnew', '').strip().lower()
+        sort_param = (request.args.get('sort', '') or 'default').strip().lower()
         try:
             limit = int(request.args.get('limit', 50))
         except (TypeError, ValueError):
@@ -105,39 +111,16 @@ def get_problems():
             except Exception as e:
                 logger.debug(f"Не удалось отследить поисковый запрос: {e}")
         
-        # Получаем рекомендации для пользователя (если авторизован)
+        # Рекомендации в отдельном потоке с таймаутом, чтобы не блокировать ответ
         recommended_ids = []
         if user_id:
             try:
-                recommended_ids = get_user_recommendations(user_id, 'problem', limit=20)
-            except Exception as e:
-                logger.debug(f"Ошибка получения рекомендаций: {e}")
+                with ThreadPoolExecutor(max_workers=1) as ex:
+                    fut = ex.submit(get_user_recommendations, user_id, 'problem', 20)
+                    recommended_ids = fut.result(timeout=2)
+            except (FuturesTimeoutError, Exception) as e:
+                logger.debug(f"Рекомендации не получены (таймаут/ошибка): {e}")
                 recommended_ids = []
-        
-        # Отладка: проверяем реальное имя таблицы и количество записей
-        try:
-            from sqlalchemy import text, inspect
-            inspector = inspect(db.engine)
-            table_names = inspector.get_table_names()
-            current_app.logger.debug(f"Доступные таблицы: {table_names}")
-
-            # SECURITY: Whitelist разрешенных имен таблиц
-            ALLOWED_TABLE_NAMES = ['problem', 'Problem', 'PROBLEM']
-
-            for table_name in ALLOWED_TABLE_NAMES:
-                if table_name in table_names:
-                    # SECURITY: Используем параметризованные запросы где возможно
-                    count_sql = text(f"SELECT COUNT(*) FROM `{table_name}`")
-                    count_result = db.session.execute(count_sql).scalar()
-                    current_app.logger.debug(f"Таблица '{table_name}' содержит {count_result} записей")
-
-                    # Показываем первые несколько записей
-                    if count_result > 0:
-                        sample_sql = text(f"SELECT id, name FROM `{table_name}` LIMIT 5")
-                        sample_result = db.session.execute(sample_sql).fetchall()
-                        current_app.logger.debug(f"Примеры записей из '{table_name}': {sample_result}")
-        except Exception as debug_error:
-            current_app.logger.warning(f"Ошибка отладки: {debug_error}")
         
         # Начинаем базовый запрос
         # Используем joinedload для eager loading связанных объектов (исправление N+1)
@@ -236,6 +219,10 @@ def get_problems():
             except ValueError:
                 logger.warning(f"Ошибка преобразования exclude: {exclude_param}")
         
+        # По умолчанию показываем все (is_new true и false). Фильтр только при явном isnew=true
+        if isnew_param in ('true', '1'):
+            query = query.filter(Problem.isnew == True)
+        
         # Применяем сортировку и пагинацию
         # Если использовался RAG поиск, сортируем по релевантности
         if rag_search_results and search:
@@ -257,13 +244,21 @@ def get_problems():
             # Применяем пагинацию
             problems = problems[offset:offset + limit]
         else:
-            # Обычная сортировка по дате
-            problems = query.order_by(Problem.created_date.desc()).offset(offset).limit(limit).all()
+            # Сортировка по параметру sort
+            if sort_param == 'show':
+                query = query.order_by(Problem.show.desc(), Problem.created_date.desc())
+            elif sort_param == 'popularity':
+                query = query.order_by(Problem.favourite.desc(), Problem.created_date.desc())
+            else:
+                # default, date или любое другое — по дате
+                query = query.order_by(Problem.created_date.desc())
+            problems = query.offset(offset).limit(limit).all()
         
         logger.debug(f"Найдено проблем через SQLAlchemy: {len(problems)}")
         
-        # Если есть рекомендации и нет активных фильтров (кроме пагинации), добавляем рекомендованные в начало
-        if recommended_ids and not search and not category_param and not hashtags_param and not topic_param:
+        # Если есть рекомендации и нет активных фильтров и сортировка по умолчанию — добавляем рекомендованные в начало
+        if (recommended_ids and not search and not category_param and not hashtags_param and not topic_param
+                and sort_param in ('', 'default')):
             # Получаем рекомендованные проблемы
             recommended_problems = Problem.query.filter(Problem.id.in_(recommended_ids)).all()
             
@@ -289,14 +284,13 @@ def get_problems():
         if len(problems) == 0:
             try:
                 from sqlalchemy import text
-                # SECURITY: Whitelist разрешенных имен таблиц для предотвращения SQL injection
                 ALLOWED_TABLE_NAMES = ['Problem', 'problem', 'PROBLEM']
-
+                direct_result = None
+                working_table_name = None
                 for table_name in ALLOWED_TABLE_NAMES:
                     try:
-                        # SECURITY: Имя таблицы из whitelist, параметры через :bind
                         direct_sql = text(f"""
-                            SELECT * FROM `{table_name}`
+                            SELECT id FROM `{table_name}`
                             ORDER BY created_date DESC
                             LIMIT :limit OFFSET :offset
                         """)
@@ -305,6 +299,7 @@ def get_problems():
                             {'limit': limit, 'offset': offset}
                         ).fetchall()
                         if direct_result:
+                            working_table_name = table_name
                             current_app.logger.info(
                                 f"Найдено {len(direct_result)} записей через SQL из таблицы '{table_name}'"
                             )
@@ -313,7 +308,23 @@ def get_problems():
                         current_app.logger.warning(
                             f"Ошибка при запросе к таблице '{table_name}': {sql_error}"
                         )
+                        direct_result = None
                         continue
+                if direct_result and working_table_name:
+                    problem_ids = [row[0] for row in direct_result]
+                    old_name = Problem.__table__.name
+                    try:
+                        Problem.__table__.name = working_table_name
+                        problems = Problem.query.options(
+                            joinedload(Problem.hashtags),
+                            joinedload(Problem.solutions),
+                            joinedload(Problem.linked_problems),
+                            joinedload(Problem.favourite_users)
+                        ).filter(Problem.id.in_(problem_ids)).all()
+                        id_order = {pid: i for i, pid in enumerate(problem_ids)}
+                        problems = sorted(problems, key=lambda p: id_order.get(p.id, 999))
+                    finally:
+                        Problem.__table__.name = old_name
             except Exception as fallback_error:
                 current_app.logger.error(f"Ошибка при прямом SQL запросе: {fallback_error}")
         
@@ -331,10 +342,32 @@ def get_problems():
 
         # Предзагружаем все темы одним запросом (вместо N запросов)
         topic_ids = {p.topic for p in problems if p.topic}
+        # Темы для связанных проблем (linked_problems)
+        for p in problems:
+            if getattr(p, 'linked_problems', None):
+                for lp in p.linked_problems:
+                    if lp.topic:
+                        topic_ids.add(lp.topic)
         topics_dict = {}
         if topic_ids:
             topics = Topic.query.filter(Topic.id.in_(topic_ids)).all()
             topics_dict = {t.id: {'ID': t.id, 'Name': t.name} for t in topics}
+
+        base_url = request.url_root.rstrip('/')
+        def _abs_image_url(raw):
+            if not raw:
+                return f'{base_url}/assets/images/Screenshot_4-ww78noDj9-transformed.png'
+            from urllib.parse import quote
+            from logic.utils.file_utils import _is_yandex_storage_url
+            if raw.startswith('http') and _is_yandex_storage_url(raw):
+                return f'{base_url}/api/storage-image?url={quote(raw)}'
+            if raw.startswith('http'):
+                return raw
+            if raw.startswith('/'):
+                return f'{base_url}{raw}'
+            if raw.startswith('../'):
+                return f'{base_url}/{raw.lstrip("./")}'  # ../images/ -> /images/
+            return f'{base_url}/{raw}'
 
         for problem in problems:
             # Получаем количество избранных для этой проблемы
@@ -360,7 +393,7 @@ def get_problems():
                 'ID': problem.id,
                 'Name': problem.name,
                 'Describe': problem.describe or '',
-                'Image': problem.image or '../images/default.png',
+                'Image': _abs_image_url(normalize_image_url(problem.image) or '../images/default.png'),
                 'Favourite': favourite_count,
                 'IsFavourite': is_favourite,
                 'IsRecommended': is_recommended,
@@ -391,8 +424,8 @@ def get_problems():
                 problem_data['Solutions'] = [{
                     'ID': solution.id,
                     'Name': solution.name,
-                    'Describe': solution.describe[:100] + '...' if len(solution.describe) > 100 else solution.describe if solution.describe else '',
-                    'Image': solution.image or '../images/default.png'
+                    'Describe': (solution.describe[:100] + '...') if (solution.describe and len(solution.describe) > 100) else (solution.describe or ''),
+                    'Image': _abs_image_url(normalize_image_url(solution.image) or '../images/default.png')
                 } for solution in problem.solutions]
             
             # Добавляем связанные проблемы
@@ -402,21 +435,24 @@ def get_problems():
                     linked_problem_data = {
                         'ID': linked_problem.id,
                         'Name': linked_problem.name,
-                        'Image': linked_problem.image or '../images/default.png'
+                        'Image': _abs_image_url(normalize_image_url(linked_problem.image) or '../images/default.png')
                     }
-                    # Добавляем информацию о теме
                     if linked_problem.topic:
-                        topic = Topic.query.get(linked_problem.topic)
-                        if topic:
-                            linked_problem_data['TopicInfo'] = {
-                                'ID': topic.id,
-                                'Name': topic.name
-                            }
+                        linked_problem_data['TopicInfo'] = topics_dict.get(linked_problem.topic)
                     linked_problems_list.append(linked_problem_data)
                 problem_data['LinkedProblems'] = linked_problems_list
             
             problems_list.append(problem_data)
         
+        has_filters = bool(search or category_param or hashtags_param or topic_param)
+        if len(problems_list) == 0 and has_filters:
+            return jsonify({
+                "problems": problems_list,
+                "suggest_ai": True,
+                "ai_plan_price_rub": 999,
+            }), 200
+        if has_filters:
+            return jsonify({"problems": problems_list}), 200
         return jsonify(problems_list), 200
         
     except Exception as e:
@@ -439,14 +475,17 @@ def get_problem_by_id(problem_id):
         
         if not problem:
             return jsonify({'error': 'Проблема не найдена'}), 404
-        
+
         # Увеличиваем счетчик просмотров
         if problem.show is None:
             problem.show = 1
         else:
             problem.show += 1
         db.session.commit()
-        
+        db.session.refresh(problem)  # актуальные данные из БД (в т.ч. image после только что созданной проблемы)
+
+        base_url = request.url_root.rstrip('/')
+
         # Отслеживаем просмотр проблемы
         try:
             from logic.middleware import get_user_id_from_token
@@ -476,7 +515,7 @@ def get_problem_by_id(problem_id):
                     'ID': solution.id,
                     'Name': solution.name,
                     'Describe': solution.describe[:100] + '...' if solution.describe and len(solution.describe) > 100 else solution.describe or '',
-                    'Image': solution.image or '../images/default.png',
+                    'Image': image_url_for_display(solution.image, base_url, '/assets/images/default.png'),
                     'Favourite': solution.favourite or 0,
                     'Rating': solution.rating or 0,
                     'Show': solution.show or 0,
@@ -568,7 +607,7 @@ def get_problem_by_id(problem_id):
                     'ID': row[0],
                     'Name': row[1],
                     'Describe': row[2][:100] + '...' if row[2] and len(row[2]) > 100 else row[2] or '',
-                    'Image': row[3] or '../images/default.png',
+                    'Image': image_url_for_display(row[3], base_url, '/assets/images/default.png'),
                     'Favourite': row[4] or 0,
                     'Rating': row[5] or 0,
                     'Show': row[6] or 0,
@@ -685,7 +724,7 @@ def get_problem_by_id(problem_id):
                 linked_problem_data = {
                     'ID': linked_problem.id,
                     'Name': linked_problem.name,
-                    'Image': linked_problem.image or '../images/default.png'
+                    'Image': image_url_for_display(linked_problem.image, base_url, '/assets/images/default.png')
                 }
                 # Добавляем информацию о теме
                 if linked_problem.topic:
@@ -720,12 +759,12 @@ def get_problem_by_id(problem_id):
         except Exception as e:
             current_app.logger.debug(f"Не удалось проверить избранное: {e}")  # Если токена нет или ошибка, is_favourite останется False
         
-        # Формируем ответ
+        # Формируем ответ: URL картинки (через прокси для Yandex Storage при приватном бакете)
         problem_dict = {
             'ID': problem.id,
             'Name': problem.name,
             'Describe': problem.describe or '',
-            'Image': problem.image or '../images/default.png',
+            'Image': image_url_for_display(problem.image, base_url, '/assets/images/default.png'),
             'Favourite': problem.favourite or 0,
             'IsFavourite': is_favourite,
             'Show': problem.show or 0,
@@ -822,6 +861,7 @@ def get_favourite_problems():
         problems = query.order_by(Problem.created_date.desc()).offset(offset).limit(limit).all()
         
         # Формируем ответ в формате, ожидаемом фронтендом
+        base_url = request.url_root.rstrip('/')
         problems_list = []
         for problem in problems:
             # Получаем хэштеги проблемы
@@ -846,7 +886,7 @@ def get_favourite_problems():
                 'ID': problem.id,
                 'Name': problem.name,
                 'Describe': problem.describe or '',
-                'Image': problem.image or '../images/default.png',
+                'Image': image_url_for_display(problem.image, base_url, '/assets/images/default.png'),
                 'Favourite': 1,  # Так как эта проблема в избранном
                 'Show': problem.show or 0,
                 'Reply': problem.reply or 0,
@@ -888,8 +928,8 @@ def create_problem():
             return jsonify({'error': 'Неверный формат данных'}), 400
         
         # Получаем данные из формы (поддержка разных имён полей от фронта)
-        name = request.form.get('name', '').strip()
-        describe = request.form.get('describe', '').strip()
+        name = capitalize_title(request.form.get('name', '').strip())
+        describe = capitalize_first(request.form.get('describe', '').strip())
         category_str = request.form.get('category') or request.form.get('category_id', '')
         topic_str = request.form.get('topicID') or request.form.get('topic_id', '')
         hashtags_str = request.form.get('hashtagsIDs') or request.form.get('hashtags', '')
@@ -897,6 +937,9 @@ def create_problem():
         # Валидация
         if not name:
             return jsonify({'error': 'Название проблемы обязательно'}), 400
+
+        if Problem.query.filter(func.lower(Problem.name) == name.lower()).first():
+            return jsonify({'error': 'Проблема с таким названием уже существует'}), 409
         
         if not category_str:
             return jsonify({'error': 'Категория обязательна'}), 400
@@ -917,24 +960,25 @@ def create_problem():
         # Обработка хэштегов
         hashtag_ids = parse_int_list(hashtags_str) if hashtags_str else []
         
-        # Обработка файла изображения
+        # Обработка файла изображения (Yandex Storage). Генерация ИИ только если пользователь не прикладывал файл.
         image_path = None
-        if 'image' in request.files:
+        user_sent_image = bool(
+            request.files.get('image') and (request.files['image'].filename or '').strip() != ''
+        )
+        if user_sent_image:
             file = request.files['image']
-            if file.filename != '' and allowed_file(file.filename):
-                image_path = save_file(file)
-        
-        # Если изображение не загружено, генерируем через OpenAI API
-        if not image_path:
+            if not allowed_file(file.filename):
+                return jsonify({
+                    'error': 'Недопустимый формат файла. Разрешены: PNG, JPG, JPEG, GIF, WEBP'
+                }), 400
             try:
-                image_path = generate_image_with_openai(name, describe)
-                if image_path:
-                    logger.info(f"Автоматически сгенерировано изображение для проблемы '{name}': {image_path}")
-            except Exception as e:
-                logger.warning(f"Ошибка автоматической генерации изображения: {e}")
-                # Продолжаем без изображения
-        
-        # Создаём проблему
+                image_path = save_file_to_yandex_storage(file, 'problems')
+            except ValueError as e:
+                return jsonify({'error': str(e)}), 400
+            if not image_path:
+                return jsonify({'error': 'Не удалось загрузить изображение. Попробуйте другой файл или позже.'}), 400
+
+        # Создаём проблему сразу (генерация изображения только если пользователь НЕ загружал своё)
         problem = Problem(
             name=name,
             describe=describe,
@@ -966,23 +1010,50 @@ def create_problem():
             except Exception as e:
                 current_app.logger.debug(f"Не удалось отследить создание проблемы: {e}")
             
-            # Создаем векторное представление для рекомендаций
-            try:
-                create_embedding('problem', problem.id)
-            except Exception as e:
-                logger.warning(f"Ошибка создания вектора для проблемы {problem.id}: {e}")
+            # Эмбеддинг и автогенерация картинки только если пользователь не загружал своё изображение
+            app = current_app._get_current_object()
+            problem_id = problem.id
+            need_bg_image = not image_path and not user_sent_image
+
+            def _background_tasks():
+                with app.app_context():
+                    try:
+                        create_embedding('problem', problem_id)
+                    except Exception as e:
+                        logger.warning(f"Ошибка создания вектора для проблемы {problem_id}: {e}")
+                    if need_bg_image:
+                        try:
+                            bg_path = generate_image_with_openai(name, describe)
+                            if bg_path:
+                                p = Problem.query.get(problem_id)
+                                if p:
+                                    p.image = bg_path
+                                    db.session.commit()
+                                    logger.info(f"Авто-изображение для проблемы {problem_id}: {bg_path}")
+                        except Exception as e:
+                            logger.warning(f"Ошибка авто-генерации изображения для проблемы {problem_id}: {e}")
+
+            threading.Thread(target=_background_tasks, daemon=True).start()
                     
         except Exception as e:
             db.session.rollback()
             logger.error(f"Ошибка сохранения проблемы: {e}")
-            # Удаляем скачанное изображение, если оно было автоматически найдено
-            if image_path and os.path.exists(image_path):
+            if image_path and image_path != '../images/default.png':
                 try:
-                    delete_file(image_path)
-                except OSError as del_err:
-                    logger.warning(f"Не удалось удалить файл изображения: {del_err}")
+                    delete_image(image_path)
+                except Exception as del_err:
+                    logger.warning(f"Не удалось удалить изображение: {del_err}")
             return jsonify({'error': 'Ошибка сохранения проблемы'}), 500
         
+        # Абсолютный URL картинки для фронта
+        base_url = request.url_root.rstrip('/')
+        raw_img = normalize_image_url(problem.image)
+        if raw_img and raw_img.startswith('http'):
+            img_url = raw_img
+        elif raw_img:
+            img_url = f'{base_url}{raw_img}' if raw_img.startswith('/') else f'{base_url}/{raw_img}'
+        else:
+            img_url = f'{base_url}/assets/images/Screenshot_4-ww78noDj9-transformed.png'
         # Возвращаем в формате, ожидаемом фронтендом
         return jsonify({
             'message': 'Проблема сохранена',
@@ -991,13 +1062,16 @@ def create_problem():
                 'ID': problem.id,
                 'Name': problem.name,
                 'Describe': problem.describe,
-                'Image': problem.image,
+                'Image': img_url,
                 'Category': {
                     'ID': problem.category
                 }
             }
         }), 201
         
+    except ValueError as e:
+        logger.warning(f"Ошибка валидации при создании проблемы: {e}")
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         logger.exception(f"Ошибка создания проблемы: {e}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
@@ -1005,13 +1079,16 @@ def create_problem():
 def create_problem_from_json(user_id, data):
     """Создание проблемы из JSON (для API)"""
     try:
-        name = data.get('name') or data.get('Name', '').strip()
-        describe = data.get('describe') or data.get('Describe', '').strip()
+        name = capitalize_title((data.get('name') or data.get('Name', '')).strip())
+        describe = capitalize_first((data.get('describe') or data.get('Describe', '')).strip())
         category_id = data.get('category_id') or data.get('CategoryID')
         topic_id = data.get('topic_id') or data.get('TopicID')
         
-        if not name or not describe:
-            return jsonify({'error': 'Название и описание обязательны'}), 400
+        if not name:
+            return jsonify({'error': 'Название проблемы обязательно'}), 400
+
+        if Problem.query.filter(func.lower(Problem.name) == name.lower()).first():
+            return jsonify({'error': 'Проблема с таким названием уже существует'}), 409
         
         if not category_id:
             return jsonify({'error': 'Категория обязательна'}), 400
@@ -1101,10 +1178,9 @@ def update_problem(problem_id):
             return jsonify({'error': 'Нет прав на обновление'}), 403
         
         # Получаем данные из формы
-        name = request.form.get('name', problem.name).strip()
-        describe = request.form.get('describe', problem.describe).strip()
+        name = capitalize_title(request.form.get('name', problem.name).strip())
+        describe = capitalize_first(request.form.get('describe', problem.describe).strip())
         category_str = request.form.get('category', str(problem.category))
-        hashtags_str = request.form.get('hashtagsIDs', '')
         is_new_str = request.form.get('isNew', '')
         from_author_str = request.form.get('fromAuthor', '')
         topic_str = request.form.get('topic', '')
@@ -1130,16 +1206,13 @@ def update_problem(problem_id):
             except ValueError:
                 pass
         
-        # Обработка файла изображения
+        # Обработка файла изображения (Yandex Storage)
         if 'image' in request.files:
             file = request.files['image']
             if file.filename != '':
-                # Удаляем старое изображение, если есть
                 if problem.image:
-                    delete_file(problem.image)
-                
-                # Сохраняем новое
-                problem.image = save_file(file)
+                    delete_image(problem.image)
+                problem.image = save_file_to_yandex_storage(file, 'problems')
         
         # Обновляем проблему
         problem.name = name
@@ -1150,15 +1223,12 @@ def update_problem(problem_id):
         problem.topic = topic_id
         problem.modified_date = datetime.utcnow()
         
-        # Обработка хэштегов
-        if hashtags_str is not None:
-            # Удаляем старые связи
+        # Обработка хэштегов — только если поле явно передано в форме
+        if 'hashtagsIDs' in request.form or 'hashtags' in request.form:
+            hashtags_str = request.form.get('hashtagsIDs') or request.form.get('hashtags', '')
             problem.hashtags.clear()
-            
-            # Добавляем новые хэштеги
             if hashtags_str:
                 hashtag_ids = parse_int_list(hashtags_str)
-                
                 if hashtag_ids:
                     hashtags = Hashtag.query.filter(Hashtag.id.in_(hashtag_ids)).all()
                     problem.hashtags.extend(hashtags)

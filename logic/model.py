@@ -4,6 +4,8 @@ import jwt
 from datetime import datetime, timedelta
 import os
 
+from logic.utils.file_utils import normalize_image_url
+
 db = SQLAlchemy()
 
 SECRET_KEY = os.getenv('JWT_SECRET', 'default_secret_key_change_me')
@@ -147,7 +149,8 @@ class User(db.Model):
     
     def generate_access_token(self):
         """Генерация access token для пользователя"""
-        expiration = datetime.utcnow() + timedelta(minutes=15)
+        exp_sec = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 86400))
+        expiration = datetime.utcnow() + timedelta(seconds=exp_sec)
         payload = {
             'username': self.username,
             'userID': self.id,
@@ -315,7 +318,7 @@ class Problem(db.Model):
             'ID': self.id,
             'Name': self.name,
             'Describe': self.describe,
-            'Image': self.image,
+            'Image': normalize_image_url(self.image) or '../images/default.png',
             'category': self.category,
             'creator': self.creator,
             'created_date': self.created_date.isoformat() if self.created_date else None,
@@ -326,9 +329,8 @@ class Problem(db.Model):
             'isnew': self.isnew,
             'topic': self.topic,
             'Hashtags': [hashtag.to_dict() for hashtag in self.hashtags] if self.hashtags else [],
-            # Используем all_solutions чтобы получить все решения
-            'Solutions': [solution.to_dict() for solution in self.all_solutions] if self.all_solutions else [],
-            'LinkedProblems': [problem.to_dict() for problem in self.problems] if self.problems else []
+            'Solutions': [solution.to_dict() for solution in self.solutions] if self.solutions else [],
+            'LinkedProblems': [problem.to_dict() for problem in self.linked_problems] if self.linked_problems else []
         }
         
 class Solution(db.Model):
@@ -380,7 +382,7 @@ class Solution(db.Model):
             'ID': self.id,
             'Name': self.name,
             'Describe': self.describe,
-            'Image': self.image or '../images/default.png',
+            'Image': normalize_image_url(self.image) or '../images/default.png',
             'creator': self.creator,
             'created_date': self.created_date.isoformat() if self.created_date else '',
             'show': self.show,

@@ -3,15 +3,14 @@
 
 User-agent: *
 Allow: /
+Allow: /problem/
+Allow: /solution/
 Allow: /html/
+Allow: /html/solutions.html
 Allow: /css/
 Allow: /js/
 Allow: /assets/
-Allow: /api/sitemap.xml
 Allow: /sitemap.xml
-Allow: /sitemap-index.xml
-Allow: /problem/
-Allow: /solution/
 
 # Запрещаем индексацию служебных страниц и личных разделов
 Disallow: /api/
@@ -25,8 +24,6 @@ Disallow: /uploads/
 Disallow: /temp/
 Disallow: /cache/
 Disallow: /logs/
-Disallow: /*.json$
-Disallow: /*.csv$
 
 # Запрещаем доступ параметрам фильтрации для избежания дублирования
 Disallow: /*?*sort=
@@ -38,6 +35,9 @@ Crawl-delay: 1
 # Специальные правила для Яндекс
 User-agent: Yandex
 Allow: /
+Allow: /problem/
+Allow: /solution/
+Allow: /html/solutions.html
 Disallow: /api/
 Disallow: /admin/
 Disallow: /html/admin
@@ -48,9 +48,12 @@ Disallow: /html/profile.html
 Disallow: /uploads/
 Crawl-delay: 1
 
-# Специальные правила для Google
+# Специальные правила для Google (Googlebot игнорирует Crawl-delay)
 User-agent: Googlebot
 Allow: /
+Allow: /problem/
+Allow: /solution/
+Allow: /html/solutions.html
 Disallow: /api/
 Disallow: /admin/
 Disallow: /html/admin
@@ -59,7 +62,6 @@ Disallow: /html/cart.html
 Disallow: /html/notifications.html
 Disallow: /html/profile.html
 Disallow: /uploads/
-Crawl-delay: 1
 
 # Специальные правила для Bing
 User-agent: Bingbot
@@ -68,7 +70,7 @@ Disallow: /api/
 Disallow: /admin/
 Crawl-delay: 1
 
-# Запрещаем доступ для других агентов (спамеры, скреперы)
+# Запрещаем доступ для спамеров и скреперов
 User-agent: AhrefsBot
 Disallow: /
 
@@ -80,11 +82,4 @@ Disallow: /
 
 # Указываем расположение sitemap
 Sitemap: https://vseprost.com/sitemap.xml
-Sitemap: https://vseprost.com/sitemap-index.xml
-Sitemap: https://vseprost.com/api/sitemap.xml
-
-# Указываем расположение RSS/Atom feeds
-Sitemap: https://vseprost.com/api/feed.xml
-Sitemap: https://vseprost.com/api/rss.xml
-Sitemap: https://vseprost.com/api/atom.xml
 

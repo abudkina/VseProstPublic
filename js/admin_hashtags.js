@@ -8,15 +8,20 @@ let currentFilters = {
   offset: 0
 };
 
+(function() {
+    const m = document.getElementById('editModal');
+    if (m) { m.style.display = 'none'; m.classList.remove('active'); }
+})();
+
 window.addEventListener('load', async function() {
-    // Проверяем авторизацию перед загрузкой
+    const modal = document.getElementById('editModal');
+    if (modal) { modal.style.display = 'none'; modal.classList.remove('active'); }
     try {
         await auth.checkAuth(true);
     } catch (error) {
         console.error('Ошибка авторизации:', error);
         return;
     }
-    
     loadCards();
     initModal();
 });
@@ -43,10 +48,11 @@ document.getElementById('profileBtn').addEventListener('click', () => {
 });
 
 document.addEventListener('click', (event) => {
+    if (!event.isTrusted) return;
     const item = event.target.closest('[data-hashtag-id]');
     if (item) {
         const hashtagId = item.getAttribute('data-hashtag-id');
-        if (hashtagId) {
+        if (hashtagId && hashtagId.trim()) {
             event.preventDefault();
             loadHashtagById(hashtagId).then(hashtag => {
                 fillEditForm(hashtag);

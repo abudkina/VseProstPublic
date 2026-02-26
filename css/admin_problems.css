@@ -35,3 +35,55 @@
 #relatedInfo p {
     margin: 5px 0;
 }
+
+.admin-links-main {
+    display: block;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.admin-links-main .back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--link-color, #007bff);
+}
+.admin-links-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+.admin-links-table th,
+.admin-links-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.admin-links-table th {
+    font-weight: 600;
+    background: #f8f9fa;
+}
+.admin-links-actions {
+    white-space: nowrap;
+}
+.admin-links-actions button {
+    margin-right: 8px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    background: #fff;
+}
+.admin-links-actions .btn-approve {
+    background: #28a745;
+    color: #fff;
+    border-color: #28a745;
+}
+.admin-links-actions .btn-delete {
+    background: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+}
+.admin-links-empty {
+    color: #666;
+    margin-top: 16px;
+}

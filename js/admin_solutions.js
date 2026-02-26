@@ -13,7 +13,14 @@ let currentFilters = {
   offset: 0
 };
 
+(function() {
+    const m = document.getElementById('editModal');
+    if (m) { m.style.display = 'none'; m.classList.remove('active'); }
+})();
+
 window.addEventListener('load', async function() {
+    const modal = document.getElementById('editModal');
+    if (modal) { modal.style.display = 'none'; modal.classList.remove('active'); }
     if (localStorage.getItem('isLoggedIn')) {
         auth.checkAuth(false).catch(() => {
             localStorage.removeItem('isLoggedIn');
@@ -47,14 +54,12 @@ document.getElementById('profileBtn').addEventListener('click', () => {
 });
 
 document.addEventListener('click', (event) => {
-    if (event.target.closest('.favorite-icon')) {
-        return;
-    }
-    
+    if (!event.isTrusted) return;
+    if (event.target.closest('.favorite-icon')) return;
     const card = event.target.closest('.card');
     if (card) {
         const solutionId = card.getAttribute('data-solution-id');
-        if (solutionId) {
+        if (solutionId && solutionId.trim()) {
             event.preventDefault();
             event.stopPropagation();
             loadSolutionById(solutionId).then(solution => {
@@ -91,24 +96,47 @@ document.addEventListener('click', (event) => {
                             overflow: auto !important;
                             box-sizing: border-box !important;
                         }
-                        #editModal .modal-content {
-                            position: relative !important;
-                            left: auto !important;
-                            right: auto !important;
-                            top: auto !important;
-                            transform: none !important;
-                            width: 100% !important;
-                            max-width: 100% !important;
-                            height: 100% !important;
-                            max-height: 100% !important;
-                            margin: 0 !important;
-                            padding: 20px !important;
-                            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
-                            border-radius: 0 !important;
-                            box-shadow: none !important;
-                            overflow-y: auto !important;
-                            display: flex !important;
-                            flex-direction: column !important;
+                        @media (min-width: 769px) {
+                            #editModal .modal-content {
+                                position: relative !important;
+                                left: auto !important;
+                                right: auto !important;
+                                top: auto !important;
+                                transform: none !important;
+                                width: 75% !important;
+                                max-width: 75% !important;
+                                height: auto !important;
+                                max-height: 90vh !important;
+                                margin: auto !important;
+                                padding: 20px !important;
+                                background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+                                border-radius: 20px !important;
+                                box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+                                overflow-y: auto !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                            }
+                        }
+                        @media (max-width: 768px) {
+                            #editModal .modal-content {
+                                position: relative !important;
+                                left: auto !important;
+                                right: auto !important;
+                                top: auto !important;
+                                transform: none !important;
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                height: 100% !important;
+                                max-height: 100% !important;
+                                margin: 0 !important;
+                                padding: 20px !important;
+                                background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+                                border-radius: 0 !important;
+                                box-shadow: none !important;
+                                overflow-y: auto !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                            }
                         }
                     `;
                 };
@@ -178,12 +206,8 @@ function initModal() {
         formData.append('name', document.getElementById('editName').value.trim());
         formData.append('describe', document.getElementById('editDescribe').value.trim());
         
-        if (editProblemsTomSelect) {
-            const problemValues = editProblemsTomSelect.getValue();
-            if (problemValues && problemValues.length > 0) {
-                formData.append('relatedProblems', problemValues.join(','));
-            }
-        }
+        const problemValues = editProblemsTomSelect ? (editProblemsTomSelect.getValue() || []) : [];
+        formData.append('relatedProblems', Array.isArray(problemValues) ? problemValues.join(',') : '');
         
         const imageFile = document.getElementById('editImage').files[0];
         if (imageFile) {
@@ -250,20 +274,24 @@ function fillEditForm(solution) {
     document.getElementById('editName').value = solution.Name || '';
     document.getElementById('editDescribe').value = solution.Describe || '';
     
-    if (editProblemsTomSelect && solution.Problems) {
-        const problemIds = solution.Problems.map(p => p.ID.toString());
+    if (editProblemsTomSelect) {
+        const problemIds = (solution.Problems && solution.Problems.length)
+            ? solution.Problems.map(p => (p.ID ?? p.id).toString())
+            : [];
         editProblemsTomSelect.setValue(problemIds);
     }
     
-    document.getElementById('editPrice').value = solution.Price || '';
-    document.getElementById('editEfficiency').value = solution.Efficiency || '';
-    document.getElementById('editComplexity').value = solution.Complexity || '';
-    document.getElementById('editTime').value = solution.Time || '';
+    const num = (v) => (v !== undefined && v !== null && v !== '') ? v : '';
+    document.getElementById('editPrice').value = num(solution.Price ?? solution.price);
+    document.getElementById('editEfficiency').value = num(solution.Efficiency ?? solution.efficiency);
+    document.getElementById('editComplexity').value = num(solution.Complexity ?? solution.complexity);
+    document.getElementById('editTime').value = num(solution.Time ?? solution.time);
     
-    document.getElementById('editIsNew').checked = solution.IsNew || false;
-    document.getElementById('editFromAuthor').checked = solution.FromAuthor || false;
-    document.getElementById('editIsBought').checked = solution.IsBought || false;
-    document.getElementById('editIsRating').checked = solution.IsRating || false;
+    const bool = (v) => !!v;
+    document.getElementById('editIsNew').checked = bool(solution.IsNew ?? solution.isnew);
+    document.getElementById('editFromAuthor').checked = bool(solution.FromAuthor ?? solution.fromauthor);
+    document.getElementById('editIsBought').checked = bool(solution.IsBought ?? solution.isbought);
+    document.getElementById('editIsRating').checked = bool(solution.IsRating ?? solution.israting);
 
     let relatedHtml = '';
     if (solution.Comments && solution.Comments.length > 0) {
@@ -391,10 +419,11 @@ async function loadCards() {
     params.append('offset', currentFilters.offset);
 
     try {
-        const response = await fetch(API_CONFIG.buildURL(`/solutions?${params.toString()}`));
+        const response = await fetch(API_CONFIG.buildURL(`/solutions?${params.toString()}`), { cache: 'no-store' });
         if (!response.ok) throw new Error('Ошибка HTTP: ' + response.status);
         const data = await response.json();
-        sortAndRender(data);
+        const list = (data && data.solutions !== undefined) ? data.solutions : (Array.isArray(data) ? data : []);
+        sortAndRender(list);
     } catch (error) {
         container.innerHTML = `<p style="color:red; text-align:center">Ошибка загрузки данных: ${error.message}</p>`;
     }
@@ -448,7 +477,7 @@ function sortAndRender(data) {
         const img = clone.querySelector('.card-image');
         const cardImageWrapper = clone.querySelector('.card-image-wrapper');
         
-        // Функция для получения изображения из интернета по названию
+        // Функция для fallback-изображения по названию (SVG)
         function getImageFromInternet(solutionName) {
             if (!solutionName || solutionName.trim() === '') {
                 return null;
@@ -494,76 +523,37 @@ function sortAndRender(data) {
             return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
         }
         
-        // Используем изображение из базы или ищем в интернете
-        if (solution.Image && solution.Image.trim() !== '') {
-            // Если это внешний URL, ищем изображение в интернете по названию
-            if (solution.Image.startsWith('http://') || solution.Image.startsWith('https://')) {
-                const internetImage = getImageFromInternet(solution.Name);
-                if (internetImage) {
-                    img.src = internetImage;
-                    img.style.display = 'block';
-                    if (cardImageWrapper) {
-                        cardImageWrapper.style.background = 'none';
-                    }
-                    
-                    img.onerror = function() {
-                        this.style.display = 'none';
-                        if (cardImageWrapper) {
-                            cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                        }
-                    };
+        const imgUrl = (solution.Image || solution.image || '').trim() || null;
+        const normalizedSrc = imgUrl
+            ? (imgUrl.startsWith('/') ? imgUrl : (imgUrl.startsWith('http') ? imgUrl : '/' + imgUrl.replace(/^\//, '')))
+            : null;
+        if (normalizedSrc) {
+            img.src = normalizedSrc;
+            img.style.display = 'block';
+            if (cardImageWrapper) cardImageWrapper.style.background = 'none';
+            img.onerror = function() {
+                const fallback = getImageFromInternet(solution.Name);
+                if (fallback) {
+                    this.src = fallback;
+                    if (cardImageWrapper) cardImageWrapper.style.background = 'none';
                 } else {
-                    img.style.display = 'none';
-                    if (cardImageWrapper) {
-                        cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                    }
+                    this.style.display = 'none';
+                    if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                 }
-            } else {
-                // Локальный файл
-                img.src = solution.Image;
-                img.style.display = 'block';
-                if (cardImageWrapper) {
-                    cardImageWrapper.style.background = 'none';
-                }
-                
-                // Обработка ошибки загрузки локального изображения - пробуем интернет
-                img.onerror = function() {
-                    const internetImage = getImageFromInternet(solution.Name);
-                    if (internetImage) {
-                        this.src = internetImage;
-                        this.style.display = 'block';
-                        if (cardImageWrapper) {
-                            cardImageWrapper.style.background = 'none';
-                        }
-                    } else {
-                        this.style.display = 'none';
-                        if (cardImageWrapper) {
-                            cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                        }
-                    }
-                };
-            }
+            };
         } else {
-            // Нет изображения - ищем в интернете по названию
-            const internetImage = getImageFromInternet(solution.Name);
-            if (internetImage) {
-                img.src = internetImage;
+            const fallback = getImageFromInternet(solution.Name);
+            if (fallback) {
+                img.src = fallback;
                 img.style.display = 'block';
-                if (cardImageWrapper) {
-                    cardImageWrapper.style.background = 'none';
-                }
-                
+                if (cardImageWrapper) cardImageWrapper.style.background = 'none';
                 img.onerror = function() {
                     this.style.display = 'none';
-                    if (cardImageWrapper) {
-                        cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                    }
+                    if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                 };
             } else {
                 img.style.display = 'none';
-                if (cardImageWrapper) {
-                    cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                }
+                if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             }
         }
         img.alt = solution.Name;

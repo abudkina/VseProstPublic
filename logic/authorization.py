@@ -129,7 +129,8 @@ def login_handler():
         response = make_response(jsonify(response_data), 200)
         
         # Устанавливаем токены в HttpOnly cookies
-        set_cookie(response, 'access_token', access_token, 15*60, secure=False, http_only=True)
+        access_expires = current_app.config.get('JWT_ACCESS_TOKEN_EXPIRES', 86400)
+        set_cookie(response, 'access_token', access_token, access_expires, secure=False, http_only=True)
         set_cookie(response, 'refresh_token', refresh_token, 30*24*3600, secure=False, http_only=True)
 
         logger.info(f"Login successful for user: {username} (user_id={user.id})")
@@ -170,7 +171,7 @@ def logout_handler():
             path='/',
             secure=secure,
             httponly=True,
-            samesite='Strict'
+            samesite='Lax'
         )
         
         response.set_cookie(
@@ -180,7 +181,7 @@ def logout_handler():
             path='/',
             secure=secure,
             httponly=True,
-            samesite='Strict'
+            samesite='Lax'
         )
         
         return response
@@ -244,7 +245,8 @@ def refresh_token_handler():
         }), 200)
         
         # Устанавливаем новый access token в cookie
-        set_cookie(response, 'access_token', access_token, 15*60, http_only=True)
+        access_expires = current_app.config.get('JWT_ACCESS_TOKEN_EXPIRES', 86400)
+        set_cookie(response, 'access_token', access_token, access_expires, http_only=True)
         
         return response
         

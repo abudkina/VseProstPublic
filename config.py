@@ -41,13 +41,14 @@ class Config:
     CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization', 'X-CSRF-Token']
     CORS_SUPPORTS_CREDENTIALS = True
 
-    # Настройки JWT
-    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 900))  # 15 минут (было 1 час)
-    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800))  # 7 дней (было 30)
+    # Настройки JWT (в секундах)
+    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 86400))  # 24 часа
+    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800))  # 7 дней
 
     # Настройки OpenAI API для генерации изображений
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     OPENAI_API_URL = os.getenv('OPENAI_API_URL', 'https://api.proxyapi.ru/openai/v1')
+    OPENAI_API_URL2 = os.getenv('OPENAI_API_URL2', 'https://api.proxyapi.ru/openrouter/v1')  # DeepSeek
 
     # Настройки Yandex Object Storage
     YANDEX_STORAGE_ACCESS_KEY = os.getenv('YANDEX_STORAGE_ACCESS_KEY')
@@ -81,6 +82,11 @@ class Config:
     YANDEX_METRIKA_ID = get_env_variable('YANDEX_METRIKA_ID', '106548955')  # Яндекс.Метрика ID
     YANDEX_VERIFICATION = get_env_variable('YANDEX_VERIFICATION', '')  # Код верификации Яндекс.Вебмастер
     YANDEX_VERIFICATION_CODE = get_env_variable('YANDEX_VERIFICATION_CODE', '')  # Код для файла верификации
+
+    # YooKassa (ЮKassa) payment
+    YOOKASSA_SHOP_ID = get_env_variable('YOOKASSA_SHOP_ID', '')
+    YOOKASSA_SECRET_KEY = get_env_variable('YOOKASSA_SECRET_KEY', '')
+    YOOKASSA_RETURN_URL = get_env_variable('YOOKASSA_RETURN_URL', '')
 
 class DevelopmentConfig(Config):
     """Конфигурация для разработки"""

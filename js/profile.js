@@ -300,6 +300,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const tabName = btn.dataset.tab;
 
+        if (tabName === 'feedback') {
+            openFeedbackModal();
+            return;
+        }
+
         // Убираем активный класс со всех кнопок и контента
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -313,8 +318,64 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
             loadUserProblems();
         } else if (tabName === 'solutions') {
             loadUserSolutions();
-        }
+        // } else if (tabName === 'payment') {
+        //     loadPaymentBalance();
+        // }
     });
+});
+
+// ——— Оплата ЮKassa (отключено) ———
+// async function loadPaymentBalance() { ... }
+// async function createPaymentAndRedirect(amount) { ... }
+// document.getElementById('payment-btn-999')?.addEventListener(...)
+// document.getElementById('payment-btn-custom')?.addEventListener(...)
+// document.getElementById('payment-submit-custom')?.addEventListener(...)
+
+// Модальное окно обратной связи
+function openFeedbackModal() {
+    const overlay = document.getElementById('feedback-modal-overlay');
+    if (overlay) {
+        overlay.classList.add('active');
+        if (currentUser?.email) document.getElementById('feedback-email').value = currentUser.email;
+        if (currentUser?.username) document.getElementById('feedback-name').value = currentUser.username;
+    }
+}
+
+function closeFeedbackModal() {
+    document.getElementById('feedback-modal-overlay')?.classList.remove('active');
+}
+
+document.getElementById('closeFeedbackModal')?.addEventListener('click', closeFeedbackModal);
+document.getElementById('feedback-modal-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'feedback-modal-overlay') closeFeedbackModal();
+});
+
+document.getElementById('feedback-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('feedback-name').value.trim();
+    const email = document.getElementById('feedback-email').value.trim();
+    const message = document.getElementById('feedback-message').value.trim();
+    if (!name || !email || !message) {
+        showToast('Заполните все поля', 'error');
+        return;
+    }
+    try {
+        const response = await fetch(`${API_CONFIG.API_URL}/user/feedback`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, message })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка отправки');
+        }
+        showToast('Сообщение отправлено', 'success');
+        document.getElementById('feedback-form').reset();
+        closeFeedbackModal();
+    } catch (err) {
+        showToast(err.message || 'Ошибка отправки', 'error');
+    }
 });
 
 // Загрузка проблем пользователя
@@ -455,7 +516,7 @@ async function loadUserSolutions() {
 // Создание карточки проблемы
 function createProblemCard(problem) {
     const card = document.createElement('a');
-    card.href = `/html/problem.html?id=${problem.ID || problem.id}`;
+    card.href = `/problem/${problem.ID || problem.id}`;
     card.className = 'item-card';
 
     const name = problem.Name || problem.name || 'Без названия';
@@ -476,7 +537,7 @@ function createProblemCard(problem) {
 // Создание карточки решения
 function createSolutionCard(solution) {
     const card = document.createElement('a');
-    card.href = `/html/solution.html?id=${solution.ID || solution.id}`;
+    card.href = `/solution/${solution.ID || solution.id}`;
     card.className = 'item-card';
 
     const name = solution.Name || solution.name || 'Без названия';

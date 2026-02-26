@@ -388,7 +388,10 @@ body {
 .card-image-wrapper img.card-image {
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  min-height: 100%;
   object-fit: cover;
+  object-position: center;
   transition: transform 0.3s ease;
 }
 
@@ -721,6 +724,11 @@ body {
   margin: 20px auto;
   max-width: 1400px;
   width: 98%;
+}
+
+#similar-problems-wrapper.cards-container:has(> .no-solutions) {
+  display: flex;
+  justify-content: center;
 }
 
 /* Стили для вкладок */
@@ -1185,4 +1193,653 @@ body {
 .problem-img:hover,
 .card-image:hover {
   transform: scale(1.05);
+}
+
+/* ========================================
+   Адаптивность для всех элементов страницы
+   ======================================== */
+
+/* Desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .search-bar {
+    padding: 6px 10px;
+  }
+
+  .search-bar input[type="text"],
+  .search-bar select {
+    font-size: 15px;
+    padding: 6px 10px;
+  }
+
+  .problem-info {
+    padding: var(--spacing-2) var(--spacing-3);
+    gap: var(--spacing-4);
+  }
+
+  .problem-title {
+    font-size: 1.6em;
+  }
+
+  .problem-img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .problem-stats {
+    font-size: 14px;
+  }
+
+  .problem-stats .stat-item {
+    padding: 6px 12px;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .card-image-wrapper {
+    height: 140px;
+  }
+
+  .add-solution-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .search-bar {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .search-bar input[type="text"],
+  .search-bar select {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .controls-row {
+    gap: 6px;
+  }
+
+  .controls-row select {
+    font-size: 14px;
+    padding: 6px 10px;
+    min-width: 120px;
+  }
+
+  .sort-btn,
+  #addBtn {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: 14px;
+    min-width: 70px;
+  }
+
+  .problem-info {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-2) var(--spacing-3);
+    gap: var(--spacing-3);
+  }
+
+  .left-block {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .problem-img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .problem-title {
+    font-size: 1.4em;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .problem-stats {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .problem-stats .stat-item {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 4px;
+  }
+
+  .card {
+    min-height: 120px;
+  }
+
+  .card-image-wrapper {
+    height: 120px;
+  }
+
+  .card-content {
+    padding: 12px 14px;
+    padding-bottom: 6px;
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .card-tags-stats .stat-item {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  .rating {
+    padding: 6px 10px;
+    font-size: 1rem;
+    top: 10px;
+    left: 10px;
+  }
+
+  .likes-overlay {
+    padding: 6px 8px;
+    font-size: 0.8em;
+    top: 10px;
+    right: 10px;
+    min-width: 36px;
+  }
+
+  .card-cart-btn {
+    width: 36px;
+    height: 36px;
+    top: 50px;
+    left: 10px;
+  }
+
+  .card-cart-btn i {
+    font-size: 16px;
+  }
+
+  .add-solution-btn {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+}
+
+/* Medium Phones (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .search-bar {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .search-bar input[type="text"],
+  .search-bar select {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .controls-row {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  .controls-row select {
+    width: 100%;
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .sort-buttons {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .sort-btn,
+  #addBtn {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-width: 60px;
+  }
+
+  .problem-info {
+    flex-direction: column;
+    padding: var(--spacing-2);
+    gap: var(--spacing-2);
+    width: 96%;
+  }
+
+  .left-block {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+    min-width: unset;
+  }
+
+  .problem-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+  }
+
+  .problem-title {
+    font-size: 1.2em;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .problem-stats {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .problem-stats .stat-item {
+    padding: 5px 8px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .problem-stats .stat-item .icon {
+    font-size: 14px;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 3px;
+    width: 96%;
+  }
+
+  .card {
+    border-radius: 16px;
+    min-height: 100px;
+  }
+
+  .card-image-wrapper {
+    height: 100px;
+  }
+
+  .card-content {
+    padding: 10px 12px;
+    padding-bottom: 6px;
+  }
+
+  .card-title-overlay {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  .tag {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+    border-radius: 10px;
+  }
+
+  .card-tags-stats {
+    padding: 6px 10px;
+  }
+
+  .card-tags-stats .stat-item {
+    font-size: 0.6rem;
+    padding: 3px 5px;
+    gap: 2px;
+  }
+
+  .card-tags-stats .stats .stat .icon {
+    font-size: 12px;
+  }
+
+  .rating {
+    padding: 5px 8px;
+    font-size: 0.9rem;
+    top: 8px;
+    left: 8px;
+    border-radius: 12px;
+  }
+
+  .likes-overlay {
+    padding: 5px 7px;
+    font-size: 0.75em;
+    top: 8px;
+    right: 8px;
+    min-width: 32px;
+    border-radius: 12px;
+  }
+
+  .card-cart-btn {
+    width: 32px;
+    height: 32px;
+    top: 42px;
+    left: 8px;
+    border-radius: 12px;
+  }
+
+  .card-cart-btn i {
+    font-size: 14px;
+  }
+
+  .tags-and-button-container {
+    width: 96%;
+    padding: 0 10px;
+    gap: 12px;
+  }
+
+  .add-solution-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .tabs-wrapper {
+    gap: 6px;
+  }
+
+  .tab-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .sort-select {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+}
+
+/* Small Phones (<480px) */
+@media (max-width: 479px) {
+  .search-bar {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .search-bar input[type="text"],
+  .search-bar select {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  .controls-row {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  .controls-row select {
+    width: 100%;
+    font-size: 13px;
+    padding: 6px 8px;
+    min-width: unset;
+  }
+
+  .sort-buttons {
+    width: 100%;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .sort-btn,
+  #addBtn {
+    padding: 7px 10px;
+    font-size: 12px;
+    min-width: 50px;
+    flex: 1;
+  }
+
+  .problem-info {
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+    width: 95%;
+  }
+
+  .left-block {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .problem-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+  }
+
+  .problem-title {
+    font-size: 1.1em;
+    white-space: normal;
+    overflow: visible;
+    text-align: center;
+    width: 100%;
+  }
+
+  .problem-stats {
+    width: 100%;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .problem-stats .stat-item {
+    padding: 4px 6px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .problem-stats .stat-item .icon {
+    font-size: 12px;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 2px;
+    width: 95%;
+  }
+
+  .card {
+    border-radius: 12px;
+    min-height: 90px;
+  }
+
+  .card-image-wrapper {
+    height: 90px;
+  }
+
+  .card-content {
+    padding: 8px 10px;
+    padding-bottom: 4px;
+  }
+
+  .card-title-overlay {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+
+  .tag {
+    font-size: 0.6rem;
+    padding: 2px 5px;
+    border-radius: 8px;
+    margin: 1px;
+  }
+
+  .card-tags-stats {
+    padding: 6px 8px;
+  }
+
+  .card-tags-stats .stat-item {
+    font-size: 0.55rem;
+    padding: 2px 4px;
+    gap: 2px;
+    border-radius: 8px;
+  }
+
+  .card-tags-stats .stat-item .stat {
+    font-size: 0.6rem;
+    gap: 3px;
+  }
+
+  .card-tags-stats .stats .stat .icon {
+    font-size: 10px;
+  }
+
+  .rating {
+    padding: 4px 6px;
+    font-size: 0.8rem;
+    top: 6px;
+    left: 6px;
+    border-radius: 10px;
+  }
+
+  .likes-overlay {
+    padding: 4px 6px;
+    font-size: 0.7em;
+    top: 6px;
+    right: 6px;
+    min-width: 28px;
+    border-radius: 10px;
+  }
+
+  .likes-overlay .icon {
+    font-size: 14px;
+  }
+
+  .card-cart-btn {
+    width: 28px;
+    height: 28px;
+    top: 36px;
+    left: 6px;
+    border-radius: 10px;
+  }
+
+  .card-cart-btn i {
+    font-size: 12px;
+  }
+
+  .tags-and-button-container {
+    width: 95%;
+    padding: 0 8px;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .add-solution-btn,
+  #addSolutionBtn {
+    padding: 10px 14px;
+    font-size: 12px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabs-wrapper {
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .tab-button {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 100px;
+    white-space: nowrap;
+  }
+
+  .sort-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 0;
+  }
+
+  .sort-select {
+    font-size: 13px;
+    padding: 6px 10px;
+    width: 100%;
+  }
+
+  .no-solutions {
+    padding: 30px 15px;
+    font-size: 16px;
+    width: 95%;
+  }
+
+  #linkedProblemSearch {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  #linkedProblemDropdown {
+    left: 20px;
+    right: 20px;
+  }
+
+  .solution-type-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Very Small Phones (<375px) */
+@media (max-width: 374px) {
+  .search-bar {
+    padding: 5px;
+  }
+
+  .search-bar input[type="text"],
+  .search-bar select {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+
+  .problem-title {
+    font-size: 1em;
+  }
+
+  .problem-stats {
+    font-size: 10px;
+  }
+
+  .problem-stats .stat-item {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 6px;
+  }
+
+  .card-image-wrapper {
+    height: 120px;
+  }
+
+  .card-title-overlay {
+    font-size: 0.7rem;
+  }
+
+  .tag {
+    font-size: 0.55rem;
+  }
+
+  .card-tags-stats .stat-item {
+    font-size: 0.5rem;
+    padding: 2px 3px;
+  }
+
+  .tab-button {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-width: 80px;
+  }
 }

@@ -6,7 +6,14 @@ let currentFilters = {
   isNew: false
 };
 
+(function() {
+    const m = document.getElementById('editModal');
+    if (m) { m.style.display = 'none'; m.classList.remove('active'); }
+})();
+
 window.addEventListener('load', async function() {
+    const modal = document.getElementById('editModal');
+    if (modal) { modal.style.display = 'none'; modal.classList.remove('active'); }
     if (localStorage.getItem('isLoggedIn')) {
         auth.checkAuth(false).catch(() => {
             localStorage.removeItem('isLoggedIn');
@@ -38,10 +45,11 @@ document.getElementById('profileBtn').addEventListener('click', () => {
 });
 
 document.addEventListener('click', (event) => {
+    if (!event.isTrusted) return;
     const item = event.target.closest('[data-user-id]');
     if (item) {
         const userId = item.getAttribute('data-user-id');
-        if (userId) {
+        if (userId && userId.trim()) {
             event.preventDefault();
             loadUserById(userId).then(user => {
                 fillEditForm(user);
@@ -75,24 +83,47 @@ document.addEventListener('click', (event) => {
                             overflow: auto !important;
                             box-sizing: border-box !important;
                         }
-                        #editModal .modal-content {
-                            position: relative !important;
-                            left: auto !important;
-                            right: auto !important;
-                            top: auto !important;
-                            transform: none !important;
-                            width: 100% !important;
-                            max-width: 100% !important;
-                            height: 100% !important;
-                            max-height: 100% !important;
-                            margin: 0 !important;
-                            padding: 20px !important;
-                            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
-                            border-radius: 0 !important;
-                            box-shadow: none !important;
-                            overflow-y: auto !important;
-                            display: flex !important;
-                            flex-direction: column !important;
+                        @media (min-width: 769px) {
+                            #editModal .modal-content {
+                                position: relative !important;
+                                left: auto !important;
+                                right: auto !important;
+                                top: auto !important;
+                                transform: none !important;
+                                width: 75% !important;
+                                max-width: 75% !important;
+                                height: auto !important;
+                                max-height: 90vh !important;
+                                margin: auto !important;
+                                padding: 20px !important;
+                                background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+                                border-radius: 20px !important;
+                                box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+                                overflow-y: auto !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                            }
+                        }
+                        @media (max-width: 768px) {
+                            #editModal .modal-content {
+                                position: relative !important;
+                                left: auto !important;
+                                right: auto !important;
+                                top: auto !important;
+                                transform: none !important;
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                height: 100% !important;
+                                max-height: 100% !important;
+                                margin: 0 !important;
+                                padding: 20px !important;
+                                background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+                                border-radius: 0 !important;
+                                box-shadow: none !important;
+                                overflow-y: auto !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                            }
                         }
                     `;
                 };

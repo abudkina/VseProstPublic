@@ -219,10 +219,12 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
     }
     if (filters.limit) params.append('limit', filters.limit);
     if (filters.offset) params.append('offset', filters.offset);
-    
+    if (filters.sort && filters.sort !== 'default') params.append('sort', filters.sort);
+
     try {
         const response = await fetch(`${API_CONFIG.API_URL}/problems?${params.toString()}`, {
-            credentials: 'include' // Важно для отправки cookies с токеном
+            credentials: 'include',
+            cache: 'no-store'
         });
         
         // Перехватчик fetch должен автоматически обработать 401,
@@ -236,12 +238,25 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
-        const data = await response.json();
-        
-        if (onSuccess) {
-            onSuccess(data);
+        const contentType = response.headers.get('Content-Type') || '';
+        let data;
+        const text = await response.text();
+        if (contentType.includes('application/json') && text) {
+            try {
+                data = JSON.parse(text);
+            } catch (_) {
+                throw new Error('Некорректный ответ сервера');
+            }
         } else {
-            renderProblemCards(data);
+            throw new Error(response.ok ? 'Некорректный ответ сервера' : `Ошибка HTTP: ${response.status}`);
+        }
+        const list = (data && data.problems !== undefined) ? data.problems : (Array.isArray(data) ? data : []);
+        // ИИ и оплата отключены: suggestAi не показываем
+        const meta = data && typeof data === 'object' ? { suggestAi: false, aiPlanPriceRub: data.ai_plan_price_rub } : {};
+        if (onSuccess) {
+            onSuccess(list, meta);
+        } else {
+            renderProblemCards(list, meta);
         }
     } catch (error) {
         console.error('Ошибка загрузки проблем:', error);
@@ -258,13 +273,76 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
 export function renderProblemCards(data, options = {}) {
     const container = document.querySelector('.cards-container');
     if (!container) return;
-    
+    const list = Array.isArray(data) ? data : [];
     container.innerHTML = '';
-    
-    if (data.length === 0) {
+
+    if (list.length === 0 && options.suggestAi) {
+        const suggestDiv = document.createElement('div');
+        suggestDiv.className = 'suggest-ai-block';
+        suggestDiv.innerHTML = `
+            <p class="suggest-ai-text">По вашему запросу ничего не найдено. Создайте проблему с решениями с помощью ИИ — тариф 999 руб/мес.</p>
+            <div class="suggest-ai-actions">
+                <button type="button" class="suggest-ai-btn suggest-ai-btn-pay">Подключить за 999 руб</button>
+                <button type="button" class="suggest-ai-btn suggest-ai-btn-create" disabled>Создать с ИИ</button>
+            </div>
+            <p class="suggest-ai-hint">После оплаты тарифа кнопка «Создать с ИИ» станет активной.</p>
+        `;
+        container.appendChild(suggestDiv);
+        const payBtn = suggestDiv.querySelector('.suggest-ai-btn-pay');
+        const createBtn = suggestDiv.querySelector('.suggest-ai-btn-create');
+        if (payBtn) {
+            payBtn.addEventListener('click', () => {
+                if (typeof window.openPaymentModal === 'function') {
+                    window.openPaymentModal(999);
+                } else {
+                    window.location.href = '/profile?tab=balance';
+                }
+            });
+        }
+            createBtn?.addEventListener('click', () => {
+            const query = (document.getElementById('search') || document.querySelector('input[type="search"]'))?.value?.trim() || '';
+            if (!query) return;
+            suggestDiv.querySelector('.suggest-ai-actions')?.classList.add('loading');
+            fetch(`${window.API_CONFIG?.API_URL || ''}/ai/create-problem-from-query`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('accessToken') || '') },
+                body: JSON.stringify({ query })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success' && res.problem) {
+                        window.location.href = '/problem/' + res.problem.ID;
+                    } else {
+                        alert(res.message || 'Ошибка создания');
+                    }
+                })
+                .catch(() => alert('Ошибка сети'))
+                .finally(() => suggestDiv.querySelector('.suggest-ai-actions')?.classList.remove('loading'));
+        });
+        function checkAiPlan() {
+            const token = localStorage.getItem('accessToken');
+            if (!token) return;
+            fetch(`${window.API_CONFIG?.API_URL || ''}/payment/check_balance`, { credentials: 'include', headers: { 'Authorization': 'Bearer ' + token } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.can_ai_plan && createBtn) {
+                        createBtn.disabled = false;
+                        const hint = suggestDiv.querySelector('.suggest-ai-hint');
+                        if (hint) hint.textContent = 'Тариф ИИ подключён. Введите запрос в поиск и нажмите «Создать с ИИ».';
+                    }
+                })
+                .catch(() => {});
+        }
+        checkAiPlan();
+        return;
+    }
+
+    if (list.length === 0) {
         container.innerHTML = '<p style="text-align:center">Нет проблем для отображения</p>';
         return;
     }
+    data = list;
     
     const template = document.getElementById('card-template');
     if (!template) {
@@ -282,22 +360,24 @@ export function renderProblemCards(data, options = {}) {
             card.style.cursor = 'pointer';
         }
         
-        // Изображение
+        // Изображение: полный URL (Yandex Storage и т.д.) — как есть, иначе относительный путь приводим к рабочему
         const img = clone.querySelector('.card-image');
         if (img) {
-            let imageSrc = problem.Image || '../images/default.png';
-            // Исправляем пути к изображениям
-            if (imageSrc && !imageSrc.startsWith('http') && !imageSrc.startsWith('/')) {
-                if (imageSrc.startsWith('../images/')) {
-                    imageSrc = imageSrc.replace('../images/', '/images/');
-                } else if (imageSrc.startsWith('../assets/')) {
-                    imageSrc = imageSrc.replace('../assets/', '/assets/');
-                } else if (!imageSrc.startsWith('/')) {
-                    imageSrc = '/images/' + imageSrc;
-                }
+            let imageSrc = (problem.Image || problem.image || '').replace(/\\/g, '/').trim();
+            if (imageSrc && (imageSrc.startsWith('http://') || imageSrc.startsWith('https://'))) {
+                img.src = imageSrc;
+            } else if (!imageSrc) {
+                img.src = '/assets/images/Screenshot_4-ww78noDj9-transformed.png';
+            } else {
+                if (imageSrc.startsWith('../images/')) imageSrc = '/images/' + imageSrc.slice(13);
+                else if (imageSrc.startsWith('../assets/')) imageSrc = '/assets/' + imageSrc.slice(14);
+                else if (imageSrc.startsWith('uploads/')) imageSrc = '/' + imageSrc;
+                else if (!imageSrc.startsWith('/')) imageSrc = '/' + imageSrc.replace(/^\//, '');
+                img.src = imageSrc;
             }
-            img.src = imageSrc;
             img.alt = problem.Name || 'Проблема';
+            img.loading = 'lazy';
+            img.onerror = () => { img.src = '/assets/images/Screenshot_4-ww78noDj9-transformed.png'; };
         }
         
         // Название
@@ -305,7 +385,7 @@ export function renderProblemCards(data, options = {}) {
         if (titleText) {
             titleText.textContent = problem.Name || 'Без названия';
             if (!options.isAdmin && titleText.tagName === 'A') {
-                titleText.href = `/html/problem.html?problemId=${problem.ID}`;
+                titleText.href = `/problem/${problem.ID}`;
             }
         }
         
@@ -313,7 +393,7 @@ export function renderProblemCards(data, options = {}) {
         if (!options.isAdmin) {
             const cardTitleLink = clone.querySelector('.card-title-link');
             if (cardTitleLink) {
-                cardTitleLink.href = `/html/problem.html?problemId=${problem.ID}`;
+                cardTitleLink.href = `/problem/${problem.ID}`;
             }
         }
         

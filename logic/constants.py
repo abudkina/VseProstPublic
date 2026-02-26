@@ -20,8 +20,8 @@ ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 MAX_FILE_SIZE = 32 * 1024 * 1024  # 32 MB
 DEFAULT_IMAGE_PATH = '../images/default.png'
 
-# Token Expiry (in seconds)
-ACCESS_TOKEN_EXPIRY = 15 * 60  # 15 minutes
+# Token Expiry (in seconds); актуальное значение в config.JWT_ACCESS_TOKEN_EXPIRES
+ACCESS_TOKEN_EXPIRY = 86400  # 24 часа
 REFRESH_TOKEN_EXPIRY = 30 * 24 * 3600  # 30 days
 PASSWORD_RESET_TOKEN_EXPIRY = 3600  # 1 hour
 

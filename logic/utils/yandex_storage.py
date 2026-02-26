@@ -10,7 +10,7 @@ from logic.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-def compress_image(image_bytes, max_size=(1920, 1920), quality=85, convert_large_png_to_jpeg=True):
+def compress_image(image_bytes, max_size=(1200, 1200), quality=78, convert_large_png_to_jpeg=True):
     """
     Сжимает изображение перед загрузкой
     
@@ -45,7 +45,7 @@ def compress_image(image_bytes, max_size=(1920, 1920), quality=85, convert_large
         pixel_count = image.size[0] * image.size[1]
         # Примерная оценка: RGBA = 4 байта на пиксель, RGB = 3 байта
         estimated_size_mb = (pixel_count * 4) / (1024 * 1024)
-        should_convert_to_jpeg = convert_large_png_to_jpeg and image.mode in ('RGBA', 'LA', 'P') and estimated_size_mb > 0.5
+        should_convert_to_jpeg = convert_large_png_to_jpeg and image.mode in ('RGBA', 'LA', 'P') and estimated_size_mb > 0.2
         
         if should_convert_to_jpeg:
             # Создаем белый фон для прозрачных изображений
@@ -120,9 +120,6 @@ def get_yandex_storage_client():
         boto3 S3 client или None в случае ошибки
     """
     try:
-        from config import Config as AppConfig
-        
-        # Получаем настройки из переменных окружения
         access_key = os.getenv('YANDEX_STORAGE_ACCESS_KEY')
         secret_key = os.getenv('YANDEX_STORAGE_SECRET_KEY')
         endpoint_url = os.getenv('YANDEX_STORAGE_ENDPOINT', 'https://storage.yandexcloud.net')
@@ -149,7 +146,7 @@ def get_yandex_storage_client():
         return None, None
 
 def upload_file_to_yandex_storage(file_bytes, file_extension='png', folder='images', compress=True, 
-                                   max_size=(1920, 1920), quality=85):
+                                   max_size=(1200, 1200), quality=78):
     """
     Загружает файл в Yandex Object Storage с автоматическим сжатием изображений
     
@@ -230,6 +227,31 @@ def upload_file_to_yandex_storage(file_bytes, file_extension='png', folder='imag
     except Exception as e:
         logger.error(f"Неожиданная ошибка при загрузке в Yandex Storage: {e}", exc_info=True)
         return None
+
+def get_object_bytes_by_url(file_url):
+    """
+    Скачивает объект из Yandex Object Storage по URL (с учётом учётных данных).
+    Используется для прокси при приватном бакете.
+
+    Returns:
+        tuple: (bytes, content_type) или (None, None)
+    """
+    try:
+        s3_client, bucket_name = get_yandex_storage_client()
+        if not s3_client or not bucket_name or bucket_name not in file_url:
+            return None, None
+        object_key = file_url.split(f"{bucket_name}/", 1)[1].split("?")[0]
+        response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
+        body = response['Body'].read()
+        content_type = response.get('ContentType') or 'application/octet-stream'
+        return body, content_type
+    except ClientError as e:
+        logger.error(f"Ошибка получения объекта из Yandex Storage: {e}", exc_info=True)
+        return None, None
+    except Exception as e:
+        logger.error(f"Неожиданная ошибка при получении из Yandex Storage: {e}", exc_info=True)
+        return None, None
+
 
 def delete_file_from_yandex_storage(file_url):
     """

@@ -276,69 +276,78 @@ def get_user_recommendations(user_id: int, entity_type: str, limit: int = 20) ->
     Returns:
         Список ID рекомендованных проблем/решений
     """
-    try:
-        # Получаем последнюю активность пользователя (за последние 30 дней)
-        cutoff_date = datetime.utcnow() - timedelta(days=30)
-        
-        activities = UserActivity.query.filter(
-            UserActivity.user_id == user_id,
-            UserActivity.entity_type == entity_type,
-            UserActivity.created_date >= cutoff_date
-        ).order_by(UserActivity.created_date.desc()).limit(50).all()
-        
-        if not activities:
+    from flask import has_app_context
+
+    def _run():
+        try:
+            # Получаем последнюю активность пользователя (за последние 30 дней)
+            cutoff_date = datetime.utcnow() - timedelta(days=30)
+
+            activities = UserActivity.query.filter(
+                UserActivity.user_id == user_id,
+                UserActivity.entity_type == entity_type,
+                UserActivity.created_date >= cutoff_date
+            ).order_by(UserActivity.created_date.desc()).limit(50).all()
+
+            if not activities:
+                return []
+
+            # Собираем ID сущностей, с которыми взаимодействовал пользователь
+            interacted_ids = set()
+            search_queries = []
+
+            for activity in activities:
+                if activity.entity_id:
+                    interacted_ids.add(activity.entity_id)
+                if activity.activity_type == 'search' and activity.search_query:
+                    search_queries.append(activity.search_query)
+
+            if not interacted_ids and not search_queries:
+                return []
+
+            # Находим похожие сущности на основе взаимодействий
+            recommended_ids = set()
+
+            # Для каждой взаимодействованной сущности находим похожие
+            for entity_id in list(interacted_ids)[:10]:  # Ограничиваем для производительности
+                similar = find_similar_entities(entity_type, entity_id, limit=5, exclude_ids=list(interacted_ids))
+                for similar_id, score in similar:
+                    if score > 0.3:  # Минимальный порог сходства
+                        recommended_ids.add(similar_id)
+
+            # Если есть поисковые запросы, находим похожие на основе запросов
+            if search_queries and SENTENCE_TRANSFORMERS_AVAILABLE:
+                model = get_model()
+                if model:
+                    # Векторизуем последний поисковый запрос
+                    last_query = search_queries[0]
+                    query_vector = model.encode(last_query, convert_to_numpy=True).tolist()
+
+                    # Ищем похожие сущности по векторам
+                    all_embeddings = Embedding.query.filter_by(entity_type=entity_type).all()
+                    for embedding in all_embeddings:
+                        if embedding.entity_id in interacted_ids:
+                            continue
+                        similarity = cosine_similarity(query_vector, embedding.embedding_vector)
+                        if similarity > 0.3:
+                            recommended_ids.add(embedding.entity_id)
+
+            # Преобразуем в список и ограничиваем
+            recommended_list = list(recommended_ids)[:limit]
+
+            return recommended_list
+
+        except Exception as e:
+            logger.warning(f"Ошибка получения рекомендаций: {e}")
+            import traceback
+            traceback.print_exc()
             return []
-        
-        # Собираем ID сущностей, с которыми взаимодействовал пользователь
-        interacted_ids = set()
-        search_queries = []
-        
-        for activity in activities:
-            if activity.entity_id:
-                interacted_ids.add(activity.entity_id)
-            if activity.activity_type == 'search' and activity.search_query:
-                search_queries.append(activity.search_query)
-        
-        if not interacted_ids and not search_queries:
-            return []
-        
-        # Находим похожие сущности на основе взаимодействий
-        recommended_ids = set()
-        
-        # Для каждой взаимодействованной сущности находим похожие
-        for entity_id in list(interacted_ids)[:10]:  # Ограничиваем для производительности
-            similar = find_similar_entities(entity_type, entity_id, limit=5, exclude_ids=list(interacted_ids))
-            for similar_id, score in similar:
-                if score > 0.3:  # Минимальный порог сходства
-                    recommended_ids.add(similar_id)
-        
-        # Если есть поисковые запросы, находим похожие на основе запросов
-        if search_queries and SENTENCE_TRANSFORMERS_AVAILABLE:
-            model = get_model()
-            if model:
-                # Векторизуем последний поисковый запрос
-                last_query = search_queries[0]
-                query_vector = model.encode(last_query, convert_to_numpy=True).tolist()
-                
-                # Ищем похожие сущности по векторам
-                all_embeddings = Embedding.query.filter_by(entity_type=entity_type).all()
-                for embedding in all_embeddings:
-                    if embedding.entity_id in interacted_ids:
-                        continue
-                    similarity = cosine_similarity(query_vector, embedding.embedding_vector)
-                    if similarity > 0.3:
-                        recommended_ids.add(embedding.entity_id)
-        
-        # Преобразуем в список и ограничиваем
-        recommended_list = list(recommended_ids)[:limit]
-        
-        return recommended_list
-    
-    except Exception as e:
-        logger.warning(f"Ошибка получения рекомендаций: {e}")
-        import traceback
-        traceback.print_exc()
-        return []
+
+    if has_app_context():
+        return _run()
+    from app import app
+    with app.app_context():
+        return _run()
 
 def batch_create_embeddings(entity_type: str, entity_ids: Optional[List[int]] = None, 
                            batch_size: int = 10):

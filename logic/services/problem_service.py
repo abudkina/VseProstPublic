@@ -11,7 +11,8 @@ from flask import g
 
 from logic.model import (
     db, Problem, Category, Hashtag, User, Solution,
-    favourite_problem, hashtag_problem, Topic
+    favourite_problem, hashtag_problem, Topic,
+    TemporaryLinkProblem, TemporaryProblemSolution, Embedding
 )
 from logic.utils.error_handler import (
     ValidationError, AuthorizationError, ResourceNotFoundError,
@@ -19,7 +20,8 @@ from logic.utils.error_handler import (
 )
 from logic.utils.logger import get_logger
 from logic.utils.validators import parse_int_list, parse_bool
-from logic.utils.file_utils import delete_file
+from logic.utils.normalizers import capitalize_title, capitalize_first
+from logic.utils.file_utils import delete_image
 from logic.recommendations import track_user_activity, create_embedding
 from logic.cache_config import cache, CACHE_TIMEOUTS
 
@@ -117,7 +119,7 @@ class ProblemService:
         
         # Применяем сортировку и пагинацию
         problems = query.order_by(
-            Problem.modified_date.desc().nulls_last(),
+            Problem.modified_date.desc(),
             Problem.created_date.desc()
         ).offset(offset).limit(limit).all()
         
@@ -169,8 +171,8 @@ class ProblemService:
             DatabaseError: При ошибках БД
         """
         # Валидация входных данных
-        name = data.get('name', '').strip()
-        describe = data.get('describe', '').strip()
+        name = capitalize_title(data.get('name', '').strip())
+        describe = capitalize_first(data.get('describe', '').strip())
         category_id = data.get('category')
         hashtag_ids = data.get('hashtag_ids', [])
         topic_id = data.get('topic')
@@ -178,6 +180,10 @@ class ProblemService:
         # Проверка обязательных полей
         if not name:
             raise ValidationError("Название проблемы обязательно")
+
+        existing = Problem.query.filter(func.lower(Problem.name) == name.lower()).first()
+        if existing:
+            raise ConflictError("Проблема с таким названием уже существует")
         
         if len(name) > ProblemService.MAX_TITLE_LENGTH:
             raise ValidationError(
@@ -279,7 +285,7 @@ class ProblemService:
         try:
             # Обновляем поля
             if 'name' in data:
-                name = data['name'].strip()
+                name = capitalize_title(data['name'].strip())
                 if not name:
                     raise ValidationError("Название не может быть пустым")
                 if len(name) > ProblemService.MAX_TITLE_LENGTH:
@@ -287,7 +293,7 @@ class ProblemService:
                 problem.name = name
             
             if 'describe' in data:
-                describe = data['describe'].strip()
+                describe = capitalize_first(data['describe'].strip())
                 if describe and len(describe) > ProblemService.MAX_DESCRIPTION_LENGTH:
                     raise ValidationError(f"Описание слишком длинное (максимум {ProblemService.MAX_DESCRIPTION_LENGTH} символов)")
                 problem.describe = describe
@@ -330,7 +336,6 @@ class ProblemService:
             
             # Инвалидируем кэш
             cache.delete_memoized(ProblemService.get_all_problems)
-            cache.delete_memoized(ProblemService.get_problem_by_id, problem_id)
             
             logger.info(f"Обновлена проблема ID={problem_id}")
             
@@ -366,19 +371,23 @@ class ProblemService:
             raise AuthorizationError("Только создатель может удалить проблему")
 
         try:
-            # Удаляем связанные файлы
             if problem.image:
                 try:
-                    delete_file(problem.image)
+                    delete_image(problem.image)
                 except Exception as e:
-                    logger.warning(f"Не удалось удалить файл изображения: {e}")
-
+                    logger.warning(f"Не удалось удалить изображение: {e}")
+            # Удаление из связанных таблиц (до удаления проблемы)
+            TemporaryLinkProblem.query.filter(
+                (TemporaryLinkProblem.currentproblem == problem_id) |
+                (TemporaryLinkProblem.linkproblem == problem_id)
+            ).delete(synchronize_session=False)
+            TemporaryProblemSolution.query.filter_by(problem=problem_id).delete()
+            Embedding.query.filter_by(entity_type='problem', entity_id=problem_id).delete()
             db.session.delete(problem)
             db.session.commit()
 
             # Инвалидируем кэш
             cache.delete_memoized(ProblemService.get_all_problems)
-            cache.delete_memoized(ProblemService.get_problem_by_id, problem_id)
 
             logger.info(f"Удалена проблема ID={problem_id}")
         except ResourceNotFoundError:

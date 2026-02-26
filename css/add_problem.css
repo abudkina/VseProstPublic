@@ -1,400 +1,433 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fff;
+/* add_problem — стили страницы «Добавить проблему» */
+
+body.add-form-page {
+    font-family: var(--font-primary);
+    background: linear-gradient(135deg, #ffffff 0%, var(--color-primary-bg) 50%, #fef2f2 100%);
+    background-attachment: fixed;
     margin: 0;
-    color: #333;
+    color: var(--text-primary);
+    min-height: 100vh;
 }
 
-.container {
-    max-width: 600px;
-    margin: 0 auto;
+.add-form-page .container {
+    max-width: 100%;
+    margin: 0;
+    padding: var(--spacing-8) var(--spacing-6);
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(220, 38, 38, 0.06);
+    border: 1px solid rgba(220, 38, 38, 0.12);
+    backdrop-filter: blur(10px);
 }
 
-h1 {
+@media (min-width: 992px) {
+    .add-form-page .container {
+        width: 80%;
+        max-width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+.add-form-page h1 {
     text-align: center;
-    color: #8B0000;
-    font-family: 'Brush Script MT', cursive, sans-serif;
-    margin-bottom: 20px;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-darkest);
+    margin-bottom: var(--spacing-6);
+    letter-spacing: -0.02em;
 }
 
-form {
+.add-form-page form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--spacing-4);
 }
 
-input[type="text"],
-textarea,
-select,
-input[type="file"] {
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    outline: none;
-    transition: border-color 0.3s;
+.add-form-page input[type="text"],
+.add-form-page textarea,
+.add-form-page select,
+.add-form-page input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-base);
+    font-family: var(--font-primary);
+    background: var(--color-white);
+    color: var(--text-primary);
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
-input[type="text"]:focus,
-textarea:focus,
-select:focus {
-    border-color: red;
-}
-
-textarea {
+.add-form-page textarea {
     resize: vertical;
-    min-height: 60px;
+    min-height: 100px;
 }
 
-.add-button {
-    background-color: red;
-    color: white;
+.add-form-page input::placeholder,
+.add-form-page textarea::placeholder {
+    color: var(--color-gray-400);
+}
+
+.add-form-page input:focus,
+.add-form-page textarea:focus,
+.add-form-page select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+
+.add-form-page #problemTitle {
+    border-color: rgba(220, 38, 38, 0.3);
+}
+
+.add-form-page #problemTitle:focus {
+    border-color: var(--color-primary);
+}
+
+.add-form-page .add-button {
+    background: var(--gradient-primary);
+    color: var(--color-white);
     border: none;
-    padding: 10px 0;
-    border-radius: 15px;
-    font-weight: bold;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
     cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    transition: transform var(--transition-fast), box-shadow var(--transition-normal);
 }
 
-.add-button:hover {
-    background-color: darkred;
+.add-form-page .add-button:hover {
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+    transform: translateY(-1px);
 }
 
-#problemTitle {
-    border: 1px solid red;
-}
-
-.form-buttons {
+.add-form-page .form-buttons {
     display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-4);
 }
 
-.clear-btn,
-.save-btn {
-    padding: 10px 20px;
-    border-radius: 15px;
-    border: none;
-    font-weight: bold;
+.add-form-page .clear-btn,
+.add-form-page .save-btn {
+    flex: 1;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
     cursor: pointer;
-    font-size: 14px;
+    transition: background var(--transition-normal), transform var(--transition-fast);
 }
 
-.clear-btn {
-    background-color: transparent;
-    color: red;
-    border: 1px solid red;
-    transition: background-color 0.3s, color 0.3s;
+.add-form-page .clear-btn {
+    background: var(--color-white);
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
 }
 
-.clear-btn:hover {
-    background-color: red;
-    color: white;
+.add-form-page .clear-btn:hover {
+    background: var(--color-primary-bg);
 }
 
-.save-btn {
-    background-color: red;
-    color: white;
-    transition: background-color 0.3s;
+.add-form-page .save-btn {
+    background: var(--gradient-primary);
+    color: var(--color-white);
+    border: none;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
 }
 
-.save-btn:hover {
-    background-color: darkred;
+.add-form-page .save-btn:hover {
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    transform: translateY(-1px);
 }
 
-    /* Оверлей для модалов */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        display: none; /* Скрыто по умолчанию */
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        animation: fadeIn 0.3s ease-out;
-    }
+.add-form-page .save-btn:active {
+    transform: translateY(0);
+}
 
-    .modal-overlay.active {
-        display: flex;
-    }
+.add-form-page input[type="file"] {
+    cursor: pointer;
+    border: 2px dashed var(--border-medium);
+    background: var(--color-gray-50);
+}
 
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
+.add-form-page input[type="file"]:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-bg-light);
+}
 
-    /* Модальные окна */
-    .modal {
-        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-        padding: 0;
-        border: none;
-        border-radius: 20px;
-        box-shadow: 
-            0 20px 60px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-        max-width: 450px;
-        width: 90%;
-        text-align: center;
-        display: none; /* Скрыто по умолчанию */
-        position: relative;
-        overflow: hidden;
-        animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+/* Модалы */
+.add-form-page .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: var(--z-modal-backdrop);
+    animation: fadeIn 0.25s ease-out;
+}
 
-    .modal.active {
-        display: block;
-    }
+.add-form-page .modal-overlay.active {
+    display: flex;
+}
 
-    /* Декоративный элемент */
-    .modal::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-        z-index: 1;
-    }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 
-    @keyframes slideUp {
-        from {
-            transform: translateY(30px) scale(0.95);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-        }
-    }
+.add-form-page .modal {
+    background: var(--color-white);
+    padding: 0;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl), 0 0 0 1px rgba(220, 38, 38, 0.08);
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    display: none;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-    .modal h2 {
-        margin: 0;
-        padding: 30px 40px 20px;
-        color: #2d3748;
-        font-family: 'Jost', 'Inter', sans-serif;
-        font-size: 28px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        letter-spacing: -0.5px;
-        position: relative;
-    }
+.add-form-page .modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-primary);
+    z-index: 1;
+}
 
-    .modal input {
-        width: calc(100% - 80px);
-        padding: 14px 18px;
-        margin: 10px 40px;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 15px;
-        font-family: 'Inter', sans-serif;
-        background: #ffffff;
-        color: #2d3748;
-        box-sizing: border-box;
-        outline: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+.add-form-page .modal.active {
+    display: block;
+}
 
-    .modal input:focus {
-        border-color: #667eea;
-        box-shadow: 
-            0 0 0 4px rgba(102, 126, 234, 0.1),
-            0 4px 12px rgba(102, 126, 234, 0.15);
-        transform: translateY(-1px);
-    }
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
 
-    .modal input::placeholder {
-        color: #a0aec0;
-        font-weight: 400;
-    }
+.add-form-page .modal h2 {
+    margin: 0;
+    padding: var(--spacing-8) var(--spacing-6) var(--spacing-4);
+    color: var(--color-primary-darkest);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+}
 
-    .modal-buttons {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        margin: 20px 40px 30px;
-        padding-top: 20px;
-        border-top: 1px solid #e2e8f0;
-    }
+.add-form-page .modal input {
+    width: calc(100% - var(--spacing-12));
+    margin: 0 var(--spacing-6) var(--spacing-4);
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-base);
+}
 
-    .modal-buttons button {
-        flex: 1;
-        padding: 14px 28px;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 600;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-family: 'Inter', sans-serif;
-        position: relative;
-        overflow: hidden;
-        letter-spacing: 0.3px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
+.add-form-page .modal input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
 
-    .modal-buttons button:first-child {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
+.add-form-page .modal-buttons {
+    display: flex;
+    gap: var(--spacing-3);
+    padding: var(--spacing-4) var(--spacing-6) var(--spacing-6);
+    border-top: 1px solid var(--border-light);
+    margin-top: var(--spacing-2);
+}
 
-    .modal-buttons button:first-child:hover {
-        background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-    }
+.add-form-page .modal-buttons button {
+    flex: 1;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-normal);
+}
 
-    .modal-buttons button:first-child:active {
-        transform: translateY(0);
-    }
+.add-form-page .modal-buttons button:first-child {
+    background: var(--gradient-primary);
+    color: var(--color-white);
+    border: none;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
 
-    .modal-buttons button:last-child {
-        background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
-        color: white;
-    }
+.add-form-page .modal-buttons button:first-child:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+}
 
-    .modal-buttons button:last-child:hover {
-        background: linear-gradient(135deg, #5a6c7d 0%, #3a4555 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
-    }
+.add-form-page .modal-buttons button:last-child {
+    background: var(--color-white);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-medium);
+}
 
-    .modal-buttons button:last-child:active {
-        transform: translateY(0);
-    }
+.add-form-page .modal-buttons button:last-child:hover {
+    background: var(--color-gray-100);
+}
 
-    .error-message {
-        color: #e53e3e;
-        margin: 0 40px 20px;
-        font-size: 14px;
-        min-height: 20px;
-        font-family: 'Inter', sans-serif;
-        font-weight: 500;
-    }
+.add-form-page .error-message {
+    color: var(--color-error);
+    margin: 0 var(--spacing-6) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    min-height: 20px;
+}
 
-    /* Адаптивность */
-    @media (max-width: 768px) {
-        .modal {
-            max-width: 95%;
-            border-radius: 16px;
-        }
-        
-        .modal h2 {
-            font-size: 24px;
-            padding: 25px 25px 15px;
-        }
-        
-        .modal input {
-            width: calc(100% - 50px);
-            margin: 10px 25px;
-        }
-        
-        .modal-buttons {
-            margin: 20px 25px 25px;
-            flex-direction: column;
-        }
-        
-        .modal-buttons button {
-            width: 100%;
-        }
+/* Tom Select — выпадающий список в body (dropdownParent: 'body'), чтобы был виден */
+body > .ts-dropdown {
+    z-index: 10002 !important;
+    max-height: 300px;
+    overflow-y: auto;
+}
 
-        .error-message {
-            margin: 0 25px 15px;
-        }
-    }
-
-/* ts-control vs-control — хэштеги (множественный выбор), как в фильтрах */
-.container .vs-wrapper {
+.add-form-page .container .vs-wrapper {
     width: 100%;
 }
 
-.vs-control input[type="text"] {
-    color: #1a202c !important;
-    font-weight: 500;
-}
-
-.vs-control input[type="text"]::placeholder {
-    color: #a0aec0;
-    transition: color 0.2s ease;
-}
-
-.vs-control.has-items input[type="text"]::placeholder {
-    color: transparent !important;
-}
-
-.vs-control:not(.has-items) input[type="text"]::placeholder {
-    color: #a0aec0 !important;
-    opacity: 1 !important;
-}
-
-.vs-control .item {
-    background-color: rgba(220, 38, 38, 0.1) !important;
-    color: #dc2626 !important;
-    border: 1px solid #dc2626;
-    border-radius: 12px;
-    padding: 4px 10px;
-    margin-right: 4px;
-    font-weight: 600;
-    white-space: normal !important;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
-
-.vs-control .item:hover {
-    background-color: rgba(220, 38, 38, 0.2) !important;
-    border-color: #b91c1c;
-}
-
-.vs-control.has-items:hover input::placeholder {
-    color: transparent;
-    transition: color 0.3s;
-}
-
-.vs-control:not(.has-items):hover input::placeholder {
-    color: #a0aec0 !important;
-    opacity: 1 !important;
-}
-
-.vs-control {
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 16px !important;
-    background-color: white !important;
-    box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+/* Поле выбора хэштегов (search-select) */
+.add-form-page .search-select-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    min-height: 48px;
+    background: var(--color-white);
     position: relative;
-    z-index: 1;
-    min-width: 140px !important;
-    padding: 8px 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+.add-form-page .search-select-wrap:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+.add-form-page .filter-search-input {
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    padding: var(--spacing-2) 0;
+    font-size: var(--font-size-base);
+    font-family: var(--font-primary);
+    background: transparent;
+    color: var(--text-primary);
+}
+.add-form-page .filter-search-input:focus {
+    outline: none;
+}
+.add-form-page .search-select-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    align-items: center;
+}
+.add-form-page .search-select-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px 4px 10px;
+    background: var(--color-primary-bg);
+    color: var(--color-primary-dark);
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+}
+.add-form-page .search-select-tag .tag-remove {
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    line-height: 1;
+    color: inherit;
+    opacity: 0.8;
+    border-radius: 2px;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.add-form-page .search-select-tag .tag-remove:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.08);
+}
+.add-form-page .search-select-dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 2px;
+    max-height: 220px;
+    overflow-y: auto;
+    background: var(--color-white);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    display: none;
+}
+.add-form-page .search-select-dropdown.active {
+    display: block;
+}
+.add-form-page .search-select-dropdown .dropdown-item {
+    padding: var(--spacing-3) var(--spacing-4);
+    cursor: pointer;
+    font-size: var(--font-size-base);
+}
+.add-form-page .search-select-dropdown .dropdown-item:hover {
+    background: var(--color-primary-bg);
 }
 
-.vs-control.focus {
-    border-color: #dc2626 !important;
-    box-shadow:
-        0 0 0 4px rgba(220, 38, 38, 0.1),
-        0 4px 12px rgba(220, 38, 38, 0.15) !important;
+/* Поле хэштегов: ширина не сужается при выборе (отменяем .vs-wrapper.multi.has-items из index.css) */
+.add-form-page .vs-wrapper,
+.add-form-page .vs-wrapper.multi.has-items,
+.add-form-page .vs-wrapper.multi.focus.input-active.has-items {
+    max-width: none !important;
+    min-width: 0 !important;
 }
 
-/* Исправление для закрытия выпадающего списка Tom Select */
-.vs-wrapper.single .ts-dropdown[style*="display: none"] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+.add-form-page .vs-control {
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-xl) !important;
+    padding: var(--spacing-2) var(--spacing-3) !important;
+    min-height: 48px;
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal) !important;
 }
 
-/* Убираем принудительное отображение для single select после выбора */
-.vs-wrapper.single:not(.focus):not(.input-active) .ts-dropdown {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+.add-form-page .vs-control.focus {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12) !important;
+}
+
+.add-form-page .vs-control .item {
+    background: var(--color-primary-bg) !important;
+    color: var(--color-primary-dark) !important;
+    border: 1px solid rgba(220, 38, 38, 0.25) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 4px 10px !important;
+}
+
+@media (max-width: 640px) {
+    .add-form-page .container {
+        padding: var(--spacing-5) var(--spacing-4);
+    }
+    .add-form-page .form-buttons {
+        flex-direction: column;
+    }
+    .add-form-page .modal-buttons {
+        flex-direction: column;
+    }
 }

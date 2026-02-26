@@ -102,7 +102,8 @@ def get_topics():
                 Topic.name.ilike(search_pattern)
             ).order_by(Topic.name).limit(50).all()
         else:
-            return jsonify([]), 200
+            # Пустой поиск — подсказки: первые темы по алфавиту
+            topics = Topic.query.order_by(Topic.name).limit(30).all()
         
         topics_list = []
         for topic in topics:

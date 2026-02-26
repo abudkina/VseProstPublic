@@ -152,7 +152,7 @@
 
 .favorite-icon.favorited,
 .favorite-icon.liked {
-  color: #991b1b;
+  color: var(--color-primary-darkest);
 }
 
 a {
@@ -323,10 +323,10 @@ body {
 }
 
 .top-row #search::placeholder {
-  color: #a0aec0;
-  font-weight: 400;
+  color: var(--text-light);
+  font-weight: var(--font-weight-normal);
   font-style: normal;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-primary);
 }
 
 .top-row #search:hover::placeholder {
@@ -472,7 +472,10 @@ body {
 .card-image-wrapper img.card-image {
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  min-height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
   transition: transform 0.3s ease;
 }
@@ -1077,10 +1080,14 @@ body > .ts-dropdown {
   }
 }
 
-/* Адаптивность */
-@media (min-width: 1200px) and (max-width: 2000px) {
+/* Адаптивность для карточек и фильтров */
+
+/* Large Desktop (1200px+) */
+@media (min-width: 1200px) {
   .cards-container {
     grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    padding: 5px;
   }
 
   .filters.mobile {
@@ -1088,34 +1095,167 @@ body > .ts-dropdown {
   }
 }
 
+/* Desktop (992px - 1199px) */
 @media (min-width: 992px) and (max-width: 1199px) {
   .cards-container {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 4px;
   }
 
   .filters.mobile {
     display: none;
   }
+
+  .search-filters {
+    padding: 8px 1em;
+  }
+
+  .card-image-wrapper {
+    height: 160px;
+  }
 }
 
+/* Tablet (768px - 991px) */
 @media (min-width: 768px) and (max-width: 991px) {
   .cards-container {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 4px;
   }
 
   .filters.mobile {
     display: none;
   }
+
+  .search-filters {
+    padding: 8px 0.8em;
+    gap: 8px;
+  }
+
+  .top-row {
+    gap: 8px;
+  }
+
+  .top-row #search {
+    font-size: 0.95rem;
+    padding: 12px 16px;
+  }
+
+  .top-row #addProblem {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+
+  .filters.desktop {
+    gap: 8px;
+  }
+
+  .filters.desktop select {
+    min-width: 120px;
+    font-size: 0.85rem;
+    padding: 7px 12px;
+  }
+
+  .card-image-wrapper {
+    height: 140px;
+  }
+
+  .card-content {
+    padding: 12px 14px;
+  }
+
+  .card-title-text {
+    font-size: 0.9rem;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  .stat-item {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+    gap: 3px;
+  }
+
+  .stat-icon {
+    width: 14px;
+    height: 14px;
+    font-size: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 0.7rem;
+  }
+
+  .card-favorites {
+    padding: 6px 8px;
+    width: 36px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .favorite-icon {
+    font-size: 16px;
+  }
+
+  .card-cart-btn {
+    width: 36px;
+    height: 36px;
+    top: 50px;
+    left: 10px;
+  }
+
+  .card-cart-btn i {
+    font-size: 16px;
+  }
+
+  .rating {
+    padding: 6px 10px;
+    font-size: 1rem;
+    top: 10px;
+    left: 10px;
+  }
 }
 
+/* Medium Phones (480px - 767px) */
 @media (min-width: 480px) and (max-width: 767px) {
   .cards-container {
     grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 3px;
+  }
+
+  .search-filters {
+    padding: 6px 0.6em;
+    gap: 8px;
+    border-radius: 16px;
+  }
+
+  .top-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .top-row #search {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+
+  .top-row #addProblem {
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    width: 100%;
   }
 
   .filters.desktop {
-    display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
   }
 
@@ -1125,23 +1265,121 @@ body > .ts-dropdown {
     width: 100%;
     min-width: 0;
     flex: 1 1 100%;
+    font-size: 0.85rem;
   }
 
   .filters.desktop .choices__list--dropdown,
   .filters.desktop .vs-wrapper {
     width: 100%;
+  }
+
+  .card {
+    border-radius: 16px;
+  }
+
+  .card-image-wrapper {
+    height: 120px;
+  }
+
+  .card-content {
+    padding: 10px 12px;
+  }
+
+  .card-title-text {
+    font-size: 0.85rem;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+  }
+
+  .tag {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    border-radius: 10px;
+  }
+
+  .stat-item {
+    font-size: 0.6rem;
+    padding: 3px 5px;
+    gap: 2px;
+  }
+
+  .stat-icon {
+    width: 12px;
+    height: 12px;
+    font-size: 0.7rem;
+  }
+
+  .stat-value {
+    font-size: 0.65rem;
+  }
+
+  .card-favorites {
+    padding: 5px 7px;
+    width: 32px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .favorite-icon {
+    font-size: 14px;
+  }
+
+  .card-cart-btn {
+    width: 32px;
+    height: 32px;
+    top: 42px;
+    left: 8px;
+    border-radius: 12px;
+  }
+
+  .card-cart-btn i {
+    font-size: 14px;
+  }
+
+  .rating {
+    padding: 5px 8px;
+    font-size: 0.9rem;
+    top: 8px;
+    left: 8px;
+    border-radius: 12px;
   }
 }
 
+/* Small Phones (<480px) */
 @media (max-width: 479px) {
   .cards-container {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 2px;
+  }
+
+  .search-filters {
+    padding: 6px 0.5em;
+    gap: 6px;
+    border-radius: 12px;
+  }
+
+  .top-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .top-row #search {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border-radius: 10px;
+  }
+
+  .top-row #addProblem {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    width: 100%;
   }
 
   .filters.desktop {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .filters.desktop select,
@@ -1150,10 +1388,140 @@ body > .ts-dropdown {
     width: 100%;
     min-width: 0;
     flex: 1 1 100%;
+    font-size: 0.8rem;
+    padding: 6px 10px;
   }
 
   .filters.desktop .choices__list--dropdown,
   .filters.desktop .vs-wrapper {
     width: 100%;
+  }
+
+  .filters.desktop button {
+    padding: 7px 12px;
+    font-size: 0.85rem;
+  }
+
+  .card {
+    border-radius: 12px;
+  }
+
+  .card-image-wrapper {
+    height: 100px;
+  }
+
+  .card-content {
+    padding: 8px 10px;
+  }
+
+  .card-title-text {
+    font-size: 0.75rem;
+    bottom: 6px;
+    left: 6px;
+    right: 6px;
+    line-height: 1.1em;
+  }
+
+  .tag {
+    font-size: 0.6rem;
+    padding: 3px 6px;
+    border-radius: 8px;
+    gap: 4px;
+  }
+
+  .stat-item {
+    font-size: 0.55rem;
+    padding: 2px 4px;
+    gap: 2px;
+    border-radius: 8px;
+  }
+
+  .stat-icon {
+    width: 10px;
+    height: 10px;
+    font-size: 0.65rem;
+  }
+
+  .stat-icon i {
+    width: 10px;
+    height: 10px;
+  }
+
+  .stat-value {
+    font-size: 0.6rem;
+    min-width: 8px;
+  }
+
+  .card-favorites {
+    padding: 4px 6px;
+    width: 28px;
+    top: 6px;
+    right: 6px;
+    border-radius: 10px;
+  }
+
+  .favorite-icon {
+    font-size: 12px;
+  }
+
+  .card-cart-btn {
+    width: 28px;
+    height: 28px;
+    top: 36px;
+    left: 6px;
+    border-radius: 10px;
+  }
+
+  .card-cart-btn i {
+    font-size: 12px;
+  }
+
+  .rating {
+    padding: 4px 6px;
+    font-size: 0.8rem;
+    top: 6px;
+    left: 6px;
+    border-radius: 10px;
+  }
+}
+
+/* Very Small Phones (<375px) */
+@media (max-width: 374px) {
+  .cards-container {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 6px;
+    padding: 2px;
+  }
+
+  .search-filters {
+    padding: 5px 0.4em;
+  }
+
+  .top-row #search {
+    font-size: 0.8rem;
+    padding: 7px 10px;
+  }
+
+  .top-row #addProblem {
+    padding: 7px 14px;
+    font-size: 0.75rem;
+  }
+
+  .card-image-wrapper {
+    height: 140px;
+  }
+
+  .card-title-text {
+    font-size: 0.8rem;
+  }
+
+  .stat-item {
+    font-size: 0.5rem;
+    padding: 2px 3px;
+  }
+
+  .tag {
+    font-size: 0.55rem;
+    padding: 2px 5px;
   }
 }

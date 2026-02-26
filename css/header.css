@@ -32,15 +32,16 @@ header {
 }
 
 .logo::after {
-  content: 'ВсёПрост';
+  content: 'Всё Прост';
   margin-left: var(--spacing-3);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary-darkest);
-  background: none;
-  -webkit-text-fill-color: currentColor;
-  -webkit-background-clip: initial;
-  background-clip: initial;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #991b1b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
 }
 
 .logo:hover {
@@ -387,110 +388,116 @@ nav {
 }
 
 /* Адаптивность */
-@media (min-width: 768px) {
+
+/* Десктопы и большие экраны (992px+) */
+@media (min-width: 992px) {
   header {
     justify-content: center;
+    padding: var(--spacing-3) var(--spacing-6);
   }
 
   header .logo {
     position: absolute;
-    left: 1em;
-  }
-}
-
-@media (min-width: 1200px) and (max-width: 2000px){
-  
-  .mobile-menu{
-    display: none; /* Скрываем мобильные фильтры */
-  }
-}
-
-@media (min-width: 992px) and (max-width: 1199px) {
-
-  .mobile-menu{
-    display: none; /* Скрываем мобильные фильтры */
+    left: 1.5em;
   }
 
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  
-  .mobile-menu{
-    display: none; /* Скрываем мобильные фильтры */
-  }
-
-}
-
-@media (min-width: 480px) and (max-width: 767px) {
-  
-  .desktop-menu{
-    display: none; /* Скрываем мобильные фильтры */
-  }
-}
-
-@media (max-width: 479px) {
-  
-  .desktop-menu{
-    display: none; /* Скрываем мобильные фильтры */
-  }
-}
-
-@media (max-width: 767px) {
-  header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-1);
-    padding: var(--spacing-3);
-  }
-
-  .logo {
+  /* Скрываем старое мобильное меню (будет использоваться гамбургер) */
+  .mobile-menu {
     display: none;
   }
 
-  .logo-image {
-    height: 32px;
-  }
-
-  .mobile-menu {
-    justify-content: space-around;
-    gap: var(--spacing-1);
-    padding: var(--spacing-1) 0;
-  }
-
-  .mobile-menu .menu-item {
-    padding: var(--spacing-2);
-    border-radius: var(--radius-xl);
-  }
-
-  .mobile-menu .menu-item img {
-    width: 26px;
-    height: 26px;
-  }
-
-  .mobile-menu .menu-item i {
-    font-size: 22px;
+  /* Показываем десктоп-меню */
+  .desktop-menu {
+    display: flex;
   }
 }
 
-@media (max-width: 479px) {
+/* Планшеты и мобильные (до 991px) */
+@media (max-width: 991px) {
+  header {
+    padding: var(--spacing-3) var(--spacing-4);
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Показываем лого на мобильных (но меньшего размера) */
+  .logo {
+    display: inline-flex;
+    font-size: var(--font-size-lg);
+  }
+
+  .logo::after {
+    font-size: var(--font-size-lg);
+    margin-left: var(--spacing-2);
+  }
+
+  .logo-image {
+    height: 36px;
+  }
+
+  /* Скрываем десктоп-меню */
+  .desktop-menu {
+    display: none;
+  }
+
+  /* Мобильное меню стилизуется в mobile-menu.css */
+}
+
+/* Планшеты (768px-991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  header {
+    padding: var(--spacing-3) var(--spacing-5);
+  }
+
+  .logo-image {
+    height: 38px;
+  }
+
   .logo {
     font-size: var(--font-size-xl);
   }
 
+  .logo::after {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* Средние смартфоны (480px-767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  header {
+    padding: var(--spacing-2) var(--spacing-4);
+  }
+
   .logo-image {
-    height: 28px;
+    height: 34px;
   }
 
-  .mobile-menu .menu-item {
-    padding: var(--spacing-2);
+  .logo {
+    font-size: var(--font-size-base);
   }
 
-  .mobile-menu .menu-item img {
-    width: 24px;
-    height: 24px;
+  .logo::after {
+    font-size: var(--font-size-base);
+    margin-left: var(--spacing-2);
+  }
+}
+
+/* Маленькие смартфоны (<480px) */
+@media (max-width: 479px) {
+  header {
+    padding: var(--spacing-2) var(--spacing-3);
   }
 
-  .mobile-menu .menu-item i {
-    font-size: 20px;
+  .logo-image {
+    height: 30px;
+  }
+
+  .logo {
+    font-size: var(--font-size-sm);
+  }
+
+  .logo::after {
+    font-size: var(--font-size-sm);
+    margin-left: var(--spacing-1);
   }
 }
