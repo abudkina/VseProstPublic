@@ -318,6 +318,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
             loadUserProblems();
         } else if (tabName === 'solutions') {
             loadUserSolutions();
+        }
         // } else if (tabName === 'payment') {
         //     loadPaymentBalance();
         // }

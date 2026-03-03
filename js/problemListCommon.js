@@ -3,6 +3,9 @@
 
 import { initTagsScroll } from './tagsScroll.js';
 
+/** Размер страницы для подгрузки по скроллу */
+export const PAGE_SIZE = 20;
+
 // Re-export initTagsScroll for use in other modules
 export { initTagsScroll };
 
@@ -201,8 +204,9 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
     const container = document.querySelector('.cards-container');
     if (!container) return;
     
-    container.innerHTML = 'Загрузка...';
-    
+    const append = filters.append === true;
+    if (!append) container.innerHTML = 'Загрузка...';
+
     const params = new URLSearchParams();
     if (filters.search) params.append('search', filters.search);
     if (filters.hashtags && filters.hashtags.length) {
@@ -251,8 +255,9 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
             throw new Error(response.ok ? 'Некорректный ответ сервера' : `Ошибка HTTP: ${response.status}`);
         }
         const list = (data && data.problems !== undefined) ? data.problems : (Array.isArray(data) ? data : []);
-        // ИИ и оплата отключены: suggestAi не показываем
+        const limit = filters.limit || PAGE_SIZE;
         const meta = data && typeof data === 'object' ? { suggestAi: false, aiPlanPriceRub: data.ai_plan_price_rub } : {};
+        meta.hasMore = list.length >= limit;
         if (onSuccess) {
             onSuccess(list, meta);
         } else {
@@ -274,7 +279,8 @@ export function renderProblemCards(data, options = {}) {
     const container = document.querySelector('.cards-container');
     if (!container) return;
     const list = Array.isArray(data) ? data : [];
-    container.innerHTML = '';
+    const append = options.append === true;
+    if (!append) container.innerHTML = '';
 
     if (list.length === 0 && options.suggestAi) {
         const suggestDiv = document.createElement('div');
@@ -337,7 +343,7 @@ export function renderProblemCards(data, options = {}) {
         checkAiPlan();
         return;
     }
-
+    if (list.length === 0 && append) return;
     if (list.length === 0) {
         container.innerHTML = '<p style="text-align:center">Нет проблем для отображения</p>';
         return;
@@ -471,9 +477,11 @@ export function renderProblemCards(data, options = {}) {
         container.appendChild(clone);
     });
     
-    // Инициализируем обработчики клика на тему (только для обычной страницы)
+    // Инициализируем обработчики клика на тему (только для обычной страницы, только у новых карточек при append)
     if (!options.isAdmin) {
-        container.querySelectorAll('.topic-link').forEach(topicLink => {
+        const cards = container.querySelectorAll('.card');
+        const links = append ? Array.from(cards).slice(-list.length).flatMap(c => c.querySelectorAll('.topic-link')) : container.querySelectorAll('.topic-link');
+        links.forEach(topicLink => {
             topicLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();

@@ -20,6 +20,7 @@ from logic.rag_search import search_with_rag, hybrid_search, semantic_search
 from logic.utils.logger import get_logger
 from logic.utils.normalizers import capitalize_title, capitalize_first
 from logic.services.problem_service import ProblemService
+from logic.cache_config import invalidate_index_cache
 from logic.utils.error_handler import (
     ValidationError, AuthorizationError, ResourceNotFoundError, DatabaseError
 )
@@ -996,7 +997,7 @@ def create_problem():
         try:
             db.session.add(problem)
             db.session.commit()
-            
+            invalidate_index_cache()
             # Связываем хэштеги ПОСЛЕ сохранения проблемы
             if hashtag_ids:
                 hashtags = Hashtag.query.filter(Hashtag.id.in_(hashtag_ids)).all()
@@ -1126,7 +1127,7 @@ def create_problem_from_json(user_id, data):
         
         db.session.add(problem)
         db.session.commit()
-        
+        invalidate_index_cache()
         return jsonify({
             'message': 'Проблема успешно создана',
             'id': problem.id,
@@ -1235,6 +1236,7 @@ def update_problem(problem_id):
         
         try:
             db.session.commit()
+            invalidate_index_cache()
         except Exception as e:
             db.session.rollback()
             logger.error(f"Ошибка обновления проблемы: {e}")
@@ -1259,6 +1261,7 @@ def delete_problem(problem_id):
             return jsonify({'error': 'userID не найден'}), 401
 
         ProblemService.delete_problem(problem_id, user_id)
+        invalidate_index_cache()
         return jsonify({'message': 'Проблема удалена'}), 200
 
     except ResourceNotFoundError:

@@ -85,9 +85,6 @@ def minify_response(app):
                 
                 response.set_data(content)
                 
-                # Добавляем Content-Encoding header
-                response.headers['Content-Encoding'] = 'gzip'
-                
             except Exception as e:
                 logger.warning(f"Ошибка при минификации: {e}")
         

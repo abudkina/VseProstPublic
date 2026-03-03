@@ -17,6 +17,7 @@ from logic.rag_search import search_with_rag, hybrid_search, semantic_search
 from logic.utils.logger import get_logger
 from logic.utils.normalizers import capitalize_title, capitalize_first
 from logic.services.solution_service import SolutionService
+from logic.cache_config import invalidate_index_cache
 from logic.utils.error_handler import ResourceNotFoundError, AuthorizationError, DatabaseError
 
 logger = get_logger(__name__)
@@ -631,6 +632,7 @@ def create_solution():
                     solution.problems.extend(problems)
             
             db.session.commit()
+            invalidate_index_cache()
             
         except Exception as e:
             db.session.rollback()
@@ -815,6 +817,7 @@ def update_solution(solution_id):
         
         try:
             db.session.commit()
+            invalidate_index_cache()
         except Exception as e:
             db.session.rollback()
             logger.error(f"Ошибка обновления решения: {e}")
@@ -846,6 +849,7 @@ def delete_solution(solution_id):
         except DatabaseError as e:
             logger.error(f"Ошибка удаления решения: {e}")
             return jsonify({'error': 'Ошибка удаления решения'}), 500
+        invalidate_index_cache()
         return jsonify({'message': 'Решение удалено'}), 200
     except Exception as e:
         logger.error(f"Ошибка удаления решения: {e}")

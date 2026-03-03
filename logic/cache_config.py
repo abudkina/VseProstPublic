@@ -57,10 +57,15 @@ def cache_route(timeout=300, key_prefix=None):
     return decorator
 
 
+def invalidate_index_cache():
+    """Сбросить кэш главной страницы (после изменения проблем/решений)."""
+    cache.delete('index_full_page')
+
+
 def invalidate_cache(pattern=None):
     """
     Инвалидировать кэш по паттерну
-    
+
     Example:
         invalidate_cache('route_get_problems_*')
     """

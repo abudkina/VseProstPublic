@@ -495,6 +495,14 @@ body > .ts-dropdown[style*="display:none"] {
 }
 
 /* Карточки */
+.cards-container .scroll-sentinel {
+  height: 1px;
+  visibility: hidden;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
 .cards-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);

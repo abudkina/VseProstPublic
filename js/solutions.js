@@ -13,13 +13,18 @@ import {
 // Инициализация обработчиков авторизации
 initAuthHandlers();
 
+const PAGE_SIZE = 20;
 let choicesInstance;
+let hasMore = true;
+let loadingMore = false;
+let scrollSentinel = null;
+let scrollObserver = null;
 
 let currentFilters = {
   search: '',
   hashtags: [],
   category: null,
-  limit: 50,
+  limit: PAGE_SIZE,
   offset: 0
 };
 
@@ -37,9 +42,9 @@ function setFavoriteIconState(iconElement, isFavorite) {
   }
 }
 
-async function loadCards(search = '', category = null, hashtags = [], offset = 0) {
+async function loadCards(append = false, onDone = null) {
   const container = document.querySelector('.cards-container');
-  container.innerHTML = 'Загрузка...';
+  if (!append) container.innerHTML = 'Загрузка...';
 
   const params = new URLSearchParams();
   if (currentFilters.search) params.append('search', currentFilters.search);
@@ -49,18 +54,23 @@ async function loadCards(search = '', category = null, hashtags = [], offset = 0
     params.append('category', currentFilters.category);
   params.append('limit', currentFilters.limit);
   params.append('offset', currentFilters.offset);
-  params.set('_', String(Date.now())); // cache-busting
+  params.set('_', String(Date.now()));
 
   try {
     const response = await fetch(API_CONFIG.buildURL(`/solutions?${params.toString()}`), { cache: 'no-store' });
     if (!response.ok) throw new Error('Ошибка HTTP: ' + response.status);
     const data = await response.json();
     const list = (data && data.solutions !== undefined) ? data.solutions : (Array.isArray(data) ? data : []);
-
-    sortAndRender(list);
-
+    const more = list.length >= currentFilters.limit;
+    if (append) {
+      renderCards(list, { append: true });
+    } else {
+      sortAndRender(list);
+    }
+    if (onDone) onDone(more);
   } catch (error) {
-    container.innerHTML = `<p style="color:red; text-align:center">Ошибка загрузки данных: ${error.message}</p>`;
+    if (!append) container.innerHTML = `<p style="color:red; text-align:center">Ошибка загрузки данных: ${error.message}</p>`;
+    if (onDone) onDone(false);
   }
 }
 
@@ -88,9 +98,10 @@ function sortAndRender(data) {
 
 // Теперь используем градиентный фон вместо внешних изображений
 
-function renderCards(data) {
+function renderCards(data, options = {}) {
   const container = document.querySelector('.cards-container');
-  container.innerHTML = '';
+  const append = options.append === true;
+  if (!append) container.innerHTML = '';
 
   const templateElement = document.getElementById('card-template');
   if (!templateElement) {
@@ -100,6 +111,7 @@ function renderCards(data) {
   const template = templateElement.content;
 
   if (data.length === 0) {
+    if (append) return;
     container.innerHTML = '<p style="text-align:center;">Ничего не найдено</p>';
     return;
   }
@@ -471,9 +483,42 @@ async function toggleSolutionFavorite(solutionId, iconElement) {
   }
 }
 
-// Функция для перезагрузки карточек
+function addSentinel() {
+  const container = document.querySelector('.cards-container');
+  if (!container || container.querySelector('.scroll-sentinel')) return;
+  const sentinel = document.createElement('div');
+  sentinel.className = 'scroll-sentinel';
+  sentinel.setAttribute('aria-hidden', 'true');
+  container.appendChild(sentinel);
+  scrollSentinel = sentinel;
+  if (scrollObserver) scrollObserver.observe(sentinel);
+}
+
+function removeSentinel() {
+  scrollSentinel?.remove();
+  scrollSentinel = null;
+}
+
 function reloadCards() {
-  loadCards();
+  currentFilters.append = false;
+  currentFilters.offset = 0;
+  loadCards(false, (more) => {
+    hasMore = more;
+    if (hasMore) addSentinel();
+  });
+}
+
+function loadMoreCards() {
+  if (loadingMore || !hasMore) return;
+  loadingMore = true;
+  const container = document.querySelector('.cards-container');
+  currentFilters.offset = container ? container.querySelectorAll('.card').length : 0;
+  currentFilters.append = true;
+  loadCards(true, (more) => {
+    hasMore = more;
+    loadingMore = false;
+    if (!hasMore) removeSentinel();
+  });
 }
 
 // Инициализация
@@ -482,9 +527,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories('category', false);
   
   // Инициализируем TomSelect для хэштегов
+  scrollObserver = new IntersectionObserver(
+    (entries) => { if (entries[0]?.isIntersecting) loadMoreCards(); },
+    { rootMargin: '200px', threshold: 0 }
+  );
   choicesInstance = initHashtagsTomSelect('hashtags', (instance) => {
     currentFilters.hashtags = instance.getValue().map(v => parseInt(v, 10));
     currentFilters.offset = 0;
+    hasMore = true;
     reloadCards();
     document.querySelector('.vs-control')?.classList.add('has-items');
   });
@@ -499,12 +549,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           choicesInstance.removeItem(value);
           currentFilters.hashtags = choicesInstance.getValue().map(v => parseInt(v, 10));
           currentFilters.offset = 0;
-          
+          hasMore = true;
           // Очищаем опции и закрываем выпадающий список при удалении
           choicesInstance.clearOptions();
           choicesInstance.close();
           choicesInstance.control_input.value = '';
-          
           reloadCards();
           if (choicesInstance.items.length == 0) {
             const tsControl = document.querySelector('.vs-control');

@@ -38,7 +38,7 @@ from logic.feed import feed_bp
 from logic.search_engines_optimization import search_engines_bp
 # from logic.payment import payment_bp
 # from logic.ai_routes import ai_bp
-from logic.cache_config import invalidate_cache
+from logic.cache_config import invalidate_cache, cache
 
 
 def create_app(config=None):
@@ -218,6 +218,10 @@ def _register_static_routes(app):
     def index():
         """Отображение главной страницы с SEO-ссылками на проблемы"""
         try:
+            cached = cache.get('index_full_page')
+            if cached is not None:
+                return Response(cached, mimetype='text/html; charset=utf-8')
+
             index_path = os.path.join(project_root, 'html', 'index.html')
             if not os.path.exists(index_path):
                 index_path = os.path.join(project_root, 'static', 'index.html')
@@ -231,8 +235,8 @@ def _register_static_routes(app):
             try:
                 from logic.model import Problem, Solution
 
-                problems = Problem.query.order_by(Problem.modified_date.desc()).limit(500).all()
-                solutions = Solution.query.order_by(Solution.modified_date.desc()).limit(500).all()
+                problems = Problem.query.order_by(Problem.modified_date.desc()).limit(150).all()
+                solutions = Solution.query.order_by(Solution.modified_date.desc()).limit(150).all()
 
                 if problems or solutions:
                     # Генерируем блок с ссылками (будет виден для поисковиков)
@@ -273,6 +277,7 @@ def _register_static_routes(app):
             except Exception as e:
                 app.logger.warning(f"Не удалось добавить SEO-ссылки на главную: {e}")
 
+            cache.set('index_full_page', content, timeout=300)
             return Response(content, mimetype='text/html; charset=utf-8')
         except Exception as e:
             app.logger.exception(f"Ошибка при отдаче index: {e}")

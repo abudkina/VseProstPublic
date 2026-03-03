@@ -6,7 +6,8 @@ import {
     loadProblemsCards,
     renderProblemCards,
     initFilterHandlers,
-    initTagClickHandler
+    initTagClickHandler,
+    PAGE_SIZE
 } from './problemListCommon.js';
 
 // Инициализация обработчиков авторизации
@@ -20,24 +21,62 @@ let currentFilters = {
   category: null,
   topic: null,
   sort: 'default',
-  limit: 50,
+  limit: PAGE_SIZE,
   offset: 0
 };
+let hasMore = true;
+let loadingMore = false;
+let scrollSentinel = null;
+let scrollObserver = null;
 
-// Функция для перезагрузки карточек
+const renderOptions = () => ({
+  isAdmin: false,
+  onTopicClick: (topicId) => {
+    currentFilters.topic = topicId;
+    currentFilters.offset = 0;
+    hasMore = true;
+    reloadCards();
+  }
+});
+
+function addSentinel() {
+  const container = document.querySelector('.cards-container');
+  if (!container || container.querySelector('.scroll-sentinel')) return;
+  const sentinel = document.createElement('div');
+  sentinel.className = 'scroll-sentinel';
+  sentinel.setAttribute('aria-hidden', 'true');
+  container.appendChild(sentinel);
+  scrollSentinel = sentinel;
+  if (scrollObserver) scrollObserver.observe(sentinel);
+}
+
+function removeSentinel() {
+  scrollSentinel?.remove();
+  scrollSentinel = null;
+}
+
 function reloadCards() {
-    loadProblemsCards(currentFilters, (list, meta) => {
-        renderProblemCards(list, {
-            ...meta, 
-            isAdmin: false,
-            onTopicClick: (topicId) => {
-                // При клике на тему фильтруем по этой теме
-                currentFilters.topic = topicId;
-                currentFilters.offset = 0;
-                reloadCards();
-            }
-        });
-    });
+  currentFilters.append = false;
+  currentFilters.offset = 0;
+  loadProblemsCards(currentFilters, (list, meta) => {
+    hasMore = meta.hasMore !== false;
+    renderProblemCards(list, { ...meta, ...renderOptions() });
+    if (hasMore) addSentinel();
+  });
+}
+
+function loadMoreCards() {
+  if (loadingMore || !hasMore) return;
+  loadingMore = true;
+  const container = document.querySelector('.cards-container');
+  currentFilters.offset = container ? container.querySelectorAll('.card').length : 0;
+  currentFilters.append = true;
+  loadProblemsCards(currentFilters, (list, meta) => {
+    hasMore = meta.hasMore !== false;
+    renderProblemCards(list, { ...meta, append: true, ...renderOptions() });
+    loadingMore = false;
+    if (!hasMore) removeSentinel();
+  });
 }
 
 // Инициализация
@@ -104,6 +143,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         addProblemLink.style.display = 'none';
     }
 
-    // Загружаем карточки
+    scrollObserver = new IntersectionObserver(
+        (entries) => { if (entries[0]?.isIntersecting) loadMoreCards(); },
+        { rootMargin: '200px', threshold: 0 }
+    );
     reloadCards();
 });
