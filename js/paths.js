@@ -10,6 +10,20 @@
         return /\/html\//.test(location.pathname);
     }
 
+    function pageUrl(page) {
+        var q = '';
+        var i = String(page).indexOf('?');
+        if (i >= 0) {
+            q = page.slice(i);
+            page = page.slice(0, i);
+        }
+        page = String(page).replace(/^\/+/, '').replace(/^html\//, '');
+        if (cfg.isStaticMode) {
+            return (inHtmlDir() ? '' : 'html/') + page + q;
+        }
+        return '/html/' + page + q;
+    }
+
     function problemUrl(id) {
         if (cfg.isStaticMode) {
             return (inHtmlDir() ? '' : 'html/') + 'problem.html?id=' + id;
@@ -36,11 +50,13 @@
         problem: problemUrl,
         solution: solutionUrl,
         asset: assetUrl,
+        page: pageUrl,
         home: function () {
             return inHtmlDir() ? '../' : './';
         }
     };
     window.assetUrl = assetUrl;
+    window.pageUrl = pageUrl;
 
     window.normalizeImageSrc = function (raw, fallback) {
         fallback = fallback || 'assets/images/Screenshot_4-ww78noDj9-transformed.png';

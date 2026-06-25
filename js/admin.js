@@ -88,14 +88,14 @@ function setupNavigationHandlers() {
     if (newProblemsLink) {
         newProblemsLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'html/admin_problems.html';
+            window.location.href = window.pageUrl('admin_problems.html');
         });
         // Делаем весь блок кликабельным
         const block = newProblemsLink.nextElementSibling;
         if (block) {
             block.style.cursor = 'pointer';
             block.addEventListener('click', () => {
-                window.location.href = 'html/admin_problems.html';
+                window.location.href = window.pageUrl('admin_problems.html');
             });
         }
     }
@@ -105,13 +105,13 @@ function setupNavigationHandlers() {
     if (newSolutionsLink) {
         newSolutionsLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'html/admin_solutions.html';
+            window.location.href = window.pageUrl('admin_solutions.html');
         });
         const block = newSolutionsLink.nextElementSibling;
         if (block) {
             block.style.cursor = 'pointer';
             block.addEventListener('click', () => {
-                window.location.href = 'html/admin_solutions.html';
+                window.location.href = window.pageUrl('admin_solutions.html');
             });
         }
     }
@@ -120,13 +120,13 @@ function setupNavigationHandlers() {
     if (newHashtagsLink) {
         newHashtagsLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'html/admin_hashtags.html';
+            window.location.href = window.pageUrl('admin_hashtags.html');
         });
         const block = newHashtagsLink.nextElementSibling;
         if (block) {
             block.style.cursor = 'pointer';
             block.addEventListener('click', () => {
-                window.location.href = 'html/admin_hashtags.html';
+                window.location.href = window.pageUrl('admin_hashtags.html');
             });
         }
     }
@@ -135,13 +135,13 @@ function setupNavigationHandlers() {
     if (newSolutionCommentsLink) {
         newSolutionCommentsLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'html/admin_comments.html';
+            window.location.href = window.pageUrl('admin_comments.html');
         });
         const block = newSolutionCommentsLink.nextElementSibling;
         if (block) {
             block.style.cursor = 'pointer';
             block.addEventListener('click', () => {
-                window.location.href = 'html/admin_comments.html';
+                window.location.href = window.pageUrl('admin_comments.html');
             });
         }
     }
@@ -150,13 +150,13 @@ function setupNavigationHandlers() {
     if (newCategoriesLink) {
         newCategoriesLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'html/admin_categories.html';
+            window.location.href = window.pageUrl('admin_categories.html');
         });
         const block = newCategoriesLink.nextElementSibling;
         if (block) {
             block.style.cursor = 'pointer';
             block.addEventListener('click', () => {
-                window.location.href = 'html/admin_categories.html';
+                window.location.href = window.pageUrl('admin_categories.html');
             });
         }
     }
@@ -165,13 +165,13 @@ function setupNavigationHandlers() {
     if (newTopicsLink) {
         newTopicsLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'html/admin_topics.html';
+            window.location.href = window.pageUrl('admin_topics.html');
         });
         const block = newTopicsLink.nextElementSibling;
         if (block) {
             block.style.cursor = 'pointer';
             block.addEventListener('click', () => {
-                window.location.href = 'html/admin_topics.html';
+                window.location.href = window.pageUrl('admin_topics.html');
             });
         }
     }
@@ -180,33 +180,33 @@ function setupNavigationHandlers() {
     if (usersLink) {
         usersLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'html/admin_users.html';
+            window.location.href = window.pageUrl('admin_users.html');
         });
         const block = usersLink.nextElementSibling;
         if (block) {
             block.style.cursor = 'pointer';
             block.addEventListener('click', () => {
-                window.location.href = 'html/admin_users.html';
+                window.location.href = window.pageUrl('admin_users.html');
             });
         }
     }
 
     const linkProblemSolutions = document.getElementById('link_problem_solutions');
     if (linkProblemSolutions) {
-        linkProblemSolutions.addEventListener('click', (e) => { e.preventDefault(); window.location.href = 'html/admin_problem_solution.html'; });
+        linkProblemSolutions.addEventListener('click', (e) => { e.preventDefault(); window.location.href = window.pageUrl('admin_problem_solution.html'); });
         const block = linkProblemSolutions.nextElementSibling;
-        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = 'html/admin_problem_solution.html'; }); }
+        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = window.pageUrl('admin_problem_solution.html'); }); }
     }
     const linkSolutionProblems = document.getElementById('link_solution_problems');
     if (linkSolutionProblems) {
-        linkSolutionProblems.addEventListener('click', (e) => { e.preventDefault(); window.location.href = 'html/admin_link_solution.html'; });
+        linkSolutionProblems.addEventListener('click', (e) => { e.preventDefault(); window.location.href = window.pageUrl('admin_link_solution.html'); });
         const block = linkSolutionProblems.nextElementSibling;
-        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = 'html/admin_link_solution.html'; }); }
+        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = window.pageUrl('admin_link_solution.html'); }); }
     }
     const linkProblemProblems = document.getElementById('link_problem_problems');
     if (linkProblemProblems) {
-        linkProblemProblems.addEventListener('click', (e) => { e.preventDefault(); window.location.href = 'html/admin_link_problem.html'; });
+        linkProblemProblems.addEventListener('click', (e) => { e.preventDefault(); window.location.href = window.pageUrl('admin_link_problem.html'); });
         const block = linkProblemProblems.nextElementSibling;
-        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = 'html/admin_link_problem.html'; }); }
+        if (block) { block.style.cursor = 'pointer'; block.addEventListener('click', () => { window.location.href = window.pageUrl('admin_link_problem.html'); }); }
     }
 }

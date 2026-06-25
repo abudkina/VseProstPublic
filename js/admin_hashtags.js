@@ -29,21 +29,21 @@ window.addEventListener('load', async function() {
 document.getElementById('favoritesLink').addEventListener('click', function(e) {
     e.preventDefault();
     if (!localStorage.getItem('isLoggedIn')) {
-        sessionStorage.setItem('redirectAfterLogin', 'html/favourites.html');
-        window.location.href = 'html/authorization.html';
+        sessionStorage.setItem('redirectAfterLogin', window.pageUrl('favourites.html'));
+        window.location.href = window.pageUrl('authorization.html');
         return;
     }
     auth.checkAuth(true).then(userID => {
-        window.location.href = 'html/favourites.html';
+        window.location.href = window.pageUrl('favourites.html');
     }).catch(() => {});
 });
 
 document.getElementById('profileBtn').addEventListener('click', () => {
     auth.checkAuth(false).then(userID => {
-        window.location.href = 'html/profile.html';
+        window.location.href = window.pageUrl('profile.html');
     }).catch(() => {
         sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = 'html/authorization.html';
+        window.location.href = window.pageUrl('authorization.html');
     });
 });
 

@@ -64,7 +64,7 @@ async function loadCart() {
         console.error('Ошибка обновления токена:', refreshError);
         localStorage.removeItem('isLoggedIn');
         sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = 'html/authorization.html';
+        window.location.href = window.pageUrl('authorization.html');
         return;
       }
     }
@@ -87,7 +87,7 @@ async function loadCart() {
       setTimeout(() => {
         localStorage.removeItem('isLoggedIn');
         sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = 'html/authorization.html';
+        window.location.href = window.pageUrl('authorization.html');
       }, 2000);
     }
   }

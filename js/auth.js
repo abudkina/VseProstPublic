@@ -4,7 +4,7 @@ import * as auth from './authorizationFunctions.js';
 document.getElementById('registerBtn').addEventListener('click', function() {
         const isAuthPage = /authorization\.html$/.test(window.location.pathname);
         if (!isAuthPage) sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = 'html/registration.html';
+        window.location.href = window.pageUrl('registration.html');
     });
 
   document.addEventListener('DOMContentLoaded', () => {

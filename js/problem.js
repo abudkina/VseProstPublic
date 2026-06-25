@@ -1139,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     await auth.checkAuth(true);
                     const problemId = currentProblem?.ID;
-                    window.location.href = problemId ? `/html/add_solution.html?problem_id=${problemId}` : 'html/add_solution.html';
+                    window.location.href = problemId ? window.pageUrl('add_solution.html?problem_id=' + problemId) : window.pageUrl('add_solution.html');
                 } catch (err) {
                     console.error(err);
                 }
