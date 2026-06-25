@@ -1,3 +1,7 @@
+# Public repo: only static frontend
+*.py
+*.md
+
 # Python cache files
 __pycache__/
 *.py[cod]
