@@ -28,10 +28,32 @@
     ensureGuestSession();
     function getDataUrl() {
         var cfg = window.SITE_CONFIG || {};
-        if (cfg.basePath) {
-            return cfg.basePath + '/data/site.json';
+        if (cfg.siteUrl) {
+            return cfg.siteUrl.replace(/\/$/, '') + '/data/site.json';
         }
-        return /\/html\//.test(location.pathname) ? '../data/site.json' : 'data/site.json';
+        if (cfg.basePath) {
+            return location.origin + cfg.basePath + '/data/site.json';
+        }
+        return new URL(
+            /\/html\//.test(location.pathname) ? '../data/site.json' : 'data/site.json',
+            location.href
+        ).href;
+    }
+
+    function staticProfileBody() {
+        var fav = getFavorites();
+        return {
+            id: STATIC_USER.userID,
+            username: localStorage.getItem('username') || STATIC_USER.username,
+            email: 'guest@demo.local',
+            created_date: '2024-01-01T00:00:00.000Z',
+            stats: {
+                problems_created: 0,
+                solutions_created: 0,
+                favourite_problems: fav.problems.length,
+                favourite_solutions: fav.solutions.length
+            }
+        };
     }
 
     var dataPromise = null;
@@ -186,6 +208,28 @@
         var method = ((init && init.method) || 'GET').toUpperCase();
         var path = parsed.path.replace(/\/$/, '') || '/';
         var params = parsed.search;
+
+        if (method === 'GET' && path === '/user/profile') {
+            return Promise.resolve(jsonResponse(staticProfileBody()));
+        }
+        if (method === 'GET' && path.match(/^\/problems\/user\/\d+$/)) {
+            return Promise.resolve(jsonResponse({ problems: [] }));
+        }
+        if (method === 'GET' && path.match(/^\/solutions\/user\/\d+$/)) {
+            return Promise.resolve(jsonResponse({ solutions: [] }));
+        }
+        if (path === '/user/profile' && (method === 'PUT' || method === 'PATCH' || method === 'POST')) {
+            return Promise.resolve(jsonResponse({ message: 'Сохранено (демо)' }));
+        }
+        if (path === '/user/profile/password' && method === 'POST') {
+            return Promise.resolve(jsonResponse({ message: 'Пароль изменён (демо)' }));
+        }
+        if (path === '/user/profile/avatar' && method === 'POST') {
+            return Promise.resolve(jsonResponse({ message: 'Аватар загружен (демо)' }));
+        }
+        if (path === '/user/feedback' && method === 'POST') {
+            return Promise.resolve(jsonResponse({ message: 'Спасибо за обратную связь!' }));
+        }
 
         return loadData().then(function (data) {
             var fav = getFavorites();
