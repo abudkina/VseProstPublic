@@ -9,6 +9,7 @@ import {
     initFilterHandlers,
     initTagClickHandler
 } from './problemListCommon.js';
+import { initMobileFilters } from './mobileFilters.js';
 
 // Инициализация обработчиков авторизации
 initAuthHandlers();
@@ -50,24 +51,28 @@ async function loadCards() {
   container.innerHTML = 'Загрузка...';
 
   try {
-    // Проверяем аутентификацию
-    await auth.checkAuth(true);
+    if (!window.SITE_CONFIG?.isStaticMode) {
+      await auth.checkAuth(true);
+    }
   } catch (error) {
     return;
   }
 
+  const searchEl = document.getElementById('search');
+  const searchValue = (searchEl && searchEl.value && searchEl.value.trim()) || (currentFilters.search || '').trim();
+
   const params = new URLSearchParams();
-  if (currentFilters.search) params.append('search', currentFilters.search);
-  if (currentFilters.hashtags.length)
+  if (searchValue) params.append('search', searchValue);
+  if (currentFilters.hashtags && currentFilters.hashtags.length)
     params.append('hashtags', currentFilters.hashtags.join(','));
-  if (currentFilters.category != null)
+  if (currentFilters.category != null && Number.isInteger(currentFilters.category))
     params.append('category', currentFilters.category);
   params.append('limit', currentFilters.limit);
   params.append('offset', currentFilters.offset);
 
   const apiUrl = currentTab === 'problems'
-    ? `/api/problems/favorites?${params.toString()}`
-    : `/api/solutions/favorites?${params.toString()}`;
+    ? API_CONFIG.buildURL(`/problems/favorites?${params.toString()}`)
+    : API_CONFIG.buildURL(`/solutions/favorites?${params.toString()}`);
   
   try {
     let response = await fetch(apiUrl, {
@@ -668,10 +673,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
     
-    // Инициализация обработчиков фильтров
-    initFilterHandlers(currentFilters, choicesInstance, reloadCards);
     initTagClickHandler(choicesInstance, currentFilters, reloadCards);
   }
+  
+  initFilterHandlers(currentFilters, choicesInstance, reloadCards);
+  initMobileFilters({ onFilterChange: reloadCards });
   
   // Сортировка
   const sortSelect = document.getElementById('sort');

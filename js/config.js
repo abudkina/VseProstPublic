@@ -3,9 +3,11 @@
  * Централизованное управление URL и настройками API
  */
 
+const SITE = window.SITE_CONFIG || {};
+
 const API_CONFIG = {
-    // Базовый URL (автоматически определяется из текущего окружения)
-    BASE_URL: window.location.origin,
+    // На GitHub Pages fetch перехватывается js/static-api.js (data/site.json)
+    BASE_URL: SITE.apiOrigin || window.location.origin,
 
     // Путь к API
     API_PATH: '/api',

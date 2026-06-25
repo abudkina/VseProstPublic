@@ -243,9 +243,16 @@ body.add-form-page {
     transform: translateY(0);
 }
 
+@media (max-width: 991px) {
+    .add-form-page .container {
+        padding-bottom: calc(var(--spacing-6) + 64px + env(safe-area-inset-bottom));
+    }
+}
+
 @media (max-width: 640px) {
     .add-form-page .container {
         padding: var(--spacing-5) var(--spacing-4);
+        padding-bottom: calc(var(--spacing-6) + 64px + env(safe-area-inset-bottom));
     }
     .add-form-page .file-inputs {
         grid-template-columns: 1fr;

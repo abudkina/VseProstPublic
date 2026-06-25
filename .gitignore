@@ -62,6 +62,16 @@ venv.bak/
 .env
 .env.local
 .env.*.local
+!.env.example
+.env.beget
+
+# Local / IDE
+.claude/
+logs/
+backups/
+
+# Root-level SQL dumps (scripts/backup_db.py output)
+/backup_*.sql
 
 # Flask
 instance/

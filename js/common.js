@@ -52,7 +52,7 @@ export function initAuthHandlers() {
   if (favoritesLink) {
     favoritesLink.addEventListener('click', function (e) {
       e.preventDefault();
-      if (!localStorage.getItem('isLoggedIn')) {
+      if (!localStorage.getItem('isLoggedIn') && !window.SITE_CONFIG?.isStaticMode) {
         sessionStorage.setItem('redirectAfterLogin', '/html/favourites.html');
         window.location.href = '/html/authorization.html';
         return;

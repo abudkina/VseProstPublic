@@ -376,7 +376,7 @@ async function displaySolutions() {
 
             const link = card.querySelector('.card-title-link');
             if (link) {
-                link.href = `/solution/${solution.ID}`;
+                link.href = (window.PATHS ? window.PATHS.solution(solution.ID) : `/solution/${solution.ID}`);
             }
 
             const cardImg = card.querySelector('.card-image');
@@ -492,20 +492,6 @@ async function displaySolutions() {
                         }
                     };
                 }
-                
-                // Добавляем обработчик клика для открытия модального окна
-                if (cardImg) {
-                    cardImg.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const imageSrc = cardImg.src;
-                        const imageAlt = cardImg.alt || solution.Name || 'Решение';
-                        // Пропускаем SVG изображения (data:image/svg+xml) и изображения, которые скрыты
-                        if (imageSrc && !imageSrc.startsWith('data:image/svg+xml') && cardImg.style.display !== 'none') {
-                            openImageViewer(imageSrc, imageAlt);
-                        }
-                    });
-                }
             }
 
             // Заполняем данные карточки
@@ -530,7 +516,7 @@ async function displaySolutions() {
 
             const cardTitleText = card.querySelector('.card-title-text');
             if (cardTitleText) {
-                cardTitleText.href = `/solution/${solution.ID}`;
+                cardTitleText.href = (window.PATHS ? window.PATHS.solution(solution.ID) : `/solution/${solution.ID}`);
                 cardTitleText.textContent = solution.Name || 'Решение';
             }
 
@@ -777,18 +763,6 @@ async function displaySolutions() {
             img.alt = linkedProblem.Name || 'Проблема';
             img.className = 'card-image';
             img.loading = 'lazy';
-            
-            // Добавляем обработчик клика для открытия модального окна
-            img.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const imageSrc = img.src;
-                const imageAlt = img.alt || linkedProblem.Name || 'Проблема';
-                // Пропускаем SVG изображения
-                if (imageSrc && !imageSrc.startsWith('data:image/svg+xml')) {
-                    openImageViewer(imageSrc, imageAlt);
-                }
-            });
             
             imageLink.appendChild(img);
             imageWrapper.appendChild(imageLink);

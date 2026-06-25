@@ -696,20 +696,117 @@ body {
   justify-content: center;
 }
 
-/* Адаптивность для мобильных устройств */
+/* Адаптивность для мобильных устройств — компактная страница */
 @media (max-width: 768px) {
+  #solutionContainer {
+    padding: 6px 8px 12px;
+    max-width: 100%;
+  }
+
+  .problem-info {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px 12px;
+    margin: 4px auto 8px;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .problem-info .problem-img {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .problem-info .problem-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 1.05em;
+    white-space: normal;
+    text-align: left;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .problem-info .problem-stats {
+    width: 100%;
+    order: 3;
+    justify-content: flex-start;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .problem-info .problem-stats .stat-item {
+    padding: 4px 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .problem-info .problem-stats .stat-item .icon {
+    font-size: 13px;
+  }
+
   .tags-and-button-container {
     flex-direction: column;
     align-items: stretch;
+    margin: 6px auto 6px;
+    padding: 0 8px;
+    gap: 8px;
   }
-  
+
   .add-solution-button-container {
     width: 100%;
   }
-  
-  .add-solution-btn {
+
+  .add-solution-btn,
+  #addSolutionBtn {
     width: 100%;
     justify-content: center;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .tabs-container {
+    margin: 4px auto;
+    padding: 0 8px;
+  }
+
+  .tabs-wrapper {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  .tab-button {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .sort-container {
+    padding: 6px 0;
+    margin-bottom: 6px;
+  }
+
+  .sort-label {
+    font-size: 14px;
+  }
+
+  .sort-select {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  .cards-container {
+    gap: 10px;
+    padding: 2px 0;
+  }
+
+  .no-solutions {
+    padding: 20px 12px;
+    font-size: 15px;
+    margin: 12px auto;
   }
 }
 
@@ -1414,28 +1511,38 @@ body {
   }
 
   .problem-info {
-    flex-direction: column;
-    padding: var(--spacing-2);
-    gap: var(--spacing-2);
-    width: 96%;
+    padding: 8px 10px;
+    margin: 2px auto 6px;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .problem-info .problem-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+  }
+
+  .problem-info .problem-title {
+    font-size: 1em;
   }
 
   .left-block {
     flex-direction: row;
     width: 100%;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 8px;
     min-width: unset;
   }
 
   .problem-img {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
   }
 
   .problem-title {
-    font-size: 1.2em;
+    font-size: 1em;
     white-space: normal;
     overflow: visible;
   }
@@ -1443,25 +1550,45 @@ body {
   .problem-stats {
     width: 100%;
     justify-content: flex-start;
-    gap: 6px;
-    font-size: 12px;
+    gap: 4px;
+    font-size: 11px;
   }
 
   .problem-stats .stat-item {
-    padding: 5px 8px;
-    font-size: 12px;
-    gap: 6px;
+    padding: 3px 6px;
+    font-size: 11px;
+    gap: 4px;
   }
 
   .problem-stats .stat-item .icon {
-    font-size: 14px;
+    font-size: 12px;
+  }
+
+  .tags-and-button-container {
+    margin: 4px auto;
+    padding: 0 6px;
+    gap: 6px;
+  }
+
+  .tabs-container {
+    margin: 2px auto;
+    padding: 0 6px;
+  }
+
+  .tabs-wrapper {
+    margin-bottom: 6px;
+  }
+
+  .sort-container {
+    padding: 4px 0;
+    margin-bottom: 4px;
   }
 
   .cards-container {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 3px;
-    width: 96%;
+    gap: 8px;
+    padding: 2px;
+    width: 100%;
   }
 
   .card {
@@ -1532,29 +1659,9 @@ body {
     font-size: 14px;
   }
 
-  .tags-and-button-container {
-    width: 96%;
-    padding: 0 10px;
-    gap: 12px;
-  }
-
   .add-solution-btn {
-    padding: 10px 16px;
-    font-size: 13px;
-  }
-
-  .tabs-wrapper {
-    gap: 6px;
-  }
-
-  .tab-button {
     padding: 8px 12px;
     font-size: 13px;
-  }
-
-  .sort-select {
-    font-size: 14px;
-    padding: 6px 12px;
   }
 }
 
@@ -1598,56 +1705,92 @@ body {
     flex: 1;
   }
 
+  #solutionContainer {
+    padding: 4px 6px 10px;
+  }
+
   .problem-info {
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-    width: 95%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    margin: 2px auto 6px;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .problem-info .problem-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+
+  .problem-info .problem-title {
+    font-size: 0.95em;
   }
 
   .left-block {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    gap: 8px;
+    gap: 6px;
   }
 
   .problem-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
   }
 
   .problem-title {
-    font-size: 1.1em;
+    font-size: 0.95em;
     white-space: normal;
     overflow: visible;
-    text-align: center;
+    text-align: left;
     width: 100%;
   }
 
   .problem-stats {
     width: 100%;
-    justify-content: center;
-    gap: 6px;
+    justify-content: flex-start;
+    gap: 4px;
     font-size: 11px;
   }
 
   .problem-stats .stat-item {
-    padding: 4px 6px;
+    padding: 3px 6px;
     font-size: 11px;
-    gap: 4px;
+    gap: 3px;
   }
 
   .problem-stats .stat-item .icon {
-    font-size: 12px;
+    font-size: 11px;
+  }
+
+  .tags-and-button-container {
+    margin: 2px auto 4px;
+    padding: 0 6px;
+    gap: 6px;
+  }
+
+  .tabs-container {
+    margin: 2px auto;
+    padding: 0 6px;
+  }
+
+  .tabs-wrapper {
+    margin-bottom: 4px;
+  }
+
+  .sort-container {
+    padding: 4px 0;
+    margin-bottom: 4px;
   }
 
   .cards-container {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 6px;
     padding: 2px;
-    width: 95%;
+    width: 100%;
   }
 
   .card {
@@ -1729,16 +1872,9 @@ body {
     font-size: 12px;
   }
 
-  .tags-and-button-container {
-    width: 95%;
-    padding: 0 8px;
-    gap: 10px;
-    flex-direction: column;
-  }
-
   .add-solution-btn,
   #addSolutionBtn {
-    padding: 10px 14px;
+    padding: 8px 12px;
     font-size: 12px;
     width: 100%;
     justify-content: center;
@@ -1750,16 +1886,16 @@ body {
   }
 
   .tab-button {
-    padding: 8px 12px;
+    padding: 6px 10px;
     font-size: 12px;
-    min-width: 100px;
+    min-width: 90px;
     white-space: nowrap;
   }
 
   .sort-container {
     flex-direction: column;
     align-items: stretch;
-    padding: 8px 0;
+    padding: 4px 0;
   }
 
   .sort-select {
@@ -1769,9 +1905,10 @@ body {
   }
 
   .no-solutions {
-    padding: 30px 15px;
-    font-size: 16px;
-    width: 95%;
+    padding: 16px 12px;
+    font-size: 14px;
+    width: 100%;
+    margin: 8px auto;
   }
 
   #linkedProblemSearch {

@@ -36,8 +36,6 @@ from logic.image_generation import image_generation_bp
 from logic.sitemap import sitemap_bp
 from logic.feed import feed_bp
 from logic.search_engines_optimization import search_engines_bp
-# from logic.payment import payment_bp
-# from logic.ai_routes import ai_bp
 from logic.cache_config import invalidate_cache, cache
 
 
@@ -167,8 +165,6 @@ def _register_blueprints(app):
         sitemap_bp,
         feed_bp,
         search_engines_bp,
-        # payment_bp,
-        # ai_bp,
     ]
 
     for blueprint in blueprints:
@@ -285,18 +281,22 @@ def _register_static_routes(app):
 
     project_root = os.path.dirname(os.path.abspath(__file__))
 
+    @app.limiter.exempt
     @app.route('/css/<path:filename>')
     def serve_css(filename):
         """Обслуживание CSS файлов"""
         css_dir = os.path.join(project_root, 'css')
         return send_from_directory(css_dir, filename, mimetype='text/css')
 
+    @app.limiter.exempt
     @app.route('/js/<path:filename>')
     def serve_js(filename):
         """Обслуживание JS файлов"""
         js_dir = os.path.join(project_root, 'js')
-        return send_from_directory(js_dir, filename)
+        mimetype = 'application/javascript; charset=utf-8' if filename.endswith('.js') else None
+        return send_from_directory(js_dir, filename, mimetype=mimetype)
 
+    @app.limiter.exempt
     @app.route('/assets/<path:filename>')
     def serve_assets(filename):
         """Обслуживание файлов из assets"""
@@ -325,6 +325,7 @@ def _register_static_routes(app):
             app.logger.error(f"Ошибка при обслуживании файла {filename}: {e}", exc_info=True)
             return f"Ошибка при загрузке файла {filename}", 500
 
+    @app.limiter.exempt
     @app.route('/favicon.ico')
     def favicon():
         """Favicon для поисковых систем и браузеров"""
@@ -346,6 +347,7 @@ def _register_static_routes(app):
             mimetype=mimetype
         )
 
+    @app.limiter.exempt
     @app.route('/favicon-48x48.png')
     def favicon_png_48():
         """PNG 48x48 для поисковиков (Google/Yandex)"""
@@ -358,6 +360,7 @@ def _register_static_routes(app):
             mimetype='image/png'
         )
 
+    @app.limiter.exempt
     @app.route('/apple-touch-icon.png')
     @app.route('/apple-touch-icon')
     def apple_touch_icon():
@@ -374,11 +377,13 @@ def _register_static_routes(app):
             mimetype=mimetype
         )
 
+    @app.limiter.exempt
     @app.route('/fonts/<path:filename>')
     def serve_fonts(filename):
         """Обслуживание шрифтов"""
         return send_from_directory('fonts', filename)
 
+    @app.limiter.exempt
     @app.route('/uploads/<path:filename>')
     def serve_uploads(filename):
         """Обслуживание загруженных файлов (изображения проблем/решений)"""

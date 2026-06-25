@@ -269,7 +269,7 @@ def get_solutions():
         if search:
             try:
                 # Пробуем использовать RAG поиск для семантического поиска
-                search_mode = request.args.get('search_mode', 'hybrid')  # 'text', 'semantic', 'hybrid', 'multimodal'
+                search_mode = request.args.get('search_mode', 'text')  # 'text', 'semantic', 'hybrid', 'multimodal'
                 rag_search_results = search_with_rag(
                     query=search,
                     entity_type='solution',
@@ -283,22 +283,31 @@ def get_solutions():
                     rag_ids = [entity_id for entity_id, score in rag_search_results]
                     query = query.filter(Solution.id.in_(rag_ids))
                 else:
-                    # Fallback на обычный текстовый поиск
+                    # Fallback: по названию решения и по названию связанных проблем
                     search_lower = f"%{search.lower()}%"
+                    solution_ids_via_problems = db.session.query(
+                        solution_problems.c.solution_id
+                    ).join(Problem, Problem.id == solution_problems.c.problem_id).filter(
+                        func.lower(Problem.name).like(search_lower)
+                    ).distinct().subquery()
                     query = query.filter(
                         or_(
                             func.lower(Solution.name).like(search_lower),
-                            func.lower(Solution.describe).like(search_lower)
+                            Solution.id.in_(db.session.query(solution_ids_via_problems.c.solution_id))
                         )
                     )
             except Exception as e:
                 logger.warning(f"Ошибка RAG поиска, используем текстовый поиск: {e}")
-                # Fallback на обычный текстовый поиск
                 search_lower = f"%{search.lower()}%"
+                solution_ids_via_problems = db.session.query(
+                    solution_problems.c.solution_id
+                ).join(Problem, Problem.id == solution_problems.c.problem_id).filter(
+                    func.lower(Problem.name).like(search_lower)
+                ).distinct().subquery()
                 query = query.filter(
                     or_(
                         func.lower(Solution.name).like(search_lower),
-                        func.lower(Solution.describe).like(search_lower)
+                        Solution.id.in_(db.session.query(solution_ids_via_problems.c.solution_id))
                     )
                 )
         
@@ -524,9 +533,6 @@ def get_solutions():
         
         has_filters = bool(search or category_param or hashtags_param)
         resp_payload = {"solutions": solutions_list}
-        if len(solutions_list) == 0 and has_filters:
-            resp_payload["suggest_ai"] = True
-            resp_payload["ai_plan_price_rub"] = 999
         resp = jsonify(resp_payload if has_filters else solutions_list)
         resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         resp.headers['Pragma'] = 'no-cache'

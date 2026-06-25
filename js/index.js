@@ -9,6 +9,7 @@ import {
     initTagClickHandler,
     PAGE_SIZE
 } from './problemListCommon.js';
+import { initMobileFilters } from './mobileFilters.js';
 
 // Инициализация обработчиков авторизации
 initAuthHandlers();
@@ -81,17 +82,35 @@ function loadMoreCards() {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', async () => {
-    // Проверяем параметр topic в URL
+    // Параметры из URL
     const urlParams = new URLSearchParams(window.location.search);
+    const searchFromUrl = urlParams.get('search');
+    if (searchFromUrl != null && searchFromUrl !== '') {
+        currentFilters.search = searchFromUrl.trim();
+        const searchInput = document.getElementById('search');
+        if (searchInput) searchInput.value = currentFilters.search;
+    }
+    const categoryParam = urlParams.get('category');
+    if (categoryParam !== null && categoryParam !== '') {
+        const categoryId = parseInt(categoryParam, 10);
+        if (!Number.isNaN(categoryId)) currentFilters.category = categoryId;
+    }
     const topicParam = urlParams.get('topic');
     if (topicParam) {
         const topicId = parseInt(topicParam, 10);
         if (Number.isInteger(topicId)) currentFilters.topic = topicId;
     }
+    const hashtagsParam = urlParams.get('hashtags');
+    if (hashtagsParam) {
+        currentFilters.hashtags = hashtagsParam.split(',').map(s => parseInt(String(s).trim(), 10)).filter(n => !Number.isNaN(n));
+    }
     
     // Загружаем категории
     await loadCategories('category', false);
-    
+    if (currentFilters.category != null) {
+        const categorySelect = document.getElementById('category');
+        if (categorySelect) categorySelect.value = String(currentFilters.category);
+    }
     // Инициализируем TomSelect для хэштегов
     choicesInstance = initHashtagsTomSelect('hashtags', (instance) => {
         currentFilters.hashtags = instance.getValue().map(v => parseInt(v, 10));
@@ -99,6 +118,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         reloadCards();
         document.querySelector('.vs-control')?.classList.add('has-items');
     });
+    // Подставить хэштеги из URL в фильтр и в TomSelect
+    if (choicesInstance && currentFilters.hashtags.length > 0) {
+        currentFilters.hashtags.forEach(id => {
+            if (!choicesInstance.options[id]) choicesInstance.addOption({ ID: id, Name: '#' + id });
+        });
+        choicesInstance.setValue(currentFilters.hashtags);
+        document.querySelector('.vs-control')?.classList.add('has-items');
+    }
     
     // Обработчик удаления хэштегов
     if (choicesInstance) {
@@ -132,10 +159,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         
-        // Инициализация обработчиков фильтров
-        initFilterHandlers(currentFilters, choicesInstance, reloadCards);
         initTagClickHandler(choicesInstance, currentFilters, reloadCards);
     }
+    
+    // Обработчики фильтров (поиск, категория, сортировка) — всегда, не только при успешном TomSelect
+    initFilterHandlers(currentFilters, choicesInstance, reloadCards);
+    initMobileFilters({ onFilterChange: reloadCards });
     
     // Скрываем ссылку "Добавить проблему" для неавторизованных
     const addProblemLink = document.getElementById('addProblem');

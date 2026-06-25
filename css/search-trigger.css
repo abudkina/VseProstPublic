@@ -1,0 +1,207 @@
+/* Десктоп: обычное поле поиска в строке. Мобильный: лупа + нижняя панель по клику */
+
+.search-trigger-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* По умолчанию (десктоп): поле поиска видно */
+.search-trigger-wrap .search-input-desktop {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-trigger-wrap .search-trigger-btn {
+  display: none;
+}
+
+/* Десктоп: кнопка-лупа скрыта */
+@media (min-width: 768px) {
+  .search-trigger-wrap .search-input-desktop input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .search-trigger-wrap .search-trigger-btn {
+    display: none !important;
+  }
+
+  .search-bottom-drawer {
+    display: none !important;
+  }
+}
+
+/* Мобильный: кнопка-лупа видна, поле в панели внизу */
+@media (max-width: 767px) {
+  .search-trigger-wrap .search-input-desktop {
+    display: none !important;
+  }
+
+  .search-trigger-wrap .search-trigger-btn {
+    display: flex;
+  }
+}
+
+.search-trigger-btn {
+  flex-shrink: 0;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border: 2px solid var(--border-light, #e2e8f0);
+  border-radius: var(--radius-2xl, 16px);
+  background: var(--gradient-white, #fff);
+  color: var(--text-secondary, #4a5568);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.search-trigger-btn i {
+  font-size: 1.25rem;
+}
+
+.search-trigger-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.search-trigger-btn:hover {
+  border-color: var(--color-primary, #dc2626);
+  color: var(--color-primary, #dc2626);
+  background: rgba(254, 226, 226, 0.3);
+}
+
+/* Нижняя панель поиска — появляется внизу по клику на лупу */
+.search-bottom-drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.search-bottom-drawer.is-open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.search-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.search-bottom-drawer.is-open .search-drawer-backdrop {
+  opacity: 1;
+}
+
+.search-drawer-panel {
+  position: relative;
+  width: 100%;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-drawer-input-slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-drawer-input-slot input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.search-bottom-drawer.is-open .search-drawer-panel {
+  transform: translateY(0);
+}
+
+.search-drawer-panel input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  border: 2px solid var(--border-light, #e2e8f0);
+  border-radius: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-drawer-panel input:focus {
+  border-color: var(--color-primary, #dc2626);
+}
+
+.search-drawer-close {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #f7fafc;
+  border-radius: 14px;
+  color: #4a5568;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.search-drawer-close:hover {
+  background: #edf2f7;
+  color: #1a202c;
+}
+
+/* Только на мобильном: одна линия, одинаковая ширина кнопок */
+@media (max-width: 767px) {
+  .search-filters .top-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .search-filters .top-row .search-trigger-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .search-filters .top-row .search-trigger-wrap .search-trigger-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .search-filters .top-row #addProblem,
+  .search-filters .top-row #addSolution {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+  }
+}

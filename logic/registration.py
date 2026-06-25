@@ -192,6 +192,9 @@ def register_handler():
 @registration_bp.route('/validate-token', methods=['GET'])
 def validate_token():
     """Проверка валидности токена. Возвращает 200 с valid: false при отсутствии/невалидном токене (без 401)."""
+    limiter = current_app.limiter if hasattr(current_app, 'limiter') else None
+    if limiter:
+        limiter.limit(get_rate_limit('validate_token'))(lambda: None)()
     from logic.middleware import get_token_from_request, is_valid_jwt_format
     access_token = get_token_from_request()
     if not access_token or not is_valid_jwt_format(access_token):

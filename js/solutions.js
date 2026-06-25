@@ -9,6 +9,7 @@ import {
     initFilterHandlers,
     initTagClickHandler
 } from './problemListCommon.js';
+import { initMobileFilters } from './mobileFilters.js';
 
 // Инициализация обработчиков авторизации
 initAuthHandlers();
@@ -46,11 +47,14 @@ async function loadCards(append = false, onDone = null) {
   const container = document.querySelector('.cards-container');
   if (!append) container.innerHTML = 'Загрузка...';
 
+  const searchEl = document.getElementById('search');
+  const searchValue = (searchEl && searchEl.value && searchEl.value.trim()) || (currentFilters.search || '').trim();
+
   const params = new URLSearchParams();
-  if (currentFilters.search) params.append('search', currentFilters.search);
-  if (currentFilters.hashtags.length)
+  if (searchValue) params.append('search', searchValue);
+  if (currentFilters.hashtags && currentFilters.hashtags.length)
     params.append('hashtags', currentFilters.hashtags.join(','));
-  if (currentFilters.category != null)
+  if (currentFilters.category != null && Number.isInteger(currentFilters.category))
     params.append('category', currentFilters.category);
   params.append('limit', currentFilters.limit);
   params.append('offset', currentFilters.offset);
@@ -120,7 +124,7 @@ function renderCards(data, options = {}) {
     const card = template.cloneNode(true);
 
     const link = card.querySelector('.card-title-link');
-    link.href = `/solution/${item.ID}`;
+    link.href = (window.PATHS ? window.PATHS.solution(item.ID) : `/solution/${item.ID}`);
 
     const cardImg = card.querySelector('.card-image');
     const cardImageWrapper = card.querySelector('.card-image-wrapper');
@@ -264,7 +268,7 @@ function renderCards(data, options = {}) {
     }
 
     const cardTitleText = card.querySelector('.card-title-text');
-    cardTitleText.href = `/solution/${item.ID}`;
+    cardTitleText.href = (window.PATHS ? window.PATHS.solution(item.ID) : `/solution/${item.ID}`);
     cardTitleText.textContent = item.Name;
 
     const favoriteCount = card.querySelector('.card-favorites .favorite-count');
@@ -570,10 +574,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
     
-    // Инициализация обработчиков фильтров
-    initFilterHandlers(currentFilters, choicesInstance, reloadCards);
     initTagClickHandler(choicesInstance, currentFilters, reloadCards);
   }
+  
+  initFilterHandlers(currentFilters, choicesInstance, reloadCards);
+  initMobileFilters({ onFilterChange: reloadCards });
   
   // Сортировка
   const sortSelect = document.getElementById('sort');

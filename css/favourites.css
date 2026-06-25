@@ -293,6 +293,11 @@ body {
   gap: 10px;
 }
 
+.search-filters .top-row {
+  align-items: center;
+  min-height: 0;
+}
+
 .top-row {
   display: flex;
   gap: 10px;
@@ -303,7 +308,7 @@ body {
 .top-row #search {
   flex-grow: 1;
   font-size: 1rem;
-  padding: 14px 20px;
+  padding: 10px 16px;
   border-radius: 16px;
   border: 2px solid #e2e8f0;
   outline: none;
@@ -338,15 +343,30 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 14px 24px;
+  padding: 0 12px;
+  height: 38px;
+  min-width: 38px;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border-radius: 16px;
   font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
+  text-decoration: none;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-style: normal;
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
+}
+
+.top-row #addProblem i {
+  font-size: 1rem;
+}
+
+.top-row #addProblem .btn-label {
+  white-space: nowrap;
 }
 
 .top-row #addProblem:hover {
@@ -1232,14 +1252,14 @@ body > .ts-dropdown {
   }
 
   .search-filters {
-    padding: 6px 0.6em;
-    gap: 8px;
+    padding: 4px 0.5em;
+    gap: 6px;
     border-radius: 16px;
   }
 
   .top-row {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .top-row #search {

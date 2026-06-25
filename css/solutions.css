@@ -1089,14 +1089,14 @@ body {
   }
 
   .search-filters {
-    padding: 6px 0.6em;
-    gap: 8px;
+    padding: 4px 0.5em;
+    gap: 6px;
     border-radius: 16px;
   }
 
   .top-row {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .top-row #search {

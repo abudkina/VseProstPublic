@@ -1,0 +1,355 @@
+/* Мобильные фильтры: только на мобильном (max-width: 767px) */
+
+/* Десктоп: иконки фильтров скрыты, модалка не показывается */
+@media (min-width: 768px) {
+  .top-row .mobile-filter-trigger {
+    display: none !important;
+  }
+
+  .mobile-filter-drawer {
+    display: none !important;
+  }
+}
+
+.top-row .mobile-filter-trigger {
+  display: none;
+}
+
+.mobile-filter-trigger {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  min-width: 0;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid var(--border-light, #e2e8f0);
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary, #4a5568);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mobile-filter-trigger:hover {
+  border-color: var(--color-primary, #dc2626);
+  color: var(--color-primary, #dc2626);
+  background: rgba(254, 226, 226, 0.5);
+}
+
+.mobile-filter-trigger i {
+  font-size: 1.25rem;
+}
+
+.mobile-filter-label {
+  white-space: nowrap;
+}
+
+/* Модальное окно выбора (сортировка, категория, хэштеги) */
+.mobile-filter-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) 16px 20px;
+  box-sizing: border-box;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  overflow-y: auto;
+}
+
+.mobile-filter-drawer.is-open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.mobile-filter-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-filter-drawer.is-open .mobile-filter-drawer-backdrop {
+  opacity: 1;
+}
+
+.mobile-filter-panel {
+  position: relative;
+  width: 100%;
+  min-width: min(320px, 100vw);
+  max-width: min(480px, 92vw);
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+  transform: scale(0.95);
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mobile-filter-drawer.is-open .mobile-filter-panel {
+  transform: scale(1);
+}
+
+.mobile-filter-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+  background: #fafafa;
+}
+
+.mobile-filter-panel-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.mobile-filter-panel-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #fff;
+  border-radius: 10px;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-filter-panel-close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.mobile-filter-panel-body {
+  padding: 10px 14px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  max-height: 60vh;
+}
+
+.mobile-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  text-align: left;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.mobile-filter-option:last-child {
+  margin-bottom: 0;
+}
+
+.mobile-filter-option .mobile-filter-option-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.mobile-filter-option:hover {
+  border-color: var(--color-primary, #dc2626);
+  background: #fef2f2;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.mobile-filter-option:hover .mobile-filter-option-icon {
+  background: rgba(254, 226, 226, 0.6);
+  color: var(--color-primary, #dc2626);
+}
+
+.mobile-filter-option.is-active {
+  border-color: var(--color-primary, #dc2626);
+  background: #fef2f2;
+  color: var(--color-primary, #dc2626);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.mobile-filter-option.is-active .mobile-filter-option-icon {
+  background: var(--color-primary, #dc2626);
+  color: #fff;
+}
+
+/* Хэштеги в drawer: везде как на главной — полная ширина, без сужения от правил страницы */
+.mobile-filter-panel-body .hashtags-drawer-wrapper {
+  width: 100%;
+  min-height: 120px;
+}
+
+.mobile-filter-panel-body .hashtags-drawer-wrapper .vs-wrapper,
+.mobile-filter-panel-body .hashtags-drawer-wrapper .ts-wrapper,
+.mobile-filter-panel-body .vs-wrapper,
+.mobile-filter-panel-body .ts-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+}
+
+/* Отмена max-width: 20% с solutions/favourites при открытии в drawer */
+.mobile-filter-panel-body .hashtags-drawer-wrapper .vs-wrapper.multi.has-items,
+.mobile-filter-panel-body .hashtags-drawer-wrapper .vs-wrapper.multi.focus.input-active.has-items,
+.mobile-filter-panel-body .hashtags-drawer-wrapper .ts-wrapper.multi.has-items,
+.mobile-filter-panel-body .hashtags-drawer-wrapper .ts-wrapper.multi.focus.input-active.has-items {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.mobile-filter-panel-body .vs-control,
+.mobile-filter-panel-body .ts-control {
+  min-height: 44px !important;
+  padding: 8px 12px !important;
+  border-radius: 12px !important;
+  border: 2px solid #e2e8f0 !important;
+  font-size: 0.875rem !important;
+}
+
+.mobile-filter-panel-body .vs-control input[type="text"],
+.mobile-filter-panel-body .ts-control input[type="text"] {
+  font-size: 0.875rem !important;
+  min-height: 26px !important;
+  padding: 4px 0 !important;
+}
+
+.mobile-filter-panel-body .vs-control .item,
+.mobile-filter-panel-body .ts-control .item {
+  padding: 5px 10px !important;
+  font-size: 0.8rem !important;
+  border-radius: 10px !important;
+  margin: 3px 3px 3px 0 !important;
+}
+
+.mobile-filter-panel-body .ts-dropdown,
+.mobile-filter-panel-body .ts-dropdown-content {
+  max-height: 50vh !important;
+}
+
+.mobile-filter-panel-body .ts-dropdown .option {
+  padding: 10px 14px !important;
+  font-size: 0.875rem !important;
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Выпадающий список хэштегов в drawer: не обрезать по ширине */
+.hashtags-drawer-wrapper .ts-dropdown,
+.mobile-filter-panel-body .ts-dropdown {
+  min-width: 100% !important;
+  max-width: min(480px, 92vw) !important;
+  box-sizing: border-box;
+}
+
+.hashtags-drawer-wrapper .ts-dropdown .option,
+.mobile-filter-panel-body .ts-dropdown .option {
+  min-height: 2.5em;
+  display: flex;
+  align-items: center;
+}
+
+/* Выпадающий список хэштегов в drawer: поверх панели, позиция задаётся TomSelect */
+.ts-dropdown-in-drawer {
+  position: fixed !important;
+  z-index: 100000 !important;
+  width: min(480px, 92vw) !important;
+  min-width: 280px !important;
+  max-width: 92vw !important;
+  box-sizing: border-box !important;
+  overflow-x: visible !important;
+  overflow-y: auto !important;
+}
+
+.ts-dropdown-in-drawer .ts-dropdown-content {
+  overflow-x: visible !important;
+  overflow-y: auto !important;
+  min-width: 100%;
+}
+
+/* На мобильном: одна линия — поиск, сортировка, категория, хэштеги, плюс */
+@media (max-width: 767px) {
+  .search-filters .filters.desktop {
+    display: none !important;
+  }
+
+  .search-filters .top-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .search-filters .top-row .search-trigger-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .search-filters .top-row .mobile-filter-trigger {
+    display: flex !important;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .search-filters .top-row #addProblem,
+  .search-filters .top-row #addSolution {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 8px;
+    min-height: 44px;
+    height: auto;
+  }
+
+  .search-filters .top-row #addProblem i,
+  .search-filters .top-row #addSolution i {
+    font-size: 1.25rem;
+  }
+
+  .search-filters .top-row #addProblem .btn-label,
+  .search-filters .top-row #addSolution .btn-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}

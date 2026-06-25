@@ -3,6 +3,19 @@ const API_CONFIG = window.API_CONFIG;
 let tokenExpiry = null;
 let refreshTimer = null;
 
+const VALIDATE_CACHE_TTL_MS = 15000; // 15 s — меньше параллельных вызовов validate-token
+let validateCache = { data: null, until: 0 };
+function getCachedValidate() {
+    if (validateCache.until > Date.now() && validateCache.data) return validateCache.data;
+    return null;
+}
+function setCachedValidate(data) {
+    validateCache = { data, until: Date.now() + VALIDATE_CACHE_TTL_MS };
+}
+function clearValidateCache() {
+    validateCache = { data: null, until: 0 };
+}
+
 function getRedirectAfterLogin() {
     const url = sessionStorage.getItem('redirectAfterLogin') || '/';
     sessionStorage.removeItem('redirectAfterLogin');
@@ -211,7 +224,9 @@ function startTokenRefreshTimer() {
     }, refreshIn);
 }
 
-export function refreshToken() {
+/** @param {{ redirectOnFail?: boolean }} options - redirectOnFail: false для опциональных запросов (иконки корзины/уведомлений), чтобы не выкидывать на страницу логина */
+export function refreshToken(options = {}) {
+    const redirectOnFail = options.redirectOnFail !== false;
     return fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.REFRESH_TOKEN), {
         method: 'POST',
         credentials: 'include' // Включаем cookies в запрос
@@ -219,7 +234,11 @@ export function refreshToken() {
     .then(response => {
         if (!response.ok) {
             if (response.status === 401) {
-                logout();
+                if (redirectOnFail) {
+                    logout();
+                } else {
+                    clearAuthState();
+                }
                 throw new Error('Refresh failed: unauthorized');
             }
             throw new Error('Refresh failed');
@@ -237,23 +256,25 @@ export function refreshToken() {
     })
     .catch(error => {
         console.error('Ошибка обновления токена:', error);
-        // Не вызываем logout сразу, может быть временная ошибка сети
-        if (error.message.includes('unauthorized')) {
-            logout();
+        if (error.message && error.message.includes('unauthorized')) {
+            if (redirectOnFail) {
+                logout();
+            } else {
+                clearAuthState();
+            }
         }
         throw error;
     });
 }
 
-export function logout() {
-    // Остановка таймера обновления токена
+/** Очистка локального состояния без редиректа (для опциональных запросов при истёкшей сессии) */
+function clearAuthState() {
     if (refreshTimer) {
         clearTimeout(refreshTimer);
         refreshTimer = null;
     }
     tokenExpiry = null;
-    
-    // Очистка localStorage
+    clearValidateCache();
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('token');
@@ -261,8 +282,12 @@ export function logout() {
     localStorage.removeItem('username');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('tokenExpiry');
-    
-    // Очистка sessionStorage
+    sessionStorage.removeItem('trustLocalAuthUntil');
+    sessionStorage.removeItem('justLoggedIn');
+}
+
+export function logout() {
+    clearAuthState();
     sessionStorage.clear();
     
     // Отправляем запрос на сервер (не ждем ответа)
@@ -378,16 +403,24 @@ export function checkAuth(redirectIfUnauthorized = true) {
         const uid = localStorage.getItem('userId');
         if (uid) return Promise.resolve(parseInt(uid, 10));
     }
+    const cached = getCachedValidate();
+    if (cached && cached.valid && cached.userID) {
+        return Promise.resolve(cached.userID);
+    }
     function doValidate() {
         return fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.VALIDATE_TOKEN), {
             method: 'GET',
             credentials: 'include'
         })
-            .then(response => response.ok ? response.json() : response.json().then(() => { throw new Error('Ошибка сервера'); }))
+            .then(response => {
+                if (response.status === 429) clearValidateCache();
+                return response.ok ? response.json() : response.json().then(() => { throw new Error('Ошибка сервера'); });
+            })
             .then(data => {
                 if (data.valid === false || !data.userID) {
                     return Promise.reject(data);
                 }
+                setCachedValidate(data);
                 if (data.userID) localStorage.setItem('userId', data.userID.toString());
                 if (data.username) localStorage.setItem('username', data.username);
                 if (data.isAdmin !== undefined) localStorage.setItem('isAdmin', data.isAdmin.toString());
@@ -410,6 +443,7 @@ export function checkAuth(redirectIfUnauthorized = true) {
         .catch(error => {
             const isUnauth = (error && typeof error === 'object' && error.valid === false) || (error && error.message === 'Не авторизован');
             if (isUnauth) {
+                clearValidateCache();
                 sessionStorage.removeItem('trustLocalAuthUntil');
                 localStorage.removeItem('isLoggedIn');
                 if (redirectIfUnauthorized) {
@@ -443,13 +477,12 @@ export function getAuthHeaders(additionalHeaders = {}) {
 // Функция проверки, является ли пользователь администратором
 export async function checkIsAdmin() {
     try {
-        // Проверяем кэш
         const cachedIsAdmin = localStorage.getItem('isAdmin');
-        if (cachedIsAdmin === 'true') {
-            return true;
-        }
-        
-        // Используем cookies для валидации
+        if (cachedIsAdmin === 'true') return true;
+        const cached = getCachedValidate();
+        if (cached && cached.isAdmin === true) return true;
+        if (cached && (cached.valid === false || !cached.userID)) return false;
+
         const response = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.VALIDATE_TOKEN), {
             method: 'GET',
             credentials: 'include'
@@ -466,16 +499,18 @@ export async function checkIsAdmin() {
                     });
                     if (!retryResponse.ok) return false;
                     const data = await retryResponse.json();
+                    setCachedValidate(data);
                     localStorage.setItem('isAdmin', data.isAdmin ? 'true' : 'false');
                     return data.isAdmin === true;
                 } catch (e) {
                     return false;
                 }
             }
+            if (response.status === 429) clearValidateCache();
             return false;
         }
-        
         const data = await response.json();
+        setCachedValidate(data);
         localStorage.setItem('isAdmin', data.isAdmin ? 'true' : 'false');
         return data.isAdmin === true;
     } catch (error) {

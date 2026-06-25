@@ -319,18 +319,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         } else if (tabName === 'solutions') {
             loadUserSolutions();
         }
-        // } else if (tabName === 'payment') {
-        //     loadPaymentBalance();
-        // }
     });
 });
-
-// ——— Оплата ЮKassa (отключено) ———
-// async function loadPaymentBalance() { ... }
-// async function createPaymentAndRedirect(amount) { ... }
-// document.getElementById('payment-btn-999')?.addEventListener(...)
-// document.getElementById('payment-btn-custom')?.addEventListener(...)
-// document.getElementById('payment-submit-custom')?.addEventListener(...)
 
 // Модальное окно обратной связи
 function openFeedbackModal() {

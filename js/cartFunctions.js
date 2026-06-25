@@ -221,7 +221,7 @@ export async function getCartCount() {
 
     if (response.status === 401) {
       try {
-        await auth.refreshToken();
+        await auth.refreshToken({ redirectOnFail: false });
         // После обновления токена повторяем запрос (токен в cookies)
         const retryResponse = await fetch(API_CONFIG.buildURL(API_CONFIG.ENDPOINTS.CART_COUNT), {
           method: 'GET',
@@ -395,7 +395,7 @@ export async function getUnreadNotificationsCount() {
     
     if (response.status === 401) {
       try {
-        await auth.refreshToken();
+        await auth.refreshToken({ redirectOnFail: false });
         // После обновления токена повторяем запрос (токен в cookies)
         const retryResponse = await fetch(API_CONFIG.buildURL('/notifications/count-unread'), {
           method: 'GET',

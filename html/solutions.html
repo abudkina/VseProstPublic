@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- Yandex.Metrika counter -->
+            <script src="/js/site-config.js"></script>
+    <script src="/js/static-api.js"></script>
+    <script src="/js/paths.js"></script>
+<script src="/js/site-config.js"></script>
+<!-- Yandex.Metrika counter -->
     <script type="text/javascript">
         (function(m,e,t,r,i,k,a){
             m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -48,6 +52,8 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="/css/variables.css" />
     <link rel="stylesheet" href="/css/solutions.css" />
+    <link rel="stylesheet" href="/css/mobile-filters.css" />
+    <link rel="stylesheet" href="/css/search-trigger.css" />
     <link rel="stylesheet" href="/css/header.css" />
     <link rel="stylesheet" href="/css/mobile-menu.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
@@ -85,7 +91,31 @@
 
 <section class="search-filters">
     <div class="top-row">
-        <input type="search" placeholder="Найти решение по названию" id="search" />
+        <div class="search-trigger-wrap">
+            <div class="search-input-desktop">
+                <input type="search" placeholder="Найти решение по названию" id="search" />
+            </div>
+            <button type="button" class="search-trigger-btn" aria-label="Поиск"><i class="fas fa-search"></i><span class="search-trigger-label">Поиск</span></button>
+        </div>
+        <button type="button" class="mobile-filter-trigger" data-filter="sort" aria-label="Сортировка">
+            <i class="fas fa-sort-amount-down"></i>
+            <span class="mobile-filter-label">Сортировка</span>
+        </button>
+        <button type="button" class="mobile-filter-trigger" data-filter="category" aria-label="Категория">
+            <i class="fas fa-folder"></i>
+            <span class="mobile-filter-label">Категория</span>
+        </button>
+        <button type="button" class="mobile-filter-trigger" data-filter="hashtags" aria-label="Хэштеги">
+            <i class="fas fa-tags"></i>
+            <span class="mobile-filter-label">Хэштеги</span>
+        </button>
+    </div>
+    <div class="search-bottom-drawer" id="searchDrawer" aria-hidden="true">
+        <div class="search-drawer-backdrop"></div>
+        <div class="search-drawer-panel">
+            <div class="search-drawer-input-slot"></div>
+            <button type="button" class="search-drawer-close" aria-label="Закрыть"><i class="fas fa-times"></i></button>
+        </div>
     </div>
     <div class="filters desktop">
         <select id="sort">
@@ -95,7 +125,7 @@
             <option value="show">По просмотрам</option>
         </select>
         <select id="category">
-            <option>Выберите категорию</option>
+            <option value="">Выберите категорию</option>
         </select>
         <select id="hashtags" placeholder="Введите хэштег..." multiple></select>
     </div>
@@ -152,7 +182,18 @@
         <!-- Здесь будут добавляться карточки -->
     </div>
 </main>
+<div class="mobile-filter-drawer" id="mobileFilterDrawer" aria-hidden="true">
+    <div class="mobile-filter-drawer-backdrop"></div>
+    <div class="mobile-filter-panel">
+        <div class="mobile-filter-panel-header">
+            <h3 class="mobile-filter-panel-title"></h3>
+            <button type="button" class="mobile-filter-panel-close" aria-label="Закрыть"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="mobile-filter-panel-body"></div>
+    </div>
+</div>
 <script src="/js/config.js"></script>
+<script src="/js/searchTrigger.js"></script>
 <script type="module" src="/js/solutions.js" defer></script>
 <script type="module" src="/js/logoAdmin.js"></script>
 <script src="/js/mobile-menu.js"></script>

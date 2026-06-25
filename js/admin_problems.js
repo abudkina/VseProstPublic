@@ -58,11 +58,8 @@ window.addEventListener('load', async function() {
         reloadCards();
     });
     
-    // Инициализация обработчиков фильтров
-    if (choicesInstance) {
-        initFilterHandlers(currentFilters, choicesInstance, reloadCards);
-        initTagClickHandler(choicesInstance, currentFilters, reloadCards);
-    }
+    if (choicesInstance) initTagClickHandler(choicesInstance, currentFilters, reloadCards);
+    initFilterHandlers(currentFilters, choicesInstance, reloadCards);
     
     reloadCards();
     initModal();

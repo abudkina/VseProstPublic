@@ -355,6 +355,11 @@ body > .ts-dropdown[style*="display:none"] {
   gap: 10px;
 }
 
+.search-filters .top-row {
+  align-items: center;
+  min-height: 0;
+}
+
 .top-row {
   display: flex;
   gap: 10px;
@@ -365,7 +370,7 @@ body > .ts-dropdown[style*="display:none"] {
 .top-row #search {
   flex-grow: 1;
   font-size: var(--font-size-base);
-  padding: var(--spacing-4) var(--spacing-5);
+  padding: var(--spacing-3) var(--spacing-4);
   border-radius: var(--radius-2xl);
   border: 2px solid var(--border-light);
   outline: none;
@@ -401,19 +406,32 @@ body > .ts-dropdown[style*="display:none"] {
   background: var(--gradient-primary);
   color: var(--color-white);
   border: none;
-  padding: var(--spacing-4) var(--spacing-6);
-  display: inline-block;
+  padding: 0 var(--spacing-3);
+  height: 38px;
+  min-width: 38px;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   text-decoration: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
   border-radius: var(--radius-2xl);
-  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  white-space: nowrap;
+  font-weight: var(--font-weight-semibold);
   box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-style: normal;
-  font-size: var(--font-size-sm);
+  font-size: 0.9375rem;
+}
+
+.top-row #addProblem i,
+.top-row #addSolution i {
+  font-size: 1rem;
+}
+
+.top-row #addProblem .btn-label,
+.top-row #addSolution .btn-label {
+  white-space: nowrap;
 }
 
 .top-row #addProblem:hover,
@@ -520,20 +538,6 @@ body > .ts-dropdown[style*="display:none"] {
   margin-top: 10px;
   /* Отступ сверху, чтобы выпадающий список не перекрывался */
 }
-
-.suggest-ai-block {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 2rem;
-  background: var(--gradient-white);
-  border-radius: var(--radius-3xl);
-  box-shadow: var(--shadow-md);
-}
-.suggest-ai-block .suggest-ai-text { margin-bottom: 1rem; }
-.suggest-ai-block .suggest-ai-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-.suggest-ai-block .suggest-ai-btn { padding: 0.5rem 1rem; border-radius: var(--radius-xl); cursor: pointer; }
-.suggest-ai-block .suggest-ai-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-.suggest-ai-block .suggest-ai-hint { margin-top: 1rem; font-size: 0.9rem; color: var(--color-text-secondary, #666); }
 
 .card {
   width: 100%;
@@ -1033,8 +1037,8 @@ body > .ts-dropdown[style*="display:none"] {
 
   .top-row #addProblem,
   .top-row #addSolution {
-    width: 100%;
-    text-align: center;
+    min-width: 38px;
+    padding: 0 var(--spacing-2);
   }
 
   .filters.desktop {
@@ -1067,13 +1071,14 @@ body > .ts-dropdown[style*="display:none"] {
   }
 
   .search-filters {
-    padding: 10px 0.8em;
+    padding: 5px 0.6em;
+    gap: 6px;
     border-radius: var(--radius-2xl);
   }
 
   .top-row {
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
   }
 
   .top-row #search {
@@ -1084,9 +1089,8 @@ body > .ts-dropdown[style*="display:none"] {
 
   .top-row #addProblem,
   .top-row #addSolution {
-    width: 100%;
-    padding: var(--spacing-3) var(--spacing-5);
-    font-size: var(--font-size-sm);
+    min-width: 38px;
+    padding: 0 var(--spacing-2);
   }
 
   .filters.desktop {
@@ -1193,10 +1197,8 @@ body > .ts-dropdown[style*="display:none"] {
 
   .top-row #addProblem,
   .top-row #addSolution {
-    width: 100%;
-    padding: var(--spacing-3) var(--spacing-4);
-    font-size: var(--font-size-sm);
-    white-space: normal;
+    min-width: 38px;
+    padding: 0 var(--spacing-2);
   }
 
   .filters.desktop {

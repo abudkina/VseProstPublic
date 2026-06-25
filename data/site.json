@@ -1,0 +1,4124 @@
+{
+  "categories": [
+    {
+      "ID": 36,
+      "Name": "Быстрая покраска волос"
+    },
+    {
+      "ID": 8,
+      "Name": "Дом"
+    },
+    {
+      "ID": 3,
+      "Name": "Еда"
+    },
+    {
+      "ID": 4,
+      "Name": "Здоровье"
+    },
+    {
+      "ID": 6,
+      "Name": "Красота"
+    },
+    {
+      "ID": 5,
+      "Name": "Работа"
+    },
+    {
+      "ID": 1,
+      "Name": "Ребенок"
+    },
+    {
+      "ID": 2,
+      "Name": "Сон"
+    },
+    {
+      "ID": 7,
+      "Name": "Спорт"
+    },
+    {
+      "ID": 9,
+      "Name": "Техника"
+    }
+  ],
+  "topics": [
+    {
+      "ID": 25,
+      "Name": "Бородавки, папилломы"
+    },
+    {
+      "ID": 29,
+      "Name": "Быстрая покраска волос"
+    },
+    {
+      "ID": 12,
+      "Name": "Быстрый маникюр"
+    },
+    {
+      "ID": 28,
+      "Name": "Быстрый педикюр"
+    },
+    {
+      "ID": 16,
+      "Name": "Воздух в доме"
+    },
+    {
+      "ID": 19,
+      "Name": "Глажка белья"
+    },
+    {
+      "ID": 14,
+      "Name": "Детокс средства"
+    },
+    {
+      "ID": 20,
+      "Name": "Детский насморк"
+    },
+    {
+      "ID": 13,
+      "Name": "Запах в обуви"
+    },
+    {
+      "ID": 21,
+      "Name": "Научить ребенка писать"
+    },
+    {
+      "ID": 26,
+      "Name": "Проблемы с потливостью"
+    },
+    {
+      "ID": 18,
+      "Name": "Проверка воды"
+    },
+    {
+      "ID": 15,
+      "Name": "Средства от морщин"
+    },
+    {
+      "ID": 27,
+      "Name": "Трудности с зачатием"
+    },
+    {
+      "ID": 23,
+      "Name": "Увлажнение тела"
+    },
+    {
+      "ID": 22,
+      "Name": "Удобства для обуви"
+    },
+    {
+      "ID": 24,
+      "Name": "Уход за порами"
+    },
+    {
+      "ID": 17,
+      "Name": "Храп"
+    }
+  ],
+  "hashtags": [
+    {
+      "ID": 38,
+      "Name": "аллерген"
+    },
+    {
+      "ID": 42,
+      "Name": "анализ"
+    },
+    {
+      "ID": 45,
+      "Name": "белье"
+    },
+    {
+      "ID": 71,
+      "Name": "беременность"
+    },
+    {
+      "ID": 66,
+      "Name": "бородавки"
+    },
+    {
+      "ID": 43,
+      "Name": "вода"
+    },
+    {
+      "ID": 76,
+      "Name": "волосы"
+    },
+    {
+      "ID": 44,
+      "Name": "глажка"
+    },
+    {
+      "ID": 36,
+      "Name": "грибок"
+    },
+    {
+      "ID": 69,
+      "Name": "дезодорант"
+    },
+    {
+      "ID": 58,
+      "Name": "держатель"
+    },
+    {
+      "ID": 26,
+      "Name": "детокс"
+    },
+    {
+      "ID": 35,
+      "Name": "дом"
+    },
+    {
+      "ID": 24,
+      "Name": "запах"
+    },
+    {
+      "ID": 72,
+      "Name": "зачатие"
+    },
+    {
+      "ID": 56,
+      "Name": "карандаш"
+    },
+    {
+      "ID": 52,
+      "Name": "кашель"
+    },
+    {
+      "ID": 62,
+      "Name": "кожа"
+    },
+    {
+      "ID": 64,
+      "Name": "косметика"
+    },
+    {
+      "ID": 77,
+      "Name": "краска"
+    },
+    {
+      "ID": 32,
+      "Name": "крем"
+    },
+    {
+      "ID": 34,
+      "Name": "лицо"
+    },
+    {
+      "ID": 18,
+      "Name": "маникюр"
+    },
+    {
+      "ID": 59,
+      "Name": "масло"
+    },
+    {
+      "ID": 31,
+      "Name": "морщины"
+    },
+    {
+      "ID": 20,
+      "Name": "наклейки"
+    },
+    {
+      "ID": 48,
+      "Name": "насморк"
+    },
+    {
+      "ID": 22,
+      "Name": "ногти"
+    },
+    {
+      "ID": 23,
+      "Name": "обувь"
+    },
+    {
+      "ID": 46,
+      "Name": "одежда"
+    },
+    {
+      "ID": 53,
+      "Name": "орви"
+    },
+    {
+      "ID": 65,
+      "Name": "папилломы"
+    },
+    {
+      "ID": 74,
+      "Name": "педикюр"
+    },
+    {
+      "ID": 54,
+      "Name": "письмо"
+    },
+    {
+      "ID": 27,
+      "Name": "пластырь"
+    },
+    {
+      "ID": 37,
+      "Name": "плесень"
+    },
+    {
+      "ID": 63,
+      "Name": "поры"
+    },
+    {
+      "ID": 68,
+      "Name": "пот"
+    },
+    {
+      "ID": 19,
+      "Name": "принтер"
+    },
+    {
+      "ID": 40,
+      "Name": "проверка"
+    },
+    {
+      "ID": 50,
+      "Name": "промывание"
+    },
+    {
+      "ID": 49,
+      "Name": "ребенок"
+    },
+    {
+      "ID": 67,
+      "Name": "родинки"
+    },
+    {
+      "ID": 55,
+      "Name": "ручка"
+    },
+    {
+      "ID": 29,
+      "Name": "саше"
+    },
+    {
+      "ID": 51,
+      "Name": "сопли"
+    },
+    {
+      "ID": 75,
+      "Name": "спа"
+    },
+    {
+      "ID": 70,
+      "Name": "старость"
+    },
+    {
+      "ID": 25,
+      "Name": "стикер"
+    },
+    {
+      "ID": 78,
+      "Name": "стиль"
+    },
+    {
+      "ID": 61,
+      "Name": "сухость"
+    },
+    {
+      "ID": 30,
+      "Name": "тело"
+    },
+    {
+      "ID": 39,
+      "Name": "тест"
+    },
+    {
+      "ID": 21,
+      "Name": "техника"
+    },
+    {
+      "ID": 57,
+      "Name": "туфли"
+    },
+    {
+      "ID": 60,
+      "Name": "увлажнение"
+    },
+    {
+      "ID": 47,
+      "Name": "утюг"
+    },
+    {
+      "ID": 33,
+      "Name": "уход"
+    },
+    {
+      "ID": 41,
+      "Name": "храп"
+    },
+    {
+      "ID": 28,
+      "Name": "шлаки"
+    },
+    {
+      "ID": 73,
+      "Name": "эзотерика"
+    }
+  ],
+  "problems": [
+    {
+      "ID": 21,
+      "Name": "Техника для быстрого маникюра",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/1ed5214c8a2346d8a0a52a60a5b7aa87.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 11,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 6,
+      "Topic": 12,
+      "TopicInfo": {
+        "ID": 12,
+        "Name": "Быстрый маникюр"
+      },
+      "Hashtags": [
+        {
+          "ID": 18,
+          "Name": "маникюр"
+        },
+        {
+          "ID": 20,
+          "Name": "наклейки"
+        },
+        {
+          "ID": 21,
+          "Name": "техника"
+        },
+        {
+          "ID": 22,
+          "Name": "ногти"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 14,
+          "Name": "Принтер для ногтей",
+          "Describe": "Наносит любое цветное или черно-белое изображение на ногти за 20 секунд",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a3e882af5945456e831901e8b57c033c.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 22,
+      "Name": "Как избавиться от запаха в обуви",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/generated-images/1ea4fa7f94ea4456970ebf91b28b311c.png",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 8,
+      "Topic": 13,
+      "TopicInfo": {
+        "ID": 13,
+        "Name": "Запах в обуви"
+      },
+      "Hashtags": [
+        {
+          "ID": 23,
+          "Name": "обувь"
+        },
+        {
+          "ID": 24,
+          "Name": "запах"
+        },
+        {
+          "ID": 25,
+          "Name": "стикер"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 15,
+          "Name": "Стикеры",
+          "Describe": "Натуральные компоненты с антибактериальным эффектом работают как дезодорант для ног от пота и запаха",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a9d798c7bce34fcda0e5d16ec1cba779.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 24,
+      "Name": "Детокс средства для тела",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/0e302ea9db0042e39c0695de1fc54ac9.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 14,
+      "TopicInfo": {
+        "ID": 14,
+        "Name": "Детокс средства"
+      },
+      "Hashtags": [
+        {
+          "ID": 26,
+          "Name": "детокс"
+        },
+        {
+          "ID": 28,
+          "Name": "шлаки"
+        },
+        {
+          "ID": 30,
+          "Name": "тело"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 16,
+          "Name": "Пластырь детокс",
+          "Describe": "Очищает от шлаков и токсинов",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/87ab7a184324449c933893e8c512b153.jpg"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 25,
+      "Name": "Крема от морщин",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/8d8cff37bca94b309d0cc9aa22fd0c54.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 6,
+      "Topic": 15,
+      "TopicInfo": {
+        "ID": 15,
+        "Name": "Средства от морщин"
+      },
+      "Hashtags": [
+        {
+          "ID": 31,
+          "Name": "морщины"
+        },
+        {
+          "ID": 32,
+          "Name": "крем"
+        },
+        {
+          "ID": 33,
+          "Name": "уход"
+        },
+        {
+          "ID": 34,
+          "Name": "лицо"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 17,
+          "Name": "Крем с линчжи",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/ed08e52fe7554119ab5f99fbf9c0fc15.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 26,
+      "Name": "Проверка воздуха в доме",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/1a4dfce01a3845c0adc50ebc3d3a3fa8.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 8,
+      "Topic": 16,
+      "TopicInfo": {
+        "ID": 16,
+        "Name": "Воздух в доме"
+      },
+      "Hashtags": [
+        {
+          "ID": 35,
+          "Name": "дом"
+        },
+        {
+          "ID": 36,
+          "Name": "грибок"
+        },
+        {
+          "ID": 37,
+          "Name": "плесень"
+        },
+        {
+          "ID": 38,
+          "Name": "аллерген"
+        },
+        {
+          "ID": 39,
+          "Name": "тест"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 18,
+          "Name": "Тест  агар сабуро",
+          "Describe": "Тест на воздух подходит как для профессионального использования, так и для обыденной проверки в дома...",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36b0521531b54815a230f4cbaa5f0bf6.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 27,
+      "Name": "Предметы от храпа",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/a69a6330a1f24eb1bba2cab595b1a2f3.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Confirmations": 2,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 17,
+      "TopicInfo": {
+        "ID": 17,
+        "Name": "Храп"
+      },
+      "Hashtags": [
+        {
+          "ID": 41,
+          "Name": "храп"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 19,
+          "Name": "Стоматологическая капа",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/62659056195447099a3bee83ef7d5c8f.webp"
+        },
+        {
+          "ID": 21,
+          "Name": "Клипса для носа",
+          "Describe": "Ее действие основывается на раскрытии носовых проходов, что помогает спящему перейти на дыхание носо...",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36c3e4d6863b4297888caca6edd499e2.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 28,
+      "Name": "Тест на анализ воды",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/6e1ccf4c26444348a86803968fd0f6a3.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 18,
+      "TopicInfo": {
+        "ID": 18,
+        "Name": "Проверка воды"
+      },
+      "Hashtags": [
+        {
+          "ID": 39,
+          "Name": "тест"
+        },
+        {
+          "ID": 42,
+          "Name": "анализ"
+        },
+        {
+          "ID": 43,
+          "Name": "вода"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 20,
+          "Name": "Тест для анализа воды питьевой 7 показателей",
+          "Describe": "- кишечная палочка\r\n- энтерококк\r\n- сальмонелла\r\n- стафилококк\r\n- синегнойная палочка\r\n- протеус\r\n- ...",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/eb3bbe70d13b473ca0a8120b91633c90.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 29,
+      "Name": "Покупки для быстрой белья",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/18685103c1f6406583e3fcd5bf3b6dcb.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 8,
+      "Topic": 19,
+      "TopicInfo": {
+        "ID": 19,
+        "Name": "Глажка белья"
+      },
+      "Hashtags": [
+        {
+          "ID": 44,
+          "Name": "глажка"
+        },
+        {
+          "ID": 45,
+          "Name": "белье"
+        },
+        {
+          "ID": 46,
+          "Name": "одежда"
+        },
+        {
+          "ID": 47,
+          "Name": "утюг"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 22,
+          "Name": "Спрей жидкий утюг",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/8afcdd55e6794120b729d20be5301675.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 30,
+      "Name": "Предметы для промывания носа",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/b204e7f3ef5e4f97ab2781c0774c5c19.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 1,
+      "Topic": 20,
+      "TopicInfo": {
+        "ID": 20,
+        "Name": "Детский насморк"
+      },
+      "Hashtags": [
+        {
+          "ID": 48,
+          "Name": "насморк"
+        },
+        {
+          "ID": 49,
+          "Name": "ребенок"
+        },
+        {
+          "ID": 50,
+          "Name": "промывание"
+        },
+        {
+          "ID": 51,
+          "Name": "сопли"
+        },
+        {
+          "ID": 52,
+          "Name": "кашель"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 23,
+          "Name": "Шприц для промывания носа",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3eee8d6e652e46ee96430b3015f86fbe.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 31,
+      "Name": "Предметы для постановки письма",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/e752f4a0725d41fc99e0ba44b91a7b15.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 1,
+      "Topic": 21,
+      "TopicInfo": {
+        "ID": 21,
+        "Name": "Научить ребенка писать"
+      },
+      "Hashtags": [
+        {
+          "ID": 49,
+          "Name": "ребенок"
+        },
+        {
+          "ID": 54,
+          "Name": "письмо"
+        },
+        {
+          "ID": 55,
+          "Name": "ручка"
+        },
+        {
+          "ID": 56,
+          "Name": "карандаш"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 24,
+          "Name": "Тренажер для карандаша/ручки",
+          "Describe": "Тренажер позволяет в игровой форме, без усилий выработать правильную постановку пальцев при обучении...",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f98665722b745a296eae368ef27d36d.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 32,
+      "Name": "Предметы для носки",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/7d18965237df49189a493bdb2189b5a2.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 4,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 22,
+      "TopicInfo": {
+        "ID": 22,
+        "Name": "Удобства для обуви"
+      },
+      "Hashtags": [
+        {
+          "ID": 23,
+          "Name": "обувь"
+        },
+        {
+          "ID": 57,
+          "Name": "туфли"
+        },
+        {
+          "ID": 58,
+          "Name": "держатель"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 25,
+          "Name": "Держатель для босоножек",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/abe242fb42794be8b5f24cec39f1f03e.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 33,
+      "Name": "Масла для увлажнения тела",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/bb950fa796f3496494bac87e1c4885e8.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 23,
+      "TopicInfo": {
+        "ID": 23,
+        "Name": "Увлажнение тела"
+      },
+      "Hashtags": [
+        {
+          "ID": 30,
+          "Name": "тело"
+        },
+        {
+          "ID": 59,
+          "Name": "масло"
+        },
+        {
+          "ID": 60,
+          "Name": "увлажнение"
+        },
+        {
+          "ID": 61,
+          "Name": "сухость"
+        },
+        {
+          "ID": 62,
+          "Name": "кожа"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 26,
+          "Name": "Кокосовое масло",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f30b901877b4f3a8d16b34f91f62a35.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 34,
+      "Name": "Косметические средства для пор",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/bb4a6cf2f72143a88f6114423dd84ccc.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 24,
+      "TopicInfo": {
+        "ID": 24,
+        "Name": "Уход за порами"
+      },
+      "Hashtags": [
+        {
+          "ID": 33,
+          "Name": "уход"
+        },
+        {
+          "ID": 34,
+          "Name": "лицо"
+        },
+        {
+          "ID": 63,
+          "Name": "поры"
+        },
+        {
+          "ID": 64,
+          "Name": "косметика"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 27,
+          "Name": "Сыворотка для сужения пор",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/1c7c41f0605741d096134d06fd3a2aff.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 35,
+      "Name": "Косметические средства для удаления бородавок, папиллом",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/3a5b5cee3d7d402cb477b6be1682211e.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 25,
+      "TopicInfo": {
+        "ID": 25,
+        "Name": "Бородавки, папилломы"
+      },
+      "Hashtags": [
+        {
+          "ID": 65,
+          "Name": "папилломы"
+        },
+        {
+          "ID": 66,
+          "Name": "бородавки"
+        },
+        {
+          "ID": 67,
+          "Name": "родинки"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 28,
+          "Name": "Крем для удаления бородавок/папиллом/родинок",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/0c1a07e946474686b2735586450b4c91.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 36,
+      "Name": "Косметические средства от потливости",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/7dd151e269eb4fc4a874abe4fbcb03e2.jpg",
+      "Favourite": 1,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 4,
+      "Topic": 26,
+      "TopicInfo": {
+        "ID": 26,
+        "Name": "Проблемы с потливостью"
+      },
+      "Hashtags": [
+        {
+          "ID": 24,
+          "Name": "запах"
+        },
+        {
+          "ID": 30,
+          "Name": "тело"
+        },
+        {
+          "ID": 33,
+          "Name": "уход"
+        },
+        {
+          "ID": 68,
+          "Name": "пот"
+        },
+        {
+          "ID": 69,
+          "Name": "дезодорант"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 29,
+          "Name": "Дезодорант кристалл",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/2e28c18d89eb466cb43ea92308e146ba.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 37,
+      "Name": "Предметы от морщин",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/4b2f432d96b3413c8997c8989b679c94.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 4,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 6,
+      "Topic": 15,
+      "TopicInfo": {
+        "ID": 15,
+        "Name": "Средства от морщин"
+      },
+      "Hashtags": [
+        {
+          "ID": 31,
+          "Name": "морщины"
+        },
+        {
+          "ID": 33,
+          "Name": "уход"
+        },
+        {
+          "ID": 34,
+          "Name": "лицо"
+        },
+        {
+          "ID": 70,
+          "Name": "старость"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 30,
+          "Name": "Тейпы от морщин",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3ce408ec96754ed6946f798e9c0525a1.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 38,
+      "Name": "Предметы для быстрого маникюра",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/df37b4229c094dea9874b5b1213b426e.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 4,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 6,
+      "Topic": 12,
+      "TopicInfo": {
+        "ID": 12,
+        "Name": "Быстрый маникюр"
+      },
+      "Hashtags": [
+        {
+          "ID": 18,
+          "Name": "маникюр"
+        },
+        {
+          "ID": 20,
+          "Name": "наклейки"
+        },
+        {
+          "ID": 22,
+          "Name": "ногти"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 31,
+          "Name": "Лаковые полоски",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/e44425d76f6743159eeca8d15a5db10a.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 39,
+      "Name": "Эзотерические предметы для зачатия",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/2b05adbd3ccd4df282bcbd6a0bd6db55.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 5,
+      "Reply": 0,
+      "Confirmations": 2,
+      "Shares": 0,
+      "Category": 1,
+      "Topic": 27,
+      "TopicInfo": {
+        "ID": 27,
+        "Name": "Трудности с зачатием"
+      },
+      "Hashtags": [
+        {
+          "ID": 49,
+          "Name": "ребенок"
+        },
+        {
+          "ID": 71,
+          "Name": "беременность"
+        },
+        {
+          "ID": 72,
+          "Name": "зачатие"
+        },
+        {
+          "ID": 73,
+          "Name": "эзотерика"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 32,
+          "Name": "Свеча",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/d8951f09c5b5446fb9e0d55323d94345.webp"
+        },
+        {
+          "ID": 33,
+          "Name": "Карта зачатия",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f43a61fbb7a242f6bc784acad7807a6c.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 40,
+      "Name": "Предметы для быстрого педикюра",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/ea50ab7445124b5aaf6237e44daa6bd6.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 5,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 6,
+      "Topic": 28,
+      "TopicInfo": {
+        "ID": 28,
+        "Name": "Быстрый педикюр"
+      },
+      "Hashtags": [
+        {
+          "ID": 22,
+          "Name": "ногти"
+        },
+        {
+          "ID": 74,
+          "Name": "педикюр"
+        },
+        {
+          "ID": 75,
+          "Name": "спа"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 34,
+          "Name": "Набор с кератолитиком",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/34c2d4f29b55420eb6ea1dfdc78f3a69.webp"
+        }
+      ],
+      "LinkedProblems": []
+    },
+    {
+      "ID": 41,
+      "Name": "Предметы для быстрой покраски волос",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/5bc7c87edc0446a59413ae1d350e7631.jpg",
+      "Favourite": 1,
+      "IsFavourite": false,
+      "Show": 5,
+      "Reply": 0,
+      "Confirmations": 1,
+      "Shares": 0,
+      "Category": 36,
+      "Topic": 29,
+      "TopicInfo": {
+        "ID": 29,
+        "Name": "Быстрая покраска волос"
+      },
+      "Hashtags": [
+        {
+          "ID": 76,
+          "Name": "волосы"
+        },
+        {
+          "ID": 77,
+          "Name": "краска"
+        },
+        {
+          "ID": 78,
+          "Name": "стиль"
+        }
+      ],
+      "Solutions": [
+        {
+          "ID": 35,
+          "Name": "Оттеночный бальзам",
+          "Describe": "",
+          "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f29dfd99f34649b19fcd43b03cc80aa1.webp"
+        }
+      ],
+      "LinkedProblems": []
+    }
+  ],
+  "problems_detail": {
+    "21": {
+      "problem": {
+        "ID": 21,
+        "Name": "Техника для быстрого маникюра",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/1ed5214c8a2346d8a0a52a60a5b7aa87.webp",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 11,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 6,
+        "Topic": 12,
+        "TopicInfo": {
+          "ID": 12,
+          "Name": "Быстрый маникюр"
+        },
+        "Hashtags": [
+          {
+            "ID": 18,
+            "Name": "маникюр"
+          },
+          {
+            "ID": 20,
+            "Name": "наклейки"
+          },
+          {
+            "ID": 21,
+            "Name": "техника"
+          },
+          {
+            "ID": 22,
+            "Name": "ногти"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 14,
+            "Name": "Принтер для ногтей",
+            "Describe": "Наносит любое цветное или черно-белое изображение на ногти за 20 секунд",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a3e882af5945456e831901e8b57c033c.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 4,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 21,
+                "Name": "Техника для быстрого маникюра",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/1ed5214c8a2346d8a0a52a60a5b7aa87.webp",
+                "Hashtags": [
+                  {
+                    "ID": 18,
+                    "Name": "маникюр"
+                  },
+                  {
+                    "ID": 20,
+                    "Name": "наклейки"
+                  },
+                  {
+                    "ID": 21,
+                    "Name": "техника"
+                  },
+                  {
+                    "ID": 22,
+                    "Name": "ногти"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 12,
+                  "Name": "Быстрый маникюр"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "22": {
+      "problem": {
+        "ID": 22,
+        "Name": "Как избавиться от запаха в обуви",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/generated-images/1ea4fa7f94ea4456970ebf91b28b311c.png",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 3,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 8,
+        "Topic": 13,
+        "TopicInfo": {
+          "ID": 13,
+          "Name": "Запах в обуви"
+        },
+        "Hashtags": [
+          {
+            "ID": 23,
+            "Name": "обувь"
+          },
+          {
+            "ID": 24,
+            "Name": "запах"
+          },
+          {
+            "ID": 25,
+            "Name": "стикер"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 15,
+            "Name": "Стикеры",
+            "Describe": "Натуральные компоненты с антибактериальным эффектом работают как дезодорант для ног от пота и запаха",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a9d798c7bce34fcda0e5d16ec1cba779.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 3,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 22,
+                "Name": "Как избавиться от запаха в обуви",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/generated-images/1ea4fa7f94ea4456970ebf91b28b311c.png",
+                "Hashtags": [
+                  {
+                    "ID": 23,
+                    "Name": "обувь"
+                  },
+                  {
+                    "ID": 24,
+                    "Name": "запах"
+                  },
+                  {
+                    "ID": 25,
+                    "Name": "стикер"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 13,
+                  "Name": "Запах в обуви"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "24": {
+      "problem": {
+        "ID": 24,
+        "Name": "Детокс средства для тела",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/0e302ea9db0042e39c0695de1fc54ac9.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 3,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 14,
+        "TopicInfo": {
+          "ID": 14,
+          "Name": "Детокс средства"
+        },
+        "Hashtags": [
+          {
+            "ID": 26,
+            "Name": "детокс"
+          },
+          {
+            "ID": 28,
+            "Name": "шлаки"
+          },
+          {
+            "ID": 30,
+            "Name": "тело"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 16,
+            "Name": "Пластырь детокс",
+            "Describe": "Очищает от шлаков и токсинов",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/87ab7a184324449c933893e8c512b153.jpg",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 24,
+                "Name": "Детокс средства для тела",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/0e302ea9db0042e39c0695de1fc54ac9.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 26,
+                    "Name": "детокс"
+                  },
+                  {
+                    "ID": 28,
+                    "Name": "шлаки"
+                  },
+                  {
+                    "ID": 30,
+                    "Name": "тело"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 14,
+                  "Name": "Детокс средства"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "25": {
+      "problem": {
+        "ID": 25,
+        "Name": "Крема от морщин",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/8d8cff37bca94b309d0cc9aa22fd0c54.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 2,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 6,
+        "Topic": 15,
+        "TopicInfo": {
+          "ID": 15,
+          "Name": "Средства от морщин"
+        },
+        "Hashtags": [
+          {
+            "ID": 31,
+            "Name": "морщины"
+          },
+          {
+            "ID": 32,
+            "Name": "крем"
+          },
+          {
+            "ID": 33,
+            "Name": "уход"
+          },
+          {
+            "ID": 34,
+            "Name": "лицо"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 17,
+            "Name": "Крем с линчжи",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/ed08e52fe7554119ab5f99fbf9c0fc15.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 25,
+                "Name": "Крема от морщин",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/8d8cff37bca94b309d0cc9aa22fd0c54.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 31,
+                    "Name": "морщины"
+                  },
+                  {
+                    "ID": 32,
+                    "Name": "крем"
+                  },
+                  {
+                    "ID": 33,
+                    "Name": "уход"
+                  },
+                  {
+                    "ID": 34,
+                    "Name": "лицо"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 15,
+                  "Name": "Средства от морщин"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "26": {
+      "problem": {
+        "ID": 26,
+        "Name": "Проверка воздуха в доме",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/1a4dfce01a3845c0adc50ebc3d3a3fa8.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 2,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 8,
+        "Topic": 16,
+        "TopicInfo": {
+          "ID": 16,
+          "Name": "Воздух в доме"
+        },
+        "Hashtags": [
+          {
+            "ID": 35,
+            "Name": "дом"
+          },
+          {
+            "ID": 36,
+            "Name": "грибок"
+          },
+          {
+            "ID": 37,
+            "Name": "плесень"
+          },
+          {
+            "ID": 38,
+            "Name": "аллерген"
+          },
+          {
+            "ID": 39,
+            "Name": "тест"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 18,
+            "Name": "Тест  агар сабуро",
+            "Describe": "Тест на воздух подходит как для профессионального использования, так и для обыденной проверки в домашних условиях. Он поможет выявить потенциальные угрозы для здоровья, связанные с плесенью и другими микробными загрязнениями. Используя данный тест, вы можете быть уверены в надежности получаемых результатов.",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36b0521531b54815a230f4cbaa5f0bf6.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 26,
+                "Name": "Проверка воздуха в доме",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/1a4dfce01a3845c0adc50ebc3d3a3fa8.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 35,
+                    "Name": "дом"
+                  },
+                  {
+                    "ID": 36,
+                    "Name": "грибок"
+                  },
+                  {
+                    "ID": 37,
+                    "Name": "плесень"
+                  },
+                  {
+                    "ID": 38,
+                    "Name": "аллерген"
+                  },
+                  {
+                    "ID": 39,
+                    "Name": "тест"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 16,
+                  "Name": "Воздух в доме"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "27": {
+      "problem": {
+        "ID": 27,
+        "Name": "Предметы от храпа",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/a69a6330a1f24eb1bba2cab595b1a2f3.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 3,
+        "Reply": 0,
+        "Confirmations": 2,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 17,
+        "TopicInfo": {
+          "ID": 17,
+          "Name": "Храп"
+        },
+        "Hashtags": [
+          {
+            "ID": 41,
+            "Name": "храп"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 19,
+            "Name": "Стоматологическая капа",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/62659056195447099a3bee83ef7d5c8f.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 27,
+                "Name": "Предметы от храпа",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/a69a6330a1f24eb1bba2cab595b1a2f3.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 41,
+                    "Name": "храп"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 17,
+                  "Name": "Храп"
+                }
+              }
+            ]
+          },
+          {
+            "ID": 21,
+            "Name": "Клипса для носа",
+            "Describe": "Ее действие основывается на раскрытии носовых проходов, что помогает спящему перейти на дыхание носом. Со временем организм привыкает и звук храпа значительно уменьшается, либо пропадает совсем.",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36c3e4d6863b4297888caca6edd499e2.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 27,
+                "Name": "Предметы от храпа",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/a69a6330a1f24eb1bba2cab595b1a2f3.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 41,
+                    "Name": "храп"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 17,
+                  "Name": "Храп"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "28": {
+      "problem": {
+        "ID": 28,
+        "Name": "Тест на анализ воды",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/6e1ccf4c26444348a86803968fd0f6a3.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 2,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 18,
+        "TopicInfo": {
+          "ID": 18,
+          "Name": "Проверка воды"
+        },
+        "Hashtags": [
+          {
+            "ID": 39,
+            "Name": "тест"
+          },
+          {
+            "ID": 42,
+            "Name": "анализ"
+          },
+          {
+            "ID": 43,
+            "Name": "вода"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 20,
+            "Name": "Тест для анализа воды питьевой 7 показателей",
+            "Describe": "- кишечная палочка\r\n- энтерококк\r\n- сальмонелла\r\n- стафилококк\r\n- синегнойная палочка\r\n- протеус\r\n- энтеробактер",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/eb3bbe70d13b473ca0a8120b91633c90.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 28,
+                "Name": "Тест на анализ воды",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/6e1ccf4c26444348a86803968fd0f6a3.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 39,
+                    "Name": "тест"
+                  },
+                  {
+                    "ID": 42,
+                    "Name": "анализ"
+                  },
+                  {
+                    "ID": 43,
+                    "Name": "вода"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 18,
+                  "Name": "Проверка воды"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "29": {
+      "problem": {
+        "ID": 29,
+        "Name": "Покупки для быстрой белья",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/18685103c1f6406583e3fcd5bf3b6dcb.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 2,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 8,
+        "Topic": 19,
+        "TopicInfo": {
+          "ID": 19,
+          "Name": "Глажка белья"
+        },
+        "Hashtags": [
+          {
+            "ID": 44,
+            "Name": "глажка"
+          },
+          {
+            "ID": 45,
+            "Name": "белье"
+          },
+          {
+            "ID": 46,
+            "Name": "одежда"
+          },
+          {
+            "ID": 47,
+            "Name": "утюг"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 22,
+            "Name": "Спрей жидкий утюг",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/8afcdd55e6794120b729d20be5301675.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 29,
+                "Name": "Покупки для быстрой белья",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/18685103c1f6406583e3fcd5bf3b6dcb.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 44,
+                    "Name": "глажка"
+                  },
+                  {
+                    "ID": 45,
+                    "Name": "белье"
+                  },
+                  {
+                    "ID": 46,
+                    "Name": "одежда"
+                  },
+                  {
+                    "ID": 47,
+                    "Name": "утюг"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 19,
+                  "Name": "Глажка белья"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "30": {
+      "problem": {
+        "ID": 30,
+        "Name": "Предметы для промывания носа",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/b204e7f3ef5e4f97ab2781c0774c5c19.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 2,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 1,
+        "Topic": 20,
+        "TopicInfo": {
+          "ID": 20,
+          "Name": "Детский насморк"
+        },
+        "Hashtags": [
+          {
+            "ID": 48,
+            "Name": "насморк"
+          },
+          {
+            "ID": 49,
+            "Name": "ребенок"
+          },
+          {
+            "ID": 50,
+            "Name": "промывание"
+          },
+          {
+            "ID": 51,
+            "Name": "сопли"
+          },
+          {
+            "ID": 52,
+            "Name": "кашель"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 23,
+            "Name": "Шприц для промывания носа",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3eee8d6e652e46ee96430b3015f86fbe.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 30,
+                "Name": "Предметы для промывания носа",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/b204e7f3ef5e4f97ab2781c0774c5c19.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 48,
+                    "Name": "насморк"
+                  },
+                  {
+                    "ID": 49,
+                    "Name": "ребенок"
+                  },
+                  {
+                    "ID": 50,
+                    "Name": "промывание"
+                  },
+                  {
+                    "ID": 51,
+                    "Name": "сопли"
+                  },
+                  {
+                    "ID": 52,
+                    "Name": "кашель"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 20,
+                  "Name": "Детский насморк"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "31": {
+      "problem": {
+        "ID": 31,
+        "Name": "Предметы для постановки письма",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/e752f4a0725d41fc99e0ba44b91a7b15.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 2,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 1,
+        "Topic": 21,
+        "TopicInfo": {
+          "ID": 21,
+          "Name": "Научить ребенка писать"
+        },
+        "Hashtags": [
+          {
+            "ID": 49,
+            "Name": "ребенок"
+          },
+          {
+            "ID": 54,
+            "Name": "письмо"
+          },
+          {
+            "ID": 55,
+            "Name": "ручка"
+          },
+          {
+            "ID": 56,
+            "Name": "карандаш"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 24,
+            "Name": "Тренажер для карандаша/ручки",
+            "Describe": "Тренажер позволяет в игровой форме, без усилий выработать правильную постановку пальцев при обучении ребенка рисованию и технике письма - ручку (карандаш) держать легко и удобно.",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f98665722b745a296eae368ef27d36d.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 31,
+                "Name": "Предметы для постановки письма",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/e752f4a0725d41fc99e0ba44b91a7b15.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 49,
+                    "Name": "ребенок"
+                  },
+                  {
+                    "ID": 54,
+                    "Name": "письмо"
+                  },
+                  {
+                    "ID": 55,
+                    "Name": "ручка"
+                  },
+                  {
+                    "ID": 56,
+                    "Name": "карандаш"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 21,
+                  "Name": "Научить ребенка писать"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "32": {
+      "problem": {
+        "ID": 32,
+        "Name": "Предметы для носки",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/7d18965237df49189a493bdb2189b5a2.webp",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 4,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 22,
+        "TopicInfo": {
+          "ID": 22,
+          "Name": "Удобства для обуви"
+        },
+        "Hashtags": [
+          {
+            "ID": 23,
+            "Name": "обувь"
+          },
+          {
+            "ID": 57,
+            "Name": "туфли"
+          },
+          {
+            "ID": 58,
+            "Name": "держатель"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 25,
+            "Name": "Держатель для босоножек",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/abe242fb42794be8b5f24cec39f1f03e.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 32,
+                "Name": "Предметы для носки",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/7d18965237df49189a493bdb2189b5a2.webp",
+                "Hashtags": [
+                  {
+                    "ID": 23,
+                    "Name": "обувь"
+                  },
+                  {
+                    "ID": 57,
+                    "Name": "туфли"
+                  },
+                  {
+                    "ID": 58,
+                    "Name": "держатель"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 22,
+                  "Name": "Удобства для обуви"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "33": {
+      "problem": {
+        "ID": 33,
+        "Name": "Масла для увлажнения тела",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/bb950fa796f3496494bac87e1c4885e8.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 3,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 23,
+        "TopicInfo": {
+          "ID": 23,
+          "Name": "Увлажнение тела"
+        },
+        "Hashtags": [
+          {
+            "ID": 30,
+            "Name": "тело"
+          },
+          {
+            "ID": 59,
+            "Name": "масло"
+          },
+          {
+            "ID": 60,
+            "Name": "увлажнение"
+          },
+          {
+            "ID": 61,
+            "Name": "сухость"
+          },
+          {
+            "ID": 62,
+            "Name": "кожа"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 26,
+            "Name": "Кокосовое масло",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f30b901877b4f3a8d16b34f91f62a35.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 33,
+                "Name": "Масла для увлажнения тела",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/bb950fa796f3496494bac87e1c4885e8.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 30,
+                    "Name": "тело"
+                  },
+                  {
+                    "ID": 59,
+                    "Name": "масло"
+                  },
+                  {
+                    "ID": 60,
+                    "Name": "увлажнение"
+                  },
+                  {
+                    "ID": 61,
+                    "Name": "сухость"
+                  },
+                  {
+                    "ID": 62,
+                    "Name": "кожа"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 23,
+                  "Name": "Увлажнение тела"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "34": {
+      "problem": {
+        "ID": 34,
+        "Name": "Косметические средства для пор",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/bb4a6cf2f72143a88f6114423dd84ccc.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 3,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 24,
+        "TopicInfo": {
+          "ID": 24,
+          "Name": "Уход за порами"
+        },
+        "Hashtags": [
+          {
+            "ID": 33,
+            "Name": "уход"
+          },
+          {
+            "ID": 34,
+            "Name": "лицо"
+          },
+          {
+            "ID": 63,
+            "Name": "поры"
+          },
+          {
+            "ID": 64,
+            "Name": "косметика"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 27,
+            "Name": "Сыворотка для сужения пор",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/1c7c41f0605741d096134d06fd3a2aff.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 34,
+                "Name": "Косметические средства для пор",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/bb4a6cf2f72143a88f6114423dd84ccc.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 33,
+                    "Name": "уход"
+                  },
+                  {
+                    "ID": 34,
+                    "Name": "лицо"
+                  },
+                  {
+                    "ID": 63,
+                    "Name": "поры"
+                  },
+                  {
+                    "ID": 64,
+                    "Name": "косметика"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 24,
+                  "Name": "Уход за порами"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "35": {
+      "problem": {
+        "ID": 35,
+        "Name": "Косметические средства для удаления бородавок, папиллом",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/3a5b5cee3d7d402cb477b6be1682211e.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 3,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 25,
+        "TopicInfo": {
+          "ID": 25,
+          "Name": "Бородавки, папилломы"
+        },
+        "Hashtags": [
+          {
+            "ID": 65,
+            "Name": "папилломы"
+          },
+          {
+            "ID": 66,
+            "Name": "бородавки"
+          },
+          {
+            "ID": 67,
+            "Name": "родинки"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 28,
+            "Name": "Крем для удаления бородавок/папиллом/родинок",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/0c1a07e946474686b2735586450b4c91.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 35,
+                "Name": "Косметические средства для удаления бородавок, папиллом",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/3a5b5cee3d7d402cb477b6be1682211e.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 65,
+                    "Name": "папилломы"
+                  },
+                  {
+                    "ID": 66,
+                    "Name": "бородавки"
+                  },
+                  {
+                    "ID": 67,
+                    "Name": "родинки"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 25,
+                  "Name": "Бородавки, папилломы"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "36": {
+      "problem": {
+        "ID": 36,
+        "Name": "Косметические средства от потливости",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/7dd151e269eb4fc4a874abe4fbcb03e2.jpg",
+        "Favourite": 1,
+        "IsFavourite": false,
+        "Show": 3,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 4,
+        "Topic": 26,
+        "TopicInfo": {
+          "ID": 26,
+          "Name": "Проблемы с потливостью"
+        },
+        "Hashtags": [
+          {
+            "ID": 24,
+            "Name": "запах"
+          },
+          {
+            "ID": 30,
+            "Name": "тело"
+          },
+          {
+            "ID": 33,
+            "Name": "уход"
+          },
+          {
+            "ID": 68,
+            "Name": "пот"
+          },
+          {
+            "ID": 69,
+            "Name": "дезодорант"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 29,
+            "Name": "Дезодорант кристалл",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/2e28c18d89eb466cb43ea92308e146ba.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 36,
+                "Name": "Косметические средства от потливости",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/7dd151e269eb4fc4a874abe4fbcb03e2.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 24,
+                    "Name": "запах"
+                  },
+                  {
+                    "ID": 30,
+                    "Name": "тело"
+                  },
+                  {
+                    "ID": 33,
+                    "Name": "уход"
+                  },
+                  {
+                    "ID": 68,
+                    "Name": "пот"
+                  },
+                  {
+                    "ID": 69,
+                    "Name": "дезодорант"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 26,
+                  "Name": "Проблемы с потливостью"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "37": {
+      "problem": {
+        "ID": 37,
+        "Name": "Предметы от морщин",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/4b2f432d96b3413c8997c8989b679c94.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 4,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 6,
+        "Topic": 15,
+        "TopicInfo": {
+          "ID": 15,
+          "Name": "Средства от морщин"
+        },
+        "Hashtags": [
+          {
+            "ID": 31,
+            "Name": "морщины"
+          },
+          {
+            "ID": 33,
+            "Name": "уход"
+          },
+          {
+            "ID": 34,
+            "Name": "лицо"
+          },
+          {
+            "ID": 70,
+            "Name": "старость"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 30,
+            "Name": "Тейпы от морщин",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3ce408ec96754ed6946f798e9c0525a1.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 37,
+                "Name": "Предметы от морщин",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/4b2f432d96b3413c8997c8989b679c94.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 31,
+                    "Name": "морщины"
+                  },
+                  {
+                    "ID": 33,
+                    "Name": "уход"
+                  },
+                  {
+                    "ID": 34,
+                    "Name": "лицо"
+                  },
+                  {
+                    "ID": 70,
+                    "Name": "старость"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 15,
+                  "Name": "Средства от морщин"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "38": {
+      "problem": {
+        "ID": 38,
+        "Name": "Предметы для быстрого маникюра",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/df37b4229c094dea9874b5b1213b426e.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 4,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 6,
+        "Topic": 12,
+        "TopicInfo": {
+          "ID": 12,
+          "Name": "Быстрый маникюр"
+        },
+        "Hashtags": [
+          {
+            "ID": 18,
+            "Name": "маникюр"
+          },
+          {
+            "ID": 20,
+            "Name": "наклейки"
+          },
+          {
+            "ID": 22,
+            "Name": "ногти"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 31,
+            "Name": "Лаковые полоски",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/e44425d76f6743159eeca8d15a5db10a.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 38,
+                "Name": "Предметы для быстрого маникюра",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/df37b4229c094dea9874b5b1213b426e.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 18,
+                    "Name": "маникюр"
+                  },
+                  {
+                    "ID": 20,
+                    "Name": "наклейки"
+                  },
+                  {
+                    "ID": 22,
+                    "Name": "ногти"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 12,
+                  "Name": "Быстрый маникюр"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "39": {
+      "problem": {
+        "ID": 39,
+        "Name": "Эзотерические предметы для зачатия",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/2b05adbd3ccd4df282bcbd6a0bd6db55.webp",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 5,
+        "Reply": 0,
+        "Confirmations": 2,
+        "Shares": 0,
+        "Category": 1,
+        "Topic": 27,
+        "TopicInfo": {
+          "ID": 27,
+          "Name": "Трудности с зачатием"
+        },
+        "Hashtags": [
+          {
+            "ID": 49,
+            "Name": "ребенок"
+          },
+          {
+            "ID": 71,
+            "Name": "беременность"
+          },
+          {
+            "ID": 72,
+            "Name": "зачатие"
+          },
+          {
+            "ID": 73,
+            "Name": "эзотерика"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 32,
+            "Name": "Свеча",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/d8951f09c5b5446fb9e0d55323d94345.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 3,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 39,
+                "Name": "Эзотерические предметы для зачатия",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/2b05adbd3ccd4df282bcbd6a0bd6db55.webp",
+                "Hashtags": [
+                  {
+                    "ID": 49,
+                    "Name": "ребенок"
+                  },
+                  {
+                    "ID": 71,
+                    "Name": "беременность"
+                  },
+                  {
+                    "ID": 72,
+                    "Name": "зачатие"
+                  },
+                  {
+                    "ID": 73,
+                    "Name": "эзотерика"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 27,
+                  "Name": "Трудности с зачатием"
+                }
+              }
+            ]
+          },
+          {
+            "ID": 33,
+            "Name": "Карта зачатия",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f43a61fbb7a242f6bc784acad7807a6c.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 2,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 39,
+                "Name": "Эзотерические предметы для зачатия",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/2b05adbd3ccd4df282bcbd6a0bd6db55.webp",
+                "Hashtags": [
+                  {
+                    "ID": 49,
+                    "Name": "ребенок"
+                  },
+                  {
+                    "ID": 71,
+                    "Name": "беременность"
+                  },
+                  {
+                    "ID": 72,
+                    "Name": "зачатие"
+                  },
+                  {
+                    "ID": 73,
+                    "Name": "эзотерика"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 27,
+                  "Name": "Трудности с зачатием"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "40": {
+      "problem": {
+        "ID": 40,
+        "Name": "Предметы для быстрого педикюра",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/ea50ab7445124b5aaf6237e44daa6bd6.jpg",
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Show": 5,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 6,
+        "Topic": 28,
+        "TopicInfo": {
+          "ID": 28,
+          "Name": "Быстрый педикюр"
+        },
+        "Hashtags": [
+          {
+            "ID": 22,
+            "Name": "ногти"
+          },
+          {
+            "ID": 74,
+            "Name": "педикюр"
+          },
+          {
+            "ID": 75,
+            "Name": "спа"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 34,
+            "Name": "Набор с кератолитиком",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/34c2d4f29b55420eb6ea1dfdc78f3a69.webp",
+            "Favourite": 0,
+            "Rating": 0,
+            "Show": 3,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 0,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 40,
+                "Name": "Предметы для быстрого педикюра",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/ea50ab7445124b5aaf6237e44daa6bd6.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 22,
+                    "Name": "ногти"
+                  },
+                  {
+                    "ID": 74,
+                    "Name": "педикюр"
+                  },
+                  {
+                    "ID": 75,
+                    "Name": "спа"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 28,
+                  "Name": "Быстрый педикюр"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    },
+    "41": {
+      "problem": {
+        "ID": 41,
+        "Name": "Предметы для быстрой покраски волос",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/5bc7c87edc0446a59413ae1d350e7631.jpg",
+        "Favourite": 1,
+        "IsFavourite": false,
+        "Show": 5,
+        "Reply": 0,
+        "Confirmations": 1,
+        "Shares": 0,
+        "Category": 36,
+        "Topic": 29,
+        "TopicInfo": {
+          "ID": 29,
+          "Name": "Быстрая покраска волос"
+        },
+        "Hashtags": [
+          {
+            "ID": 76,
+            "Name": "волосы"
+          },
+          {
+            "ID": 77,
+            "Name": "краска"
+          },
+          {
+            "ID": 78,
+            "Name": "стиль"
+          }
+        ],
+        "Solutions": [
+          {
+            "ID": 35,
+            "Name": "Оттеночный бальзам",
+            "Describe": "",
+            "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f29dfd99f34649b19fcd43b03cc80aa1.webp",
+            "Favourite": 0,
+            "Rating": 5,
+            "Show": 17,
+            "Reply": 0,
+            "Price": 0,
+            "Efficiency": 5,
+            "Complexity": 0,
+            "Time": 0,
+            "IsBought": true,
+            "IsRating": true,
+            "Comments": [],
+            "Problems": [
+              {
+                "ID": 41,
+                "Name": "Предметы для быстрой покраски волос",
+                "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/problems/5bc7c87edc0446a59413ae1d350e7631.jpg",
+                "Hashtags": [
+                  {
+                    "ID": 76,
+                    "Name": "волосы"
+                  },
+                  {
+                    "ID": 77,
+                    "Name": "краска"
+                  },
+                  {
+                    "ID": 78,
+                    "Name": "стиль"
+                  }
+                ],
+                "TopicInfo": {
+                  "ID": 29,
+                  "Name": "Быстрая покраска волос"
+                }
+              }
+            ]
+          }
+        ],
+        "LinkedProblems": []
+      }
+    }
+  },
+  "solutions": [
+    {
+      "ID": 14,
+      "Name": "Принтер для ногтей",
+      "Describe": "Наносит любое цветное или черно-белое изображение на ногти за 20 секунд",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a3e882af5945456e831901e8b57c033c.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 4,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 21,
+          "Name": "Техника для быстрого маникюра"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 15,
+      "Name": "Стикеры",
+      "Describe": "Натуральные компоненты с антибактериальным эффектом работают как дезодорант для ног от пота и запаха",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a9d798c7bce34fcda0e5d16ec1cba779.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 22,
+          "Name": "Как избавиться от запаха в обуви"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 16,
+      "Name": "Пластырь детокс",
+      "Describe": "Очищает от шлаков и токсинов",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/87ab7a184324449c933893e8c512b153.jpg",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 24,
+          "Name": "Детокс средства для тела"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 17,
+      "Name": "Крем с линчжи",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/ed08e52fe7554119ab5f99fbf9c0fc15.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 25,
+          "Name": "Крема от морщин"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 18,
+      "Name": "Тест  агар сабуро",
+      "Describe": "Тест на воздух подходит как для профессионального использования, так и для обыденной проверки в домашних условиях. Он поможет выявить потенциальные угрозы для здоровья, связанные с плесенью и другими микробными загрязнениями. Используя данный тест, вы можете быть уверены в надежности получаемых результатов.",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36b0521531b54815a230f4cbaa5f0bf6.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 26,
+          "Name": "Проверка воздуха в доме"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 19,
+      "Name": "Стоматологическая капа",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/62659056195447099a3bee83ef7d5c8f.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 27,
+          "Name": "Предметы от храпа"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 20,
+      "Name": "Тест для анализа воды питьевой 7 показателей",
+      "Describe": "- кишечная палочка\r\n- энтерококк\r\n- сальмонелла\r\n- стафилококк\r\n- синегнойная палочка\r\n- протеус\r\n- энтеробактер",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/eb3bbe70d13b473ca0a8120b91633c90.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 28,
+          "Name": "Тест на анализ воды"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 21,
+      "Name": "Клипса для носа",
+      "Describe": "Ее действие основывается на раскрытии носовых проходов, что помогает спящему перейти на дыхание носом. Со временем организм привыкает и звук храпа значительно уменьшается, либо пропадает совсем.",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36c3e4d6863b4297888caca6edd499e2.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 27,
+          "Name": "Предметы от храпа"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 22,
+      "Name": "Спрей жидкий утюг",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/8afcdd55e6794120b729d20be5301675.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 29,
+          "Name": "Покупки для быстрой белья"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 23,
+      "Name": "Шприц для промывания носа",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3eee8d6e652e46ee96430b3015f86fbe.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 30,
+          "Name": "Предметы для промывания носа"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 24,
+      "Name": "Тренажер для карандаша/ручки",
+      "Describe": "Тренажер позволяет в игровой форме, без усилий выработать правильную постановку пальцев при обучении ребенка рисованию и технике письма - ручку (карандаш) держать легко и удобно.",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f98665722b745a296eae368ef27d36d.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 31,
+          "Name": "Предметы для постановки письма"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 25,
+      "Name": "Держатель для босоножек",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/abe242fb42794be8b5f24cec39f1f03e.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 32,
+          "Name": "Предметы для носки"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 26,
+      "Name": "Кокосовое масло",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f30b901877b4f3a8d16b34f91f62a35.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 33,
+          "Name": "Масла для увлажнения тела"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 27,
+      "Name": "Сыворотка для сужения пор",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/1c7c41f0605741d096134d06fd3a2aff.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 34,
+          "Name": "Косметические средства для пор"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 28,
+      "Name": "Крем для удаления бородавок/папиллом/родинок",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/0c1a07e946474686b2735586450b4c91.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 35,
+          "Name": "Косметические средства для удаления бородавок, папиллом"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 29,
+      "Name": "Дезодорант кристалл",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/2e28c18d89eb466cb43ea92308e146ba.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 36,
+          "Name": "Косметические средства от потливости"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 30,
+      "Name": "Тейпы от морщин",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3ce408ec96754ed6946f798e9c0525a1.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 37,
+          "Name": "Предметы от морщин"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 31,
+      "Name": "Лаковые полоски",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/e44425d76f6743159eeca8d15a5db10a.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 38,
+          "Name": "Предметы для быстрого маникюра"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 32,
+      "Name": "Свеча",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/d8951f09c5b5446fb9e0d55323d94345.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 39,
+          "Name": "Эзотерические предметы для зачатия"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 33,
+      "Name": "Карта зачатия",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f43a61fbb7a242f6bc784acad7807a6c.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 2,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 39,
+          "Name": "Эзотерические предметы для зачатия"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 34,
+      "Name": "Набор с кератолитиком",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/34c2d4f29b55420eb6ea1dfdc78f3a69.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 3,
+      "Reply": 0,
+      "Rating": 0,
+      "Price": 0,
+      "Efficiency": 0,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 40,
+          "Name": "Предметы для быстрого педикюра"
+        }
+      ],
+      "Hashtags": []
+    },
+    {
+      "ID": 35,
+      "Name": "Оттеночный бальзам",
+      "Describe": "",
+      "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f29dfd99f34649b19fcd43b03cc80aa1.webp",
+      "Favourite": 0,
+      "IsFavourite": false,
+      "Show": 17,
+      "Reply": 0,
+      "Rating": 5,
+      "Price": 0,
+      "Efficiency": 5,
+      "Complexity": 0,
+      "Time": 0,
+      "Problems": [
+        {
+          "ID": 41,
+          "Name": "Предметы для быстрой покраски волос"
+        }
+      ],
+      "Hashtags": []
+    }
+  ],
+  "solutions_detail": {
+    "14": {
+      "solution": {
+        "ID": 14,
+        "Name": "Принтер для ногтей",
+        "Describe": "Наносит любое цветное или черно-белое изображение на ногти за 20 секунд",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a3e882af5945456e831901e8b57c033c.webp",
+        "Show": 4,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 21,
+            "Name": "Техника для быстрого маникюра"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "15": {
+      "solution": {
+        "ID": 15,
+        "Name": "Стикеры",
+        "Describe": "Натуральные компоненты с антибактериальным эффектом работают как дезодорант для ног от пота и запаха",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/a9d798c7bce34fcda0e5d16ec1cba779.webp",
+        "Show": 3,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 22,
+            "Name": "Как избавиться от запаха в обуви"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "16": {
+      "solution": {
+        "ID": 16,
+        "Name": "Пластырь детокс",
+        "Describe": "Очищает от шлаков и токсинов",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/87ab7a184324449c933893e8c512b153.jpg",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 24,
+            "Name": "Детокс средства для тела"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "17": {
+      "solution": {
+        "ID": 17,
+        "Name": "Крем с линчжи",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/ed08e52fe7554119ab5f99fbf9c0fc15.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 25,
+            "Name": "Крема от морщин"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "18": {
+      "solution": {
+        "ID": 18,
+        "Name": "Тест  агар сабуро",
+        "Describe": "Тест на воздух подходит как для профессионального использования, так и для обыденной проверки в домашних условиях. Он поможет выявить потенциальные угрозы для здоровья, связанные с плесенью и другими микробными загрязнениями. Используя данный тест, вы можете быть уверены в надежности получаемых результатов.",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36b0521531b54815a230f4cbaa5f0bf6.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 26,
+            "Name": "Проверка воздуха в доме"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "19": {
+      "solution": {
+        "ID": 19,
+        "Name": "Стоматологическая капа",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/62659056195447099a3bee83ef7d5c8f.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 27,
+            "Name": "Предметы от храпа"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "20": {
+      "solution": {
+        "ID": 20,
+        "Name": "Тест для анализа воды питьевой 7 показателей",
+        "Describe": "- кишечная палочка\r\n- энтерококк\r\n- сальмонелла\r\n- стафилококк\r\n- синегнойная палочка\r\n- протеус\r\n- энтеробактер",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/eb3bbe70d13b473ca0a8120b91633c90.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 28,
+            "Name": "Тест на анализ воды"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "21": {
+      "solution": {
+        "ID": 21,
+        "Name": "Клипса для носа",
+        "Describe": "Ее действие основывается на раскрытии носовых проходов, что помогает спящему перейти на дыхание носом. Со временем организм привыкает и звук храпа значительно уменьшается, либо пропадает совсем.",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/36c3e4d6863b4297888caca6edd499e2.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 27,
+            "Name": "Предметы от храпа"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "22": {
+      "solution": {
+        "ID": 22,
+        "Name": "Спрей жидкий утюг",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/8afcdd55e6794120b729d20be5301675.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 29,
+            "Name": "Покупки для быстрой белья"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "23": {
+      "solution": {
+        "ID": 23,
+        "Name": "Шприц для промывания носа",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3eee8d6e652e46ee96430b3015f86fbe.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 30,
+            "Name": "Предметы для промывания носа"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "24": {
+      "solution": {
+        "ID": 24,
+        "Name": "Тренажер для карандаша/ручки",
+        "Describe": "Тренажер позволяет в игровой форме, без усилий выработать правильную постановку пальцев при обучении ребенка рисованию и технике письма - ручку (карандаш) держать легко и удобно.",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f98665722b745a296eae368ef27d36d.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 31,
+            "Name": "Предметы для постановки письма"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "25": {
+      "solution": {
+        "ID": 25,
+        "Name": "Держатель для босоножек",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/abe242fb42794be8b5f24cec39f1f03e.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 32,
+            "Name": "Предметы для носки"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "26": {
+      "solution": {
+        "ID": 26,
+        "Name": "Кокосовое масло",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/4f30b901877b4f3a8d16b34f91f62a35.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 33,
+            "Name": "Масла для увлажнения тела"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "27": {
+      "solution": {
+        "ID": 27,
+        "Name": "Сыворотка для сужения пор",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/1c7c41f0605741d096134d06fd3a2aff.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 34,
+            "Name": "Косметические средства для пор"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "28": {
+      "solution": {
+        "ID": 28,
+        "Name": "Крем для удаления бородавок/папиллом/родинок",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/0c1a07e946474686b2735586450b4c91.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 35,
+            "Name": "Косметические средства для удаления бородавок, папиллом"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "29": {
+      "solution": {
+        "ID": 29,
+        "Name": "Дезодорант кристалл",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/2e28c18d89eb466cb43ea92308e146ba.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 36,
+            "Name": "Косметические средства от потливости"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "30": {
+      "solution": {
+        "ID": 30,
+        "Name": "Тейпы от морщин",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/3ce408ec96754ed6946f798e9c0525a1.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 37,
+            "Name": "Предметы от морщин"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "31": {
+      "solution": {
+        "ID": 31,
+        "Name": "Лаковые полоски",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/e44425d76f6743159eeca8d15a5db10a.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 38,
+            "Name": "Предметы для быстрого маникюра"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "32": {
+      "solution": {
+        "ID": 32,
+        "Name": "Свеча",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/d8951f09c5b5446fb9e0d55323d94345.webp",
+        "Show": 3,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 39,
+            "Name": "Эзотерические предметы для зачатия"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "33": {
+      "solution": {
+        "ID": 33,
+        "Name": "Карта зачатия",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f43a61fbb7a242f6bc784acad7807a6c.webp",
+        "Show": 2,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 39,
+            "Name": "Эзотерические предметы для зачатия"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "34": {
+      "solution": {
+        "ID": 34,
+        "Name": "Набор с кератолитиком",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/34c2d4f29b55420eb6ea1dfdc78f3a69.webp",
+        "Show": 3,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 0,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 0,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 40,
+            "Name": "Предметы для быстрого педикюра"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    },
+    "35": {
+      "solution": {
+        "ID": 35,
+        "Name": "Оттеночный бальзам",
+        "Describe": "",
+        "Image": "https://storage.yandexcloud.net/glaff23-myapp-bucket/solutions/f29dfd99f34649b19fcd43b03cc80aa1.webp",
+        "Show": 17,
+        "Favourite": 0,
+        "IsFavourite": false,
+        "Reply": 0,
+        "Price": 0,
+        "Efficiency": 5,
+        "Complexity": 0,
+        "Time": 0,
+        "Rating": 5,
+        "IsBought": true,
+        "IsRating": true,
+        "IsNew": true,
+        "Problems": [
+          {
+            "ID": 41,
+            "Name": "Предметы для быстрой покраски волос"
+          }
+        ],
+        "Comments": [],
+        "LinkedSolutions": []
+      }
+    }
+  },
+  "meta": {
+    "static_base_url": "https://abudkina.github.io/VseProstPublic",
+    "exported_at": "2026-06-25T10:45:07.101872Z"
+  }
+}

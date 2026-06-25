@@ -332,20 +332,6 @@ function createSolutionCard(item) {
     };
   }
   
-  // Добавляем обработчик клика для открытия модального окна
-  if (cardImg) {
-    cardImg.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const imageSrc = cardImg.src;
-      const imageAlt = cardImg.alt || item.Name || 'Решение';
-      // Пропускаем SVG изображения и изображения, которые скрыты
-      if (imageSrc && !imageSrc.startsWith('data:image/svg+xml') && cardImg.style.display !== 'none') {
-        openImageViewer(imageSrc, imageAlt);
-      }
-    });
-  }
-  
   imageLink.appendChild(cardImg);
   imageWrapper.appendChild(imageLink);
   

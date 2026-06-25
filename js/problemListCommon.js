@@ -207,17 +207,22 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
     const append = filters.append === true;
     if (!append) container.innerHTML = 'Загрузка...';
 
+    const searchInput = document.getElementById('search');
+    const searchValue = (searchInput && searchInput.value && searchInput.value.trim()) || (filters.search || '').trim();
+
     const params = new URLSearchParams();
-    if (filters.search) params.append('search', filters.search);
+    if (searchValue) params.append('search', searchValue);
     if (filters.hashtags && filters.hashtags.length) {
         params.append('hashtags', filters.hashtags.join(','));
     }
-    if (filters.category != null && Number.isInteger(filters.category)) {
-        params.append('category', filters.category);
-    }
-    if (filters.topic != null && Number.isInteger(filters.topic)) {
-        params.append('topic', filters.topic);
-    }
+    const catNum = filters.category != null && filters.category !== ''
+        ? (Number.isInteger(filters.category) ? filters.category : parseInt(String(filters.category), 10))
+        : NaN;
+    if (!Number.isNaN(catNum)) params.append('category', catNum);
+    const topicNum = filters.topic != null && filters.topic !== ''
+        ? (Number.isInteger(filters.topic) ? filters.topic : parseInt(String(filters.topic), 10))
+        : NaN;
+    if (!Number.isNaN(topicNum)) params.append('topic', topicNum);
     if (filters.isNew) {
         params.append('isnew', 'true');
     }
@@ -256,7 +261,7 @@ export async function loadProblemsCards(filters, onSuccess = null, onError = nul
         }
         const list = (data && data.problems !== undefined) ? data.problems : (Array.isArray(data) ? data : []);
         const limit = filters.limit || PAGE_SIZE;
-        const meta = data && typeof data === 'object' ? { suggestAi: false, aiPlanPriceRub: data.ai_plan_price_rub } : {};
+        const meta = data && typeof data === 'object' ? {} : {};
         meta.hasMore = list.length >= limit;
         if (onSuccess) {
             onSuccess(list, meta);
@@ -282,70 +287,9 @@ export function renderProblemCards(data, options = {}) {
     const append = options.append === true;
     if (!append) container.innerHTML = '';
 
-    if (list.length === 0 && options.suggestAi) {
-        const suggestDiv = document.createElement('div');
-        suggestDiv.className = 'suggest-ai-block';
-        suggestDiv.innerHTML = `
-            <p class="suggest-ai-text">По вашему запросу ничего не найдено. Создайте проблему с решениями с помощью ИИ — тариф 999 руб/мес.</p>
-            <div class="suggest-ai-actions">
-                <button type="button" class="suggest-ai-btn suggest-ai-btn-pay">Подключить за 999 руб</button>
-                <button type="button" class="suggest-ai-btn suggest-ai-btn-create" disabled>Создать с ИИ</button>
-            </div>
-            <p class="suggest-ai-hint">После оплаты тарифа кнопка «Создать с ИИ» станет активной.</p>
-        `;
-        container.appendChild(suggestDiv);
-        const payBtn = suggestDiv.querySelector('.suggest-ai-btn-pay');
-        const createBtn = suggestDiv.querySelector('.suggest-ai-btn-create');
-        if (payBtn) {
-            payBtn.addEventListener('click', () => {
-                if (typeof window.openPaymentModal === 'function') {
-                    window.openPaymentModal(999);
-                } else {
-                    window.location.href = '/profile?tab=balance';
-                }
-            });
-        }
-            createBtn?.addEventListener('click', () => {
-            const query = (document.getElementById('search') || document.querySelector('input[type="search"]'))?.value?.trim() || '';
-            if (!query) return;
-            suggestDiv.querySelector('.suggest-ai-actions')?.classList.add('loading');
-            fetch(`${window.API_CONFIG?.API_URL || ''}/ai/create-problem-from-query`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('accessToken') || '') },
-                body: JSON.stringify({ query })
-            })
-                .then(r => r.json())
-                .then(res => {
-                    if (res.status === 'success' && res.problem) {
-                        window.location.href = '/problem/' + res.problem.ID;
-                    } else {
-                        alert(res.message || 'Ошибка создания');
-                    }
-                })
-                .catch(() => alert('Ошибка сети'))
-                .finally(() => suggestDiv.querySelector('.suggest-ai-actions')?.classList.remove('loading'));
-        });
-        function checkAiPlan() {
-            const token = localStorage.getItem('accessToken');
-            if (!token) return;
-            fetch(`${window.API_CONFIG?.API_URL || ''}/payment/check_balance`, { credentials: 'include', headers: { 'Authorization': 'Bearer ' + token } })
-                .then(r => r.json())
-                .then(res => {
-                    if (res.can_ai_plan && createBtn) {
-                        createBtn.disabled = false;
-                        const hint = suggestDiv.querySelector('.suggest-ai-hint');
-                        if (hint) hint.textContent = 'Тариф ИИ подключён. Введите запрос в поиск и нажмите «Создать с ИИ».';
-                    }
-                })
-                .catch(() => {});
-        }
-        checkAiPlan();
-        return;
-    }
     if (list.length === 0 && append) return;
     if (list.length === 0) {
-        container.innerHTML = '<p style="text-align:center">Нет проблем для отображения</p>';
+        container.innerHTML = '<p style="text-align:center">По вашему запросу ничего не найдено</p>';
         return;
     }
     data = list;
@@ -391,7 +335,7 @@ export function renderProblemCards(data, options = {}) {
         if (titleText) {
             titleText.textContent = problem.Name || 'Без названия';
             if (!options.isAdmin && titleText.tagName === 'A') {
-                titleText.href = `/problem/${problem.ID}`;
+                titleText.href = (window.PATHS ? window.PATHS.problem(problem.ID) : `/problem/${problem.ID}`);
             }
         }
         
@@ -399,7 +343,7 @@ export function renderProblemCards(data, options = {}) {
         if (!options.isAdmin) {
             const cardTitleLink = clone.querySelector('.card-title-link');
             if (cardTitleLink) {
-                cardTitleLink.href = `/problem/${problem.ID}`;
+                cardTitleLink.href = (window.PATHS ? window.PATHS.problem(problem.ID) : `/problem/${problem.ID}`);
             }
         }
         
@@ -480,8 +424,11 @@ export function renderProblemCards(data, options = {}) {
     // Инициализируем обработчики клика на тему (только для обычной страницы, только у новых карточек при append)
     if (!options.isAdmin) {
         const cards = container.querySelectorAll('.card');
-        const links = append ? Array.from(cards).slice(-list.length).flatMap(c => c.querySelectorAll('.topic-link')) : container.querySelectorAll('.topic-link');
+        const links = append
+            ? Array.from(cards).slice(-list.length).flatMap(c => Array.from(c.querySelectorAll('.topic-link')))
+            : Array.from(container.querySelectorAll('.topic-link'));
         links.forEach(topicLink => {
+            if (!topicLink || typeof topicLink.addEventListener !== 'function') return;
             topicLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -581,20 +528,35 @@ export function initFilterHandlers(filters, tomSelectInstance, onFilterChange) {
     const categorySelect = document.getElementById('category');
     const hashtagsSelect = document.getElementById('hashtags');
     const sortSelect = document.getElementById('sort');
-    
+
+    let searchDebounceTimer;
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            filters.search = e.target.value.trim();
+        const applySearch = () => {
+            filters.search = searchInput.value.trim();
             filters.offset = 0;
             if (onFilterChange) onFilterChange();
+        };
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(applySearch, 400);
+        });
+        searchInput.addEventListener('search', () => {
+            clearTimeout(searchDebounceTimer);
+            applySearch();
+        });
+        searchInput.addEventListener('change', () => {
+            clearTimeout(searchDebounceTimer);
+            applySearch();
         });
     }
     
     if (categorySelect) {
         categorySelect.addEventListener('change', (e) => {
             const val = e.target.value;
-            filters.category = val === '' ? null : parseInt(val, 10);
+            const num = val === '' ? null : parseInt(val, 10);
+            filters.category = (num !== null && !Number.isNaN(num)) ? num : null;
             filters.offset = 0;
+            if (searchInput) filters.search = searchInput.value.trim();
             if (onFilterChange) onFilterChange();
         });
     }
@@ -603,6 +565,7 @@ export function initFilterHandlers(filters, tomSelectInstance, onFilterChange) {
         hashtagsSelect.addEventListener('change', (e) => {
             filters.hashtags = tomSelectInstance.getValue().map(Number);
             filters.offset = 0;
+            if (searchInput) filters.search = searchInput.value.trim();
             if (onFilterChange) onFilterChange();
         });
     }
@@ -611,6 +574,7 @@ export function initFilterHandlers(filters, tomSelectInstance, onFilterChange) {
         sortSelect.addEventListener('change', (e) => {
             filters.sort = e.target.value;
             filters.offset = 0;
+            if (searchInput) filters.search = searchInput.value.trim();
             if (onFilterChange) onFilterChange();
         });
     }

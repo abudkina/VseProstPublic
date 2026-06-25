@@ -142,18 +142,6 @@ function renderCart() {
       problemLink.style.pointerEvents = 'none';
     }
 
-    // Статус покупки
-    const statusBadge = card.querySelector('.status-badge');
-    if (statusBadge) {
-      if (item.IsBought) {
-        statusBadge.textContent = 'Куплено';
-        statusBadge.className = 'status-badge bought';
-      } else {
-        statusBadge.textContent = 'Не куплено';
-        statusBadge.className = 'status-badge not-bought';
-      }
-    }
-
     // Изображение
     const img = card.querySelector('.cart-item-img');
     if (img) {

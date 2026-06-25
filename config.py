@@ -83,11 +83,6 @@ class Config:
     YANDEX_VERIFICATION = get_env_variable('YANDEX_VERIFICATION', '')  # Код верификации Яндекс.Вебмастер
     YANDEX_VERIFICATION_CODE = get_env_variable('YANDEX_VERIFICATION_CODE', '')  # Код для файла верификации
 
-    # YooKassa (ЮKassa) payment
-    YOOKASSA_SHOP_ID = get_env_variable('YOOKASSA_SHOP_ID', '')
-    YOOKASSA_SECRET_KEY = get_env_variable('YOOKASSA_SECRET_KEY', '')
-    YOOKASSA_RETURN_URL = get_env_variable('YOOKASSA_RETURN_URL', '')
-
 class DevelopmentConfig(Config):
     """Конфигурация для разработки"""
     DEBUG = True

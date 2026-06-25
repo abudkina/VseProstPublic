@@ -137,8 +137,8 @@ def get_problems():
         rag_search_results = []
         if search:
             try:
-                # Пробуем использовать RAG поиск для семантического поиска
-                search_mode = request.args.get('search_mode', 'hybrid')  # 'text', 'semantic', 'hybrid', 'multimodal'
+                # По умолчанию только текстовый поиск (LIKE), чтобы в списке были только реальные совпадения по запросу
+                search_mode = request.args.get('search_mode', 'text')  # 'text', 'semantic', 'hybrid', 'multimodal'
                 rag_search_results = search_with_rag(
                     query=search,
                     entity_type='problem',
@@ -447,11 +447,7 @@ def get_problems():
         
         has_filters = bool(search or category_param or hashtags_param or topic_param)
         if len(problems_list) == 0 and has_filters:
-            return jsonify({
-                "problems": problems_list,
-                "suggest_ai": True,
-                "ai_plan_price_rub": 999,
-            }), 200
+            return jsonify({"problems": problems_list}), 200
         if has_filters:
             return jsonify({"problems": problems_list}), 200
         return jsonify(problems_list), 200
