@@ -107,7 +107,7 @@ async function loadCards() {
         console.error('Ошибка обновления токена:', refreshError);
         localStorage.removeItem('isLoggedIn');
         sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = '/html/authorization.html';
+        window.location.href = 'html/authorization.html';
         return;
       }
     }
@@ -136,7 +136,7 @@ async function loadCards() {
       setTimeout(() => {
         localStorage.removeItem('isLoggedIn');
         sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = '/html/authorization.html';
+        window.location.href = 'html/authorization.html';
       }, 2000);
     }
   }

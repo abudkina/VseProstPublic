@@ -313,7 +313,7 @@ function createSolutionCard(item) {
       if (imageSrc.startsWith('../images/')) {
         imageSrc = imageSrc.replace('../images/', '/images/');
       } else if (imageSrc.startsWith('../assets/')) {
-        imageSrc = imageSrc.replace('../assets/', '/assets/');
+        imageSrc = imageSrc.replace('../assets/', 'assets/');
       } else {
         imageSrc = '/images/' + imageSrc;
       }
@@ -677,7 +677,7 @@ async function renderSolutionPage() {
     // Обновляем SEO мета-теги
     const baseUrl = window.location.origin;
     const solutionUrl = `/solution/${solution.ID}`;
-    const solutionImage = solution.Image || '/assets/og-image.png';
+    const solutionImage = solution.Image || 'assets/og-image.png';
     
     updateSEOMetaTags({
         title: `${solution.Name} - Всё Прост`,
@@ -779,10 +779,10 @@ async function renderSolutionPage() {
   let mainImageSrc = solution.Image || '';
   if (mainImageSrc && !mainImageSrc.startsWith('http') && !mainImageSrc.startsWith('/')) {
     if (mainImageSrc.startsWith('../images/')) mainImageSrc = '/images/' + mainImageSrc.slice(13);
-    else if (mainImageSrc.startsWith('../assets/')) mainImageSrc = '/assets/' + mainImageSrc.slice(14);
+    else if (mainImageSrc.startsWith('../assets/')) mainImageSrc = 'assets/' + mainImageSrc.slice(14);
     else mainImageSrc = '/' + mainImageSrc.replace(/^\//, '');
   }
-  img.src = mainImageSrc || '/assets/images/Screenshot_4-ww78noDj9-transformed.png';
+  img.src = mainImageSrc || 'assets/images/Screenshot_4-ww78noDj9-transformed.png';
   img.alt = solution.Name;
   img.className = 'solution-image';
   

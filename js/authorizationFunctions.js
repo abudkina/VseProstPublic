@@ -19,7 +19,7 @@ function clearValidateCache() {
 function getRedirectAfterLogin() {
     const url = sessionStorage.getItem('redirectAfterLogin') || '/';
     sessionStorage.removeItem('redirectAfterLogin');
-    const authPath = '/html/authorization.html';
+    const authPath = 'html/authorization.html';
     if (url === authPath || url.endsWith(authPath) || url.replace(/\/$/, '').endsWith(authPath.replace('.html', ''))) {
         return '/';
     }
@@ -299,7 +299,7 @@ export function logout() {
     });
     
     // Редирект
-    window.location.href = '/html/authorization.html';
+    window.location.href = 'html/authorization.html';
 }
 
 // Глобальный перехватчик fetch для автоматического обновления токена
@@ -388,7 +388,7 @@ export function checkAuth(redirectIfUnauthorized = true) {
     if (localStorage.getItem('isLoggedIn') !== 'true') {
         if (redirectIfUnauthorized) {
             sessionStorage.setItem('redirectAfterLogin', window.location.href);
-            window.location.href = '/html/authorization.html';
+            window.location.href = 'html/authorization.html';
         }
         throw new Error('Не авторизован');
     }
@@ -448,7 +448,7 @@ export function checkAuth(redirectIfUnauthorized = true) {
                 localStorage.removeItem('isLoggedIn');
                 if (redirectIfUnauthorized) {
                     sessionStorage.setItem('redirectAfterLogin', window.location.href);
-                    window.location.href = '/html/authorization.html';
+                    window.location.href = 'html/authorization.html';
                 }
             }
             console.error('Ошибка проверки авторизации:', error);

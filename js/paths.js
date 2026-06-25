@@ -8,14 +8,14 @@
 
     function problemUrl(id) {
         if (cfg.isStaticMode) {
-            return (cfg.basePath || '') + '/html/problem.html?id=' + id;
+            return 'html/problem.html?id=' + id;
         }
         return '/problem/' + id;
     }
 
     function solutionUrl(id) {
         if (cfg.isStaticMode) {
-            return (cfg.basePath || '') + '/html/solution.html?id=' + id;
+            return 'html/solution.html?id=' + id;
         }
         return '/solution/' + id;
     }
@@ -23,6 +23,6 @@
     window.PATHS = {
         problem: problemUrl,
         solution: solutionUrl,
-        home: function () { return (cfg.basePath || '') + '/'; }
+        home: function () { return './'; }
     };
 })();

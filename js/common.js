@@ -53,12 +53,12 @@ export function initAuthHandlers() {
     favoritesLink.addEventListener('click', function (e) {
       e.preventDefault();
       if (!localStorage.getItem('isLoggedIn') && !window.SITE_CONFIG?.isStaticMode) {
-        sessionStorage.setItem('redirectAfterLogin', '/html/favourites.html');
-        window.location.href = '/html/authorization.html';
+        sessionStorage.setItem('redirectAfterLogin', 'html/favourites.html');
+        window.location.href = 'html/authorization.html';
         return;
       }
       auth.checkAuth(true).then(userID => {
-        window.location.href = '/html/favourites.html';
+        window.location.href = 'html/favourites.html';
       }).catch(() => {});
     });
   }
@@ -66,10 +66,10 @@ export function initAuthHandlers() {
   if (profileBtn) {
     profileBtn.addEventListener('click', () => {
       auth.checkAuth(false).then(userID => {
-        window.location.href = '/html/profile.html';
+        window.location.href = 'html/profile.html';
       }).catch(() => {
         sessionStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = '/html/authorization.html';
+        window.location.href = 'html/authorization.html';
       });
     });
   }

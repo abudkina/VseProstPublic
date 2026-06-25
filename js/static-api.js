@@ -10,7 +10,7 @@
     }
 
     var basePath = window.SITE_CONFIG.basePath || '';
-    var dataUrl = basePath + '/data/site.json';
+    var dataUrl = 'data/site.json';
     var dataPromise = null;
     var favKey = 'vseprost_static_favorites';
     var cartKey = 'vseprost_static_cart';

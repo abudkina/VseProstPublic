@@ -13,7 +13,7 @@ export function initAdminLogo() {
             logo.title = 'Перейти в админку';
             logo.addEventListener('click', (e) => {
                 e.preventDefault();
-                window.location.href = '/html/admin.html';
+                window.location.href = 'html/admin.html';
             });
         }
     }).catch(() => {

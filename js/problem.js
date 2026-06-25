@@ -62,7 +62,7 @@ async function displaySolutions() {
     // Обновляем SEO мета-теги
     const baseUrl = window.location.origin;
     const problemUrl = `/problem/${problem.ID}`;
-    const problemImage = problem.Image || '/assets/og-image.png';
+    const problemImage = problem.Image || 'assets/og-image.png';
     
     updateSEOMetaTags({
         title: `${problem.Name} - Всё Прост`,
@@ -83,7 +83,7 @@ async function displaySolutions() {
     const problemInfo = problemInfoTemplate.content.cloneNode(true);
 
     const img = problemInfo.querySelector('.problem-img');
-    img.src = problem.Image || problem.image || '/assets/images/Screenshot_4-ww78noDj9-transformed.png';
+    img.src = problem.Image || problem.image || 'assets/images/Screenshot_4-ww78noDj9-transformed.png';
     img.alt = problem.Name;
     
     // Добавляем обработчик клика для открытия модального окна
@@ -467,7 +467,7 @@ async function displaySolutions() {
                         if (imageSrc.startsWith('../images/')) {
                             imageSrc = imageSrc.replace('../images/', '/images/');
                         } else if (imageSrc.startsWith('../assets/')) {
-                            imageSrc = imageSrc.replace('../assets/', '/assets/');
+                            imageSrc = imageSrc.replace('../assets/', 'assets/');
                         } else {
                             imageSrc = '/images/' + imageSrc;
                         }
@@ -754,7 +754,7 @@ async function displaySolutions() {
                 if (imageSrc.startsWith('../images/')) {
                     imageSrc = imageSrc.replace('../images/', '/images/');
                 } else if (imageSrc.startsWith('../assets/')) {
-                    imageSrc = imageSrc.replace('../assets/', '/assets/');
+                    imageSrc = imageSrc.replace('../assets/', 'assets/');
                 } else if (!imageSrc.startsWith('/')) {
                     imageSrc = '/images/' + imageSrc;
                 }
@@ -1181,7 +1181,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     await auth.checkAuth(true);
                     const problemId = currentProblem?.ID;
-                    window.location.href = problemId ? `/html/add_solution.html?problem_id=${problemId}` : '/html/add_solution.html';
+                    window.location.href = problemId ? `/html/add_solution.html?problem_id=${problemId}` : 'html/add_solution.html';
                 } catch (err) {
                     console.error(err);
                 }

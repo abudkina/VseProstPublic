@@ -76,7 +76,7 @@ async function load() {
         render(items);
     } catch (e) {
         if (e.message && e.message.includes('авторизация')) {
-            window.location.href = '/html/authorization.html';
+            window.location.href = 'html/authorization.html';
             return;
         }
         document.getElementById('tbody').innerHTML = '<tr><td colspan="3">Ошибка загрузки</td></tr>';
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await auth.checkAuth(true);
     } catch {
-        window.location.href = '/html/authorization.html';
+        window.location.href = 'html/authorization.html';
         return;
     }
     await load();
@@ -123,16 +123,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('favoritesLink')?.addEventListener('click', (ev) => {
         ev.preventDefault();
         if (!localStorage.getItem('isLoggedIn')) {
-            sessionStorage.setItem('redirectAfterLogin', '/html/favourites.html');
-            window.location.href = '/html/authorization.html';
+            sessionStorage.setItem('redirectAfterLogin', 'html/favourites.html');
+            window.location.href = 'html/authorization.html';
             return;
         }
-        auth.checkAuth(true).then(() => { window.location.href = '/html/favourites.html'; }).catch(() => {});
+        auth.checkAuth(true).then(() => { window.location.href = 'html/favourites.html'; }).catch(() => {});
     });
     document.getElementById('profileBtn')?.addEventListener('click', () => {
-        auth.checkAuth(false).then(() => { window.location.href = '/html/profile.html'; }).catch(() => {
+        auth.checkAuth(false).then(() => { window.location.href = 'html/profile.html'; }).catch(() => {
             sessionStorage.setItem('redirectAfterLogin', window.location.href);
-            window.location.href = '/html/authorization.html';
+            window.location.href = 'html/authorization.html';
         });
     });
 });

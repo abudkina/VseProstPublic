@@ -150,7 +150,7 @@ const API = {
                     return null;
                 } catch (refreshError) {
                     // Если обновление не удалось, перенаправляем на логин
-                    window.location.href = '/html/authorization.html';
+                    window.location.href = 'html/authorization.html';
                     throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
                 }
             }

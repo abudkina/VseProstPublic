@@ -2,18 +2,18 @@
 <html lang="ru">
 <head>
 <script>
-(function(){var h=location.hostname;if(!h.endsWith("github.io"))return;var s={css:1,js:1,html:1,assets:1,fonts:1,data:1,uploads:1,problem:1,solution:1,api:1},p=location.pathname.split("/").filter(Boolean);if(p.length&&!s[p[0]]){var b=document.createElement("base");b.href="/"+p[0]+"/";document.head.insertBefore(b,document.head.firstChild);}})();
+(function(){var h=location.hostname,p=location.pathname.split("/").filter(Boolean),s={css:1,js:1,html:1,assets:1,fonts:1,data:1,uploads:1,problem:1,solution:1,api:1},base="/";if(h.endsWith("github.io")&&p.length&&!s[p[0]])base="/"+p[0]+"/";var b=document.createElement("base");b.href=base;document.head.insertBefore(b,document.head.firstChild);})();
 </script>
-    <script src="/js/site-config.js"></script>
-    <script src="/js/static-api.js"></script>
-    <script src="/js/paths.js"></script>
+    <script src="js/site-config.js"></script>
+    <script src="js/static-api.js"></script>
+    <script src="js/paths.js"></script>
 <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Политика конфиденциальности - Всё Прост</title>
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="stylesheet" href="/css/variables.css" />
-    <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/mobile-menu.css" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/mobile-menu.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
@@ -28,21 +28,21 @@
 </head>
 <body>
 <header>
-    <a href="/" class="logo"><img src="/assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
+    <a href="./" class="logo"><img src="assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
     <ul class="nav-menu desktop-menu">
-        <li><a href="/" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-        <li><a href="/html/solutions.html" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-        <li><a href="/html/profile.html" class="menu-item"><i class="fas fa-user"></i></a></li>
+        <li><a href="./" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+        <li><a href="html/solutions.html" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+        <li><a href="html/profile.html" class="menu-item"><i class="fas fa-user"></i></a></li>
     </ul>
 </header>
 <ul class="nav-menu mobile-menu">
-    <li><a href="/" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-    <li><a href="/html/solutions.html" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-    <li><a href="/html/profile.html" class="menu-item"><i class="fas fa-user"></i></a></li>
+    <li><a href="./" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+    <li><a href="html/solutions.html" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+    <li><a href="html/profile.html" class="menu-item"><i class="fas fa-user"></i></a></li>
 </ul>
 
 <main class="legal-page">
-    <a href="/html/profile.html" class="legal-back"><i class="fas fa-arrow-left"></i> Назад</a>
+    <a href="html/profile.html" class="legal-back"><i class="fas fa-arrow-left"></i> Назад</a>
     <h1>Политика конфиденциальности</h1>
     <p>Настоящая политика конфиденциальности описывает, как сервис «Всё Прост» (далее — Сервис) собирает, использует и защищает персональные данные пользователей.</p>
 
@@ -79,6 +79,6 @@
     <p>По вопросам обработки персональных данных обращайтесь через форму обратной связи в профиле или на контакты, указанные в Сервисе.</p>
 </main>
 
-<script src="/js/mobile-menu.js"></script>
+<script src="js/mobile-menu.js"></script>
 </body>
 </html>

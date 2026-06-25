@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
 <script>
-(function(){var h=location.hostname;if(!h.endsWith("github.io"))return;var s={css:1,js:1,html:1,assets:1,fonts:1,data:1,uploads:1,problem:1,solution:1,api:1},p=location.pathname.split("/").filter(Boolean);if(p.length&&!s[p[0]]){var b=document.createElement("base");b.href="/"+p[0]+"/";document.head.insertBefore(b,document.head.firstChild);}})();
+(function(){var h=location.hostname,p=location.pathname.split("/").filter(Boolean),s={css:1,js:1,html:1,assets:1,fonts:1,data:1,uploads:1,problem:1,solution:1,api:1},base="/";if(h.endsWith("github.io")&&p.length&&!s[p[0]])base="/"+p[0]+"/";var b=document.createElement("base");b.href=base;document.head.insertBefore(b,document.head.firstChild);})();
 </script>
-    <script src="/js/site-config.js"></script>
-    <script src="/js/static-api.js"></script>
-    <script src="/js/paths.js"></script>
+    <script src="js/site-config.js"></script>
+    <script src="js/static-api.js"></script>
+    <script src="js/paths.js"></script>
 <!-- Yandex.Metrika counter -->
     <script type="text/javascript">
         (function(m,e,t,r,i,k,a){
@@ -29,35 +29,35 @@
     <meta name="description" content="Просмотр всех решений на платформе Всё Прост. Найдите решения для ваших проблем и получите помощь от сообщества." />
     <meta name="keywords" content="VseProst, ВсеПрост, Все Просто, ВсёПрост, Всё Прост, решения, ответы, помощь, советы, решения проблем" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="/html/solutions.html" />
+    <link rel="canonical" href="html/solutions.html" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="/html/solutions.html" />
+    <meta property="og:url" content="html/solutions.html" />
     <meta property="og:title" content="Решения - Всё Прост" />
     <meta property="og:description" content="Просмотр всех решений на платформе Всё Прост" />
-    <meta property="og:image" content="/assets/images/Screenshot_4-ww78noDj9-transformed.png" />
+    <meta property="og:image" content="assets/images/Screenshot_4-ww78noDj9-transformed.png" />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:site_name" content="Всё Прост" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="/html/solutions.html" />
+    <meta name="twitter:url" content="html/solutions.html" />
     <meta name="twitter:title" content="Решения - Всё Прост" />
     <meta name="twitter:description" content="Просмотр всех решений на платформе Всё Прост" />
-    <meta name="twitter:image" content="/assets/images/Screenshot_4-ww78noDj9-transformed.png" />
+    <meta name="twitter:image" content="assets/images/Screenshot_4-ww78noDj9-transformed.png" />
     
     <!-- Favicon для поисковиков и браузеров -->
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/css/variables.css" />
-    <link rel="stylesheet" href="/css/solutions.css" />
-    <link rel="stylesheet" href="/css/mobile-filters.css" />
-    <link rel="stylesheet" href="/css/search-trigger.css" />
-    <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/mobile-menu.css" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/solutions.css" />
+    <link rel="stylesheet" href="css/mobile-filters.css" />
+    <link rel="stylesheet" href="css/search-trigger.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/mobile-menu.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
@@ -67,26 +67,26 @@
 </head>
 <body>
     <header>
-    <a href="/" class="logo"><img src="/assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
+    <a href="./" class="logo"><img src="assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
     <ul class="nav-menu desktop-menu">
-        <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-        <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-        <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
-        <li><a href="/html/cart.html" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
-        <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-        <li><a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
+        <li><a href="./" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+        <li><a href="html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+        <li><a href="html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
+        <li><a href="html/cart.html" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
+        <li><a href="html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
+        <li><a href="html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
     </ul>
     
 
 </header>
 
 <ul class="nav-menu mobile-menu">
-    <li><a href="/" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-    <li><a href="/html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-    <li><a href="/html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
-    <li><a href="/html/cart.html" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
-    <li><a href="/html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-    <li><a href="/html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
+    <li><a href="./" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+    <li><a href="html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+    <li><a href="html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
+    <li><a href="html/cart.html" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
+    <li><a href="html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
+    <li><a href="html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
 </ul>
 
 
@@ -194,10 +194,10 @@
         <div class="mobile-filter-panel-body"></div>
     </div>
 </div>
-<script src="/js/config.js"></script>
-<script src="/js/searchTrigger.js"></script>
-<script type="module" src="/js/solutions.js" defer></script>
-<script type="module" src="/js/logoAdmin.js"></script>
-<script src="/js/mobile-menu.js"></script>
+<script src="js/config.js"></script>
+<script src="js/searchTrigger.js"></script>
+<script type="module" src="js/solutions.js" defer></script>
+<script type="module" src="js/logoAdmin.js"></script>
+<script src="js/mobile-menu.js"></script>
 </body>
 </html>

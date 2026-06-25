@@ -317,17 +317,17 @@ export function renderProblemCards(data, options = {}) {
             if (imageSrc && (imageSrc.startsWith('http://') || imageSrc.startsWith('https://'))) {
                 img.src = imageSrc;
             } else if (!imageSrc) {
-                img.src = '/assets/images/Screenshot_4-ww78noDj9-transformed.png';
+                img.src = 'assets/images/Screenshot_4-ww78noDj9-transformed.png';
             } else {
                 if (imageSrc.startsWith('../images/')) imageSrc = '/images/' + imageSrc.slice(13);
-                else if (imageSrc.startsWith('../assets/')) imageSrc = '/assets/' + imageSrc.slice(14);
+                else if (imageSrc.startsWith('../assets/')) imageSrc = 'assets/' + imageSrc.slice(14);
                 else if (imageSrc.startsWith('uploads/')) imageSrc = '/' + imageSrc;
                 else if (!imageSrc.startsWith('/')) imageSrc = '/' + imageSrc.replace(/^\//, '');
                 img.src = imageSrc;
             }
             img.alt = problem.Name || 'Проблема';
             img.loading = 'lazy';
-            img.onerror = () => { img.src = '/assets/images/Screenshot_4-ww78noDj9-transformed.png'; };
+            img.onerror = () => { img.src = 'assets/images/Screenshot_4-ww78noDj9-transformed.png'; };
         }
         
         // Название
