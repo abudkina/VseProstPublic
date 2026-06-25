@@ -27,7 +27,10 @@
 
     ensureGuestSession();
     function getDataUrl() {
-        if (window.assetUrl) return window.assetUrl('data/site.json');
+        var cfg = window.SITE_CONFIG || {};
+        if (cfg.basePath) {
+            return cfg.basePath + '/data/site.json';
+        }
         return /\/html\//.test(location.pathname) ? '../data/site.json' : 'data/site.json';
     }
 
@@ -39,8 +42,15 @@
         if (!dataPromise) {
             dataPromise = fetch(getDataUrl(), { cache: 'no-store' })
                 .then(function (r) {
-                    if (!r.ok) throw new Error('Не удалось загрузить data/site.json');
+                    if (!r.ok) {
+                        dataPromise = null;
+                        throw new Error('Не удалось загрузить data/site.json');
+                    }
                     return r.json();
+                })
+                .catch(function (err) {
+                    dataPromise = null;
+                    throw err;
                 });
         }
         return dataPromise;
