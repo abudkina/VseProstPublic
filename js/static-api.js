@@ -26,14 +26,18 @@
     }
 
     ensureGuestSession();
-    var dataUrl = 'data/site.json';
+    function getDataUrl() {
+        if (window.assetUrl) return window.assetUrl('data/site.json');
+        return /\/html\//.test(location.pathname) ? '../data/site.json' : 'data/site.json';
+    }
+
     var dataPromise = null;
     var favKey = 'vseprost_static_favorites';
     var cartKey = 'vseprost_static_cart';
 
     function loadData() {
         if (!dataPromise) {
-            dataPromise = fetch(dataUrl, { cache: 'no-store' })
+            dataPromise = fetch(getDataUrl(), { cache: 'no-store' })
                 .then(function (r) {
                     if (!r.ok) throw new Error('Не удалось загрузить data/site.json');
                     return r.json();
