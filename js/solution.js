@@ -85,13 +85,13 @@ function createComment(comment) {
 }
 
 function getParameterByName(name) {
-  // Сначала проверяем красивый URL: /solution/123 или /solution/123-slug
   if (name === 'solutionId' || name === 'id') {
     const pathMatch = window.location.pathname.match(/\/solution\/(\d+)/);
     if (pathMatch) return pathMatch[1];
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('solutionId') || urlParams.get('id');
   }
 
-  // Фоллбэк на query параметры
   const url = window.location.href;
   const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
   const results = regex.exec(url);
