@@ -57,7 +57,7 @@ function createRatingBlock(label, rating, solutionID, ratingType) {
     const authMsg = createElem('span', 'rating-auth-message', 'Оценивать могут только авторизованные пользователи');
     block.append(labelElem, authMsg);
   }
-  const valueElem = createElem('span', 'rating-value', rating.toString());
+  const valueElem = createElem('span', 'rating-value', String(rating ?? 0));
   block.appendChild(valueElem);
   return block;
 }
@@ -634,7 +634,8 @@ async function renderSolutionPage() {
       return;
     }
 
-    const solution = await response.json();
+    const data = await response.json();
+    const solution = data.solution ?? data;
 
     container.innerHTML = '';
 
