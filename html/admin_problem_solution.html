@@ -4,46 +4,46 @@
 <script>
 (function(){var h=location.hostname,p=location.pathname.split("/").filter(Boolean),s={css:1,js:1,html:1,assets:1,fonts:1,data:1,uploads:1,problem:1,solution:1,api:1},base="/";if(h.endsWith("github.io")&&p.length&&!s[p[0]])base="/"+p[0]+"/";var b=document.createElement("base");b.href=base;document.head.insertBefore(b,document.head.firstChild);})();
 </script>
-    <script src="js/site-config.js"></script>
-    <script src="js/static-api.js"></script>
-    <script src="js/paths.js"></script>
+    <script src="../js/site-config.js"></script>
+    <script src="../js/static-api.js"></script>
+    <script src="../js/paths.js"></script>
 <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Админка — Проблемы — Решения</title>
-    <link rel="shortcut icon" href="favicon.ico" />
-    <link rel="stylesheet" href="css/variables.css" />
-    <link rel="stylesheet" href="css/admin.css" />
-    <link rel="stylesheet" href="css/index.css" />
-    <link rel="stylesheet" href="css/header.css" />
-    <link rel="stylesheet" href="css/mobile-menu.css" />
-    <link rel="stylesheet" href="css/admin_problems.css" />
-    <link rel="stylesheet" href="css/admin_links.css" />
+    <link rel="shortcut icon" href="../favicon.ico" />
+    <link rel="stylesheet" href="../css/variables.css" />
+    <link rel="stylesheet" href="../css/admin.css" />
+    <link rel="stylesheet" href="../css/index.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="../css/mobile-menu.css" />
+    <link rel="stylesheet" href="../css/admin_problems.css" />
+    <link rel="stylesheet" href="../css/admin_links.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
 <header>
-    <a href="./" class="logo"><img src="assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
+    <a href="../" class="logo"><img src="../assets/images/logo1-Photoroom1.png" alt="Всё Прост" class="logo-image" /></a>
     <ul class="nav-menu desktop-menu">
-        <li><a href="./" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-        <li><a href="html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-        <li><a href="html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
+        <li><a href="../" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+        <li><a href="solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+        <li><a href="favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
         <li><a href="#" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
-        <li><a href="html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-        <li><a href="html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
+        <li><a href="notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
+        <li><a href="profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
     </ul>
 </header>
 <ul class="nav-menu mobile-menu">
-    <li><a href="./" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
-    <li><a href="html/solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
-    <li><a href="html/favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
+    <li><a href="../" title="Вопросы" class="menu-item"><i class="fas fa-question-circle"></i></a></li>
+    <li><a href="solutions.html" title="Решения" class="menu-item"><i class="fas fa-lightbulb"></i></a></li>
+    <li><a href="favourites.html" title="Избранное" class="menu-item heart" id="favoritesLink"><i class="fas fa-heart"></i></a></li>
     <li><a href="#" title="Корзина" class="menu-item"><i class="fas fa-shopping-basket"></i></a></li>
-    <li><a href="html/notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
-    <li><a href="html/profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
+    <li><a href="notifications.html" title="Уведомления" class="menu-item"><i class="fas fa-bell"></i></a></li>
+    <li><a href="profile.html" title="Профиль" class="menu-item" id="profileBtn"><i class="fas fa-user"></i></a></li>
 </ul>
 
 <main class="admin-links-main">
-    <p><a href="html/admin.html" class="back-link">← Админка</a></p>
+    <p><a href="admin.html" class="back-link">← Админка</a></p>
     <h1>Link Problem Solution</h1>
     <table class="admin-links-table">
         <thead>
@@ -58,9 +58,9 @@
     <p id="emptyMsg" class="admin-links-empty" style="display:none;">Нет записей.</p>
 </main>
 
-<script src="js/config.js"></script>
-<script type="module" src="js/admin_problem_solution.js"></script>
-<script type="module" src="js/logoAdmin.js"></script>
-<script src="js/mobile-menu.js"></script>
+<script src="../js/config.js"></script>
+<script type="module" src="../js/admin_problem_solution.js"></script>
+<script type="module" src="../js/logoAdmin.js"></script>
+<script src="../js/mobile-menu.js"></script>
 </body>
 </html>

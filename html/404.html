@@ -4,9 +4,9 @@
 <script>
 (function(){var h=location.hostname,p=location.pathname.split("/").filter(Boolean),s={css:1,js:1,html:1,assets:1,fonts:1,data:1,uploads:1,problem:1,solution:1,api:1},base="/";if(h.endsWith("github.io")&&p.length&&!s[p[0]])base="/"+p[0]+"/";var b=document.createElement("base");b.href=base;document.head.insertBefore(b,document.head.firstChild);})();
 </script>
-    <script src="js/site-config.js"></script>
-    <script src="js/static-api.js"></script>
-    <script src="js/paths.js"></script>
+    <script src="../js/site-config.js"></script>
+    <script src="../js/static-api.js"></script>
+    <script src="../js/paths.js"></script>
 <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     
@@ -30,10 +30,10 @@
     <meta name="twitter:description" content="Запрашиваемая страница не найдена. Вернитесь на главную страницу." />
     
     <!-- Favicon для поисковиков и браузеров -->
-    <link rel="shortcut icon" href="favicon.ico" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="shortcut icon" href="../favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/png" sizes="48x48" href="../favicon-48x48.png" />
+    <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
     
     <!-- Preconnect для быстрой загрузки -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -222,17 +222,17 @@
         </p>
         
         <div class="error-actions">
-            <a href="./" class="btn">На главную</a>
-            <a href="html/solutions.html" class="btn btn-secondary">Решения</a>
+            <a href="../" class="btn">На главную</a>
+            <a href="solutions.html" class="btn btn-secondary">Решения</a>
             <button onclick="history.back()" class="btn btn-secondary">Назад</button>
         </div>
         
         <div class="suggestions">
             <h2 class="suggestions-title">Популярные разделы:</h2>
             <ul class="suggestions-list">
-                <li><a href="./">Главная страница</a> - Найдите ответы на свои вопросы</li>
-                <li><a href="html/solutions.html">Решения</a> - Просмотрите готовые решения</li>
-                <li><a href="html/add_problem.html">Добавить проблему</a> - Задайте свой вопрос</li>
+                <li><a href="../">Главная страница</a> - Найдите ответы на свои вопросы</li>
+                <li><a href="solutions.html">Решения</a> - Просмотрите готовые решения</li>
+                <li><a href="add_problem.html">Добавить проблему</a> - Задайте свой вопрос</li>
             </ul>
         </div>
     </div>
@@ -253,6 +253,6 @@
             });
         }
     </script>
-<script src="js/mobile-menu.js"></script>
+<script src="../js/mobile-menu.js"></script>
 </body>
 </html>

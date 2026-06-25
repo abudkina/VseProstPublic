@@ -9,7 +9,23 @@
         return;
     }
 
-    var basePath = window.SITE_CONFIG.basePath || '';
+    var STATIC_USER = {
+        userID: 1,
+        username: 'Гость',
+        isAdmin: false,
+        valid: true,
+        accessExpiry: new Date(Date.now() + 86400000).toISOString()
+    };
+
+    function ensureGuestSession() {
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userId', String(STATIC_USER.userID));
+        localStorage.setItem('username', STATIC_USER.username);
+        localStorage.setItem('isAdmin', 'false');
+        localStorage.setItem('accessToken', 'static-demo-token');
+    }
+
+    ensureGuestSession();
     var dataUrl = 'data/site.json';
     var dataPromise = null;
     var favKey = 'vseprost_static_favorites';
@@ -257,11 +273,40 @@
                 return jsonResponse({ in_cart: cart.indexOf(checkId) !== -1 });
             }
 
-            if (path === '/login' || path === '/register' || path === '/validate-token' ||
-                path === '/refreshToken' || path === '/forgot-password' || path === '/reset-password') {
+            if (path === '/login' && method === 'POST') {
+                ensureGuestSession();
                 return jsonResponse({
-                    message: 'Авторизация недоступна в демо на GitHub Pages. Запустите проект локально с Flask.'
-                }, 401);
+                    message: 'OK',
+                    userID: STATIC_USER.userID,
+                    username: STATIC_USER.username,
+                    accessExpiry: STATIC_USER.accessExpiry
+                });
+            }
+            if (path === '/register' && method === 'POST') {
+                ensureGuestSession();
+                return jsonResponse({ message: 'Регистрация в демо-режиме (без сервера)' });
+            }
+            if (path === '/validate-token' && method === 'GET') {
+                return jsonResponse({
+                    valid: true,
+                    userID: STATIC_USER.userID,
+                    username: STATIC_USER.username,
+                    isAdmin: false,
+                    accessExpiry: STATIC_USER.accessExpiry
+                });
+            }
+            if (path === '/refreshToken' && method === 'POST') {
+                return jsonResponse({
+                    message: 'OK',
+                    accessExpiry: STATIC_USER.accessExpiry
+                });
+            }
+            if (path === '/logout' && method === 'POST') {
+                ensureGuestSession();
+                return jsonResponse({ message: 'OK' });
+            }
+            if (path === '/forgot-password' || path === '/reset-password') {
+                return jsonResponse({ message: 'В демо-режиме восстановление пароля недоступно' });
             }
 
             if (method === 'GET') {

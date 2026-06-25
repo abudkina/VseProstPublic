@@ -385,6 +385,12 @@ window.fetch = function(...args) {
 
 // Функция проверки авторизации (переиспользуемая)
 export function checkAuth(redirectIfUnauthorized = true) {
+    if (window.SITE_CONFIG && window.SITE_CONFIG.isStaticMode) {
+        localStorage.setItem('isLoggedIn', 'true');
+        if (!localStorage.getItem('userId')) localStorage.setItem('userId', '1');
+        if (!localStorage.getItem('username')) localStorage.setItem('username', 'Гость');
+        return Promise.resolve(parseInt(localStorage.getItem('userId') || '1', 10));
+    }
     if (localStorage.getItem('isLoggedIn') !== 'true') {
         if (redirectIfUnauthorized) {
             sessionStorage.setItem('redirectAfterLogin', window.location.href);
@@ -476,6 +482,9 @@ export function getAuthHeaders(additionalHeaders = {}) {
 
 // Функция проверки, является ли пользователь администратором
 export async function checkIsAdmin() {
+    if (window.SITE_CONFIG && window.SITE_CONFIG.isStaticMode) {
+        return false;
+    }
     try {
         const cachedIsAdmin = localStorage.getItem('isAdmin');
         if (cachedIsAdmin === 'true') return true;
