@@ -313,21 +313,12 @@ export function renderProblemCards(data, options = {}) {
         // Изображение: полный URL (Yandex Storage и т.д.) — как есть, иначе относительный путь приводим к рабочему
         const img = clone.querySelector('.card-image');
         if (img) {
-            let imageSrc = (problem.Image || problem.image || '').replace(/\\/g, '/').trim();
-            if (imageSrc && (imageSrc.startsWith('http://') || imageSrc.startsWith('https://'))) {
-                img.src = imageSrc;
-            } else if (!imageSrc) {
-                img.src = 'assets/images/Screenshot_4-ww78noDj9-transformed.png';
-            } else {
-                if (imageSrc.startsWith('../images/')) imageSrc = '/images/' + imageSrc.slice(13);
-                else if (imageSrc.startsWith('../assets/')) imageSrc = 'assets/' + imageSrc.slice(14);
-                else if (imageSrc.startsWith('uploads/')) imageSrc = '/' + imageSrc;
-                else if (!imageSrc.startsWith('/')) imageSrc = '/' + imageSrc.replace(/^\//, '');
-                img.src = imageSrc;
-            }
+            const fallback = (window.normalizeImageSrc || window.assetUrl || ((p) => p))('assets/images/Screenshot_4-ww78noDj9-transformed.png');
+            const norm = window.normalizeImageSrc || ((raw) => raw ? (window.assetUrl ? window.assetUrl(raw) : raw) : fallback);
+            img.src = norm(problem.Image || problem.image);
             img.alt = problem.Name || 'Проблема';
             img.loading = 'lazy';
-            img.onerror = () => { img.src = 'assets/images/Screenshot_4-ww78noDj9-transformed.png'; };
+            img.onerror = () => { img.src = fallback; };
         }
         
         // Название

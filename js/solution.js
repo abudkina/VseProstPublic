@@ -236,15 +236,12 @@ function createSolutionCard(item) {
   
   const cardImg = createElem('img', 'card-image');
   cardImg.loading = 'lazy';
-  let imageSrc = item.Image;
-  
-  // Функция для генерации SVG изображения с градиентом и названием
+
   function getImageFromInternet(solutionName) {
     if (!solutionName || solutionName.trim() === '') {
       return null;
     }
     
-    // Создаем хеш от названия для получения стабильного изображения
     let hash = 0;
     for (let i = 0; i < solutionName.length; i++) {
       const char = solutionName.charCodeAt(i);
@@ -253,18 +250,14 @@ function createSolutionCard(item) {
     }
     
     const imageId = Math.abs(hash) % 1000;
-    
-    // Цвета для градиента на основе хеша
     const colors = [
       ['#667eea', '#764ba2'], ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'],
       ['#43e97b', '#38f9d7'], ['#fa709a', '#fee140'], ['#30cfd0', '#330867'],
       ['#a8edea', '#fed6e3'], ['#d299c2', '#fef9d7'], ['#ff9a9e', '#fecfef'],
       ['#ffecd2', '#fcb69f'],
     ];
-    
     const colorPair = colors[imageId % colors.length];
     const displayText = solutionName.trim().replace(/[<>]/g, '').substring(0, 30);
-    
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
         <defs>
@@ -280,13 +273,13 @@ function createSolutionCard(item) {
         </text>
       </svg>
     `;
-    
     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   }
-  
-  // Внешний URL (Yandex Storage и т.д.) — используем как есть
-  if (imageSrc && (imageSrc.startsWith('http://') || imageSrc.startsWith('https://'))) {
-    cardImg.src = imageSrc;
+
+  const norm = window.normalizeImageSrc || ((raw) => raw ? (window.assetUrl ? window.assetUrl(raw) : raw) : null);
+
+  if (item.Image && item.Image.trim() !== '' && item.Image !== '../images/default.png') {
+    cardImg.src = norm(item.Image);
     cardImg.alt = item.Name || 'Решение';
     cardImg.style.display = 'block';
     cardImg.onerror = function() {
@@ -297,8 +290,7 @@ function createSolutionCard(item) {
         this.style.display = 'none';
       }
     };
-  } else if (!imageSrc || imageSrc.trim() === '' || imageSrc === '../images/default.png') {
-    // Нет картинки — плейсхолдер
+  } else {
     const internetImage = getImageFromInternet(item.Name);
     if (internetImage) {
       cardImg.src = internetImage;
@@ -307,29 +299,6 @@ function createSolutionCard(item) {
     } else {
       cardImg.style.display = 'none';
     }
-  } else {
-    // Локальный/относительный путь
-    if (!imageSrc.startsWith('/')) {
-      if (imageSrc.startsWith('../images/')) {
-        imageSrc = imageSrc.replace('../images/', '/images/');
-      } else if (imageSrc.startsWith('../assets/')) {
-        imageSrc = imageSrc.replace('../assets/', 'assets/');
-      } else {
-        imageSrc = '/images/' + imageSrc;
-      }
-    }
-    cardImg.src = imageSrc;
-    cardImg.alt = item.Name || 'Решение';
-    cardImg.style.display = 'block';
-    cardImg.onerror = function() {
-      const internetImage = getImageFromInternet(item.Name);
-      if (internetImage) {
-        this.src = internetImage;
-        this.style.display = 'block';
-      } else {
-        this.style.display = 'none';
-      }
-    };
   }
   
   imageLink.appendChild(cardImg);
@@ -776,13 +745,7 @@ async function renderSolutionPage() {
   const mainBlock = createElem('div', 'main-block');
 
   const img = createElem('img');
-  let mainImageSrc = solution.Image || '';
-  if (mainImageSrc && !mainImageSrc.startsWith('http') && !mainImageSrc.startsWith('/')) {
-    if (mainImageSrc.startsWith('../images/')) mainImageSrc = '/images/' + mainImageSrc.slice(13);
-    else if (mainImageSrc.startsWith('../assets/')) mainImageSrc = 'assets/' + mainImageSrc.slice(14);
-    else mainImageSrc = '/' + mainImageSrc.replace(/^\//, '');
-  }
-  img.src = mainImageSrc || 'assets/images/Screenshot_4-ww78noDj9-transformed.png';
+  img.src = (window.normalizeImageSrc || ((x) => x))(solution.Image);
   img.alt = solution.Name;
   img.className = 'solution-image';
   

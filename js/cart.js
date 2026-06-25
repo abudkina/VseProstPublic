@@ -146,7 +146,7 @@ function renderCart() {
     const img = card.querySelector('.cart-item-img');
     if (img) {
       img.loading = 'lazy';
-      img.src = item.Image || '../images/default.png';
+      img.src = (window.normalizeImageSrc || ((x) => x))(item.Image);
       img.alt = item.Name || 'Решение';
     }
 

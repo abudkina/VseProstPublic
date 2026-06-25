@@ -83,7 +83,7 @@ async function displaySolutions() {
     const problemInfo = problemInfoTemplate.content.cloneNode(true);
 
     const img = problemInfo.querySelector('.problem-img');
-    img.src = problem.Image || problem.image || 'assets/images/Screenshot_4-ww78noDj9-transformed.png';
+    img.src = (window.normalizeImageSrc || ((x) => x))(problem.Image || problem.image);
     img.alt = problem.Name;
     
     // Добавляем обработчик клика для открытия модального окна
@@ -430,11 +430,10 @@ async function displaySolutions() {
                     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
                 }
                 
-                let imageSrc = solution.Image;
-                
-                // Внешний URL (Yandex Storage и т.д.) — используем как есть
-                if (imageSrc && (imageSrc.startsWith('http://') || imageSrc.startsWith('https://'))) {
-                    cardImg.src = imageSrc;
+                const norm = window.normalizeImageSrc || ((raw) => raw ? (window.assetUrl ? window.assetUrl(raw) : raw) : null);
+
+                if (solution.Image && solution.Image.trim() !== '' && solution.Image !== '../images/default.png') {
+                    cardImg.src = norm(solution.Image);
                     cardImg.alt = solution.Name || 'Решение';
                     cardImg.style.display = 'block';
                     if (cardImageWrapper) cardImageWrapper.style.background = 'none';
@@ -447,7 +446,7 @@ async function displaySolutions() {
                             if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                         }
                     };
-                } else if (!imageSrc || imageSrc.trim() === '' || imageSrc === '../images/default.png') {
+                } else {
                     const internetImage = getImageFromInternet(solution.Name);
                     if (internetImage) {
                         cardImg.src = internetImage;
@@ -461,36 +460,6 @@ async function displaySolutions() {
                         cardImg.style.display = 'none';
                         if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                     }
-                } else {
-                    // Локальный/относительный путь
-                    if (!imageSrc.startsWith('/')) {
-                        if (imageSrc.startsWith('../images/')) {
-                            imageSrc = imageSrc.replace('../images/', '/images/');
-                        } else if (imageSrc.startsWith('../assets/')) {
-                            imageSrc = imageSrc.replace('../assets/', 'assets/');
-                        } else {
-                            imageSrc = '/images/' + imageSrc;
-                        }
-                    }
-                    cardImg.src = imageSrc;
-                    cardImg.alt = solution.Name || 'Решение';
-                    cardImg.style.display = 'block';
-                    if (cardImageWrapper) cardImageWrapper.style.background = 'none';
-                    cardImg.onerror = function() {
-                        const internetImage = getImageFromInternet(solution.Name);
-                        if (internetImage) {
-                            this.src = internetImage;
-                            this.style.display = 'block';
-                            if (cardImageWrapper) {
-                                cardImageWrapper.style.background = 'none';
-                            }
-                        } else {
-                            this.style.display = 'none';
-                            if (cardImageWrapper) {
-                                cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                            }
-                        }
-                    };
                 }
             }
 
@@ -748,18 +717,7 @@ async function displaySolutions() {
             imageLink.className = 'card-title-link';
             
             const img = document.createElement('img');
-            let imageSrc = linkedProblem.Image || '../images/default.png';
-            // Исправляем пути к изображениям
-            if (imageSrc && !imageSrc.startsWith('http') && !imageSrc.startsWith('/')) {
-                if (imageSrc.startsWith('../images/')) {
-                    imageSrc = imageSrc.replace('../images/', '/images/');
-                } else if (imageSrc.startsWith('../assets/')) {
-                    imageSrc = imageSrc.replace('../assets/', 'assets/');
-                } else if (!imageSrc.startsWith('/')) {
-                    imageSrc = '/images/' + imageSrc;
-                }
-            }
-            img.src = imageSrc;
+            img.src = (window.normalizeImageSrc || ((x) => x))(linkedProblem.Image);
             img.alt = linkedProblem.Name || 'Проблема';
             img.className = 'card-image';
             img.loading = 'lazy';

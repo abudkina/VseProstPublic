@@ -188,66 +188,24 @@ function renderCards(data, options = {}) {
       return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
     
-    // Используем изображение из базы: наш origin или прокси — показываем как есть, внешние URL — fallback SVG
-    const isOurImage = item.Image && item.Image.trim() !== '' &&
-      (item.Image.startsWith('/') ||
-       item.Image.includes('/api/storage-image') ||
-       (item.Image.startsWith('http') && (item.Image.startsWith(window.location.origin) || item.Image.includes('storage-image'))));
-
     if (item.Image && item.Image.trim() !== '') {
-      if (isOurImage) {
-        cardImg.src = item.Image.startsWith('/') ? item.Image : (item.Image.startsWith('http') ? item.Image : '/' + item.Image.replace(/^\//, ''));
-        cardImg.alt = item.Name || 'Решение';
-        cardImg.style.display = 'block';
-        if (cardImageWrapper) cardImageWrapper.style.background = 'none';
-        cardImg.onerror = function() {
-          const generatedImage = getImageFromInternet(item.Name);
-          if (generatedImage) {
-            this.src = generatedImage;
-            if (cardImageWrapper) cardImageWrapper.style.background = 'none';
-          } else {
-            this.style.display = 'none';
-            if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-          }
-        };
-      } else if (item.Image.startsWith('http://') || item.Image.startsWith('https://')) {
+      const norm = window.normalizeImageSrc || ((raw) => {
+        const p = (raw || '').replace(/^\//, '');
+        return (window.assetUrl ? window.assetUrl(p) : p);
+      });
+      cardImg.src = norm(item.Image);
+      cardImg.alt = item.Name || 'Решение';
+      cardImg.style.display = 'block';
+      if (cardImageWrapper) cardImageWrapper.style.background = 'none';
+      cardImg.onerror = function() {
         const generatedImage = getImageFromInternet(item.Name);
         if (generatedImage) {
-          cardImg.src = generatedImage;
-          cardImg.alt = item.Name || 'Решение';
-          cardImg.style.display = 'block';
-          if (cardImageWrapper) cardImageWrapper.style.background = 'none';
+          this.src = generatedImage;
         } else {
-          cardImg.style.display = 'none';
+          this.style.display = 'none';
           if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         }
-      } else {
-        // Локальный файл - нормализуем путь (с ведущим /)
-        cardImg.src = item.Image.startsWith('/') ? item.Image : '/' + item.Image.replace(/^\//, '');
-        cardImg.alt = item.Name || 'Решение';
-        cardImg.style.display = 'block';
-        if (cardImageWrapper) {
-          cardImageWrapper.style.background = 'none';
-        }
-        
-        // Обработка ошибки загрузки локального изображения
-        cardImg.onerror = function() {
-          // При ошибке локального файла генерируем SVG изображение
-          const generatedImage = getImageFromInternet(item.Name);
-          if (generatedImage) {
-            this.src = generatedImage;
-            this.style.display = 'block';
-            if (cardImageWrapper) {
-              cardImageWrapper.style.background = 'none';
-            }
-          } else {
-            this.style.display = 'none';
-            if (cardImageWrapper) {
-              cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            }
-          }
-        };
-      }
+      };
     } else {
       // Нет изображения - генерируем SVG изображение
       const generatedImage = getImageFromInternet(item.Name);

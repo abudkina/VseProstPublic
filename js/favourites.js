@@ -199,7 +199,7 @@ function renderProblemCards(data) {
     const cardImg = card.querySelector('.card-image');
     if (cardImg) {
       cardImg.loading = 'lazy';
-      cardImg.src = item.Image || '../images/default.png';
+      cardImg.src = (window.normalizeImageSrc || ((x) => x))(item.Image);
       cardImg.alt = item.Name || 'Проблема';
     }
 
@@ -366,53 +366,20 @@ function renderSolutionCards(data) {
       
       // Используем изображение решения напрямую из API
       if (item.Image && item.Image.trim() !== '') {
-        // Если это внешний URL, ищем изображение в интернете по названию
-        if (item.Image.startsWith('http://') || item.Image.startsWith('https://')) {
+        cardImg.src = (window.normalizeImageSrc || ((x) => x))(item.Image);
+        cardImg.style.display = 'block';
+        if (cardImageWrapper) cardImageWrapper.style.background = 'none';
+        cardImg.onerror = function() {
           const internetImage = getImageFromInternet(item.Name);
           if (internetImage) {
-            cardImg.src = internetImage;
-            cardImg.style.display = 'block';
-            if (cardImageWrapper) {
-              cardImageWrapper.style.background = 'none';
-            }
-            
-            cardImg.onerror = function() {
-              this.style.display = 'none';
-              if (cardImageWrapper) {
-                cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-              }
-            };
+            this.src = internetImage;
+            this.style.display = 'block';
+            if (cardImageWrapper) cardImageWrapper.style.background = 'none';
           } else {
-            cardImg.style.display = 'none';
-            if (cardImageWrapper) {
-              cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            }
+            this.style.display = 'none';
+            if (cardImageWrapper) cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
           }
-        } else {
-          // Локальный файл - используем как есть
-          cardImg.src = item.Image.startsWith('/') ? item.Image : '/' + item.Image;
-          cardImg.style.display = 'block';
-          if (cardImageWrapper) {
-            cardImageWrapper.style.background = 'none';
-          }
-          
-          // Обработка ошибки загрузки локального изображения - пробуем интернет
-          cardImg.onerror = function() {
-            const internetImage = getImageFromInternet(item.Name);
-            if (internetImage) {
-              this.src = internetImage;
-              this.style.display = 'block';
-              if (cardImageWrapper) {
-                cardImageWrapper.style.background = 'none';
-              }
-            } else {
-              this.style.display = 'none';
-              if (cardImageWrapper) {
-                cardImageWrapper.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-              }
-            }
-          };
-        }
+        };
       } else {
         // Если изображения нет, ищем в интернете по названию
         const internetImage = getImageFromInternet(item.Name);
