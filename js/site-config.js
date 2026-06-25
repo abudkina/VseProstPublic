@@ -20,11 +20,6 @@
         if (parts.length && !staticRoots[parts[0]]) {
             basePath = '/' + parts[0];
         }
-        if (basePath) {
-            var baseEl = document.createElement('base');
-            baseEl.href = basePath + '/';
-            document.head.insertBefore(baseEl, document.head.firstChild);
-        }
     }
 
     window.SITE_CONFIG = {
